@@ -61,7 +61,7 @@ export function SourceManager({
           >
             <div className="flex min-w-0 items-center gap-3">
               <Switch
-                checked={source.enabled}
+                checked={source.enabled !== false}
                 onChange={() => onToggle(source.id)}
                 ariaLabel={`切换 ${source.name} 状态`}
               />

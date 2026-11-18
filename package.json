@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "dev": "node scripts/next-with-lan-access.mjs dev",
-    "build": "next build --webpack",
+    "build": "next build",
     "start": "node scripts/next-with-lan-access.mjs start",
     "lint": "eslint",
     "test": "tsx --test tests/**/*.test.ts"

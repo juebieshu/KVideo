@@ -6,7 +6,8 @@ type ButtonVariant =
   | "soft"
   | "outline"
   | "ghost"
-  | "link";
+  | "link"
+  | "secondary" | "primary";
 
 type ButtonColor =
   | "primary"
@@ -140,6 +141,10 @@ const variants: Record<ButtonVariant, string> = {
 
     enabled:hover:underline
   `,
+
+  // 历史遗留
+  secondary: ``,
+  primary: ``,
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

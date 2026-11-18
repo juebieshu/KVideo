@@ -3,10 +3,12 @@ const config = {
     "@tailwindcss/postcss": {},
     "postcss-preset-env": {
       features: {
-        "cascade-layers": true,
+        // preset-env's cascade-layers transform drops Tailwind v4 responsive
+        // variant rules; target browsers support native layers, so leave it off.
+        "cascade-layers": false,
         "color-mix": true,
       },
-      browsers: "Safari >= 15, iOS >= 15",
+      browsers: "Chrome >= 130, Edge >= 130, Safari >= 17.5, Firefox >= 121",
     },
   },
 };

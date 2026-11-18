@@ -8,7 +8,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useHistory } from '@/lib/store/history-store';
 import { Icons } from '@/components/ui/Icon';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { ConfirmDialog } from '@/components/ui/Dialog';
 import { HistoryHeader } from './HistoryHeader';
 import { HistoryList } from './HistoryList';
 import { HistoryFooter } from './HistoryFooter';

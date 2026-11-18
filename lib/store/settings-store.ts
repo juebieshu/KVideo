@@ -21,7 +21,6 @@ export type SortOption =
 
 export type SearchDisplayMode = 'normal' | 'grouped';
 export type AdFilterMode = 'off' | 'keyword' | 'heuristic' | 'aggressive';
-export type ProxyMode = 'retry' | 'none' | 'always';
 
 export const DEFAULT_SEEK_STEP_SECONDS = 10;
 export const MIN_SEEK_STEP_SECONDS = 1;
@@ -49,16 +48,14 @@ export interface AppSettings {
   autoSkipOutro: boolean;
   skipOutroSeconds: number;
   seekStepSeconds: number;
-  showModeIndicator: boolean; // Show '直连模式'/'代理模式' badge on player
   adFilter: boolean; // Filter ad tags from m3u8 (legacy, kept for compatibility)
   adFilterMode: AdFilterMode; // 'off' | 'keyword' | 'heuristic' | 'aggressive'
   adKeywords: string[]; // Dynamically loaded ad keywords
   // Search & Display settings
   realtimeLatency: boolean; // Enable real-time latency ping updates
-  searchDisplayMode: SearchDisplayMode; // 'normal' = individual cards, 'grouped' = group same-name videos
+  searchDisplayMode: SearchDisplayMode; // 'normal' = individual cards, 'grouped' = group exact same-name videos
   episodeReverseOrder: boolean; // Persist episode list reverse state
   fullscreenType: 'auto' | 'native' | 'window'; // Fullscreen mode preference: 'auto' (native on desktop, window on mobile) | 'native' | 'window'
-  proxyMode: ProxyMode; // Proxy behavior: 'retry' | 'none' | 'always'
   rememberScrollPosition: boolean; // Remember scroll position when navigating back or refreshing
   personalizedRecommendations: boolean; // Show personalized recommendations based on watch history
   videoTogetherEnabled: boolean; // Show VideoTogether entry on supported player pages
@@ -133,7 +130,6 @@ function getDefaultAppSettings(): AppSettings {
     autoSkipOutro: false,
     skipOutroSeconds: 0,
     seekStepSeconds: DEFAULT_SEEK_STEP_SECONDS,
-    showModeIndicator: false,
     adFilter: false,
     adFilterMode: 'heuristic',
     adKeywords: [],
@@ -141,7 +137,6 @@ function getDefaultAppSettings(): AppSettings {
     searchDisplayMode: 'normal',
     episodeReverseOrder: false,
     fullscreenType: 'auto',
-    proxyMode: 'retry',
     rememberScrollPosition: true,
     personalizedRecommendations: true,
     videoTogetherEnabled: false,
@@ -237,7 +232,6 @@ export const settingsStore = {
         autoSkipOutro: parsed.autoSkipOutro !== undefined ? parsed.autoSkipOutro : false,
         skipOutroSeconds: typeof parsed.skipOutroSeconds === 'number' ? parsed.skipOutroSeconds : 0,
         seekStepSeconds: normalizeSeekStepSeconds(parsed.seekStepSeconds),
-        showModeIndicator: parsed.showModeIndicator !== undefined ? parsed.showModeIndicator : false,
         adFilter: parsed.adFilter !== undefined ? parsed.adFilter : false,
         adFilterMode: parsed.adFilterMode || 'heuristic',
         adKeywords: Array.isArray(parsed.adKeywords) ? parsed.adKeywords : [],
@@ -245,7 +239,6 @@ export const settingsStore = {
         searchDisplayMode: parsed.searchDisplayMode === 'grouped' ? 'grouped' : 'normal',
         episodeReverseOrder: parsed.episodeReverseOrder !== undefined ? parsed.episodeReverseOrder : false,
         fullscreenType: (parsed.fullscreenType === 'window' || parsed.fullscreenType === 'native' || parsed.fullscreenType === 'auto') ? parsed.fullscreenType : 'auto',
-        proxyMode: (parsed.proxyMode === 'retry' || parsed.proxyMode === 'none' || parsed.proxyMode === 'always') ? parsed.proxyMode : 'retry',
         rememberScrollPosition: parsed.rememberScrollPosition !== undefined ? parsed.rememberScrollPosition : true,
         personalizedRecommendations: parsed.personalizedRecommendations !== undefined ? parsed.personalizedRecommendations : true,
         videoTogetherEnabled: parsed.videoTogetherEnabled !== undefined ? parsed.videoTogetherEnabled : false,

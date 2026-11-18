@@ -47,6 +47,29 @@ export interface Video extends VideoItem {
   relevanceScore?: number;
 }
 
+export type MergeConfidence = 'high' | 'medium';
+
+export interface MediaCandidate {
+  sourceId: string;
+  vodId: string | number;
+  sourceName: string;
+  title: string;
+  year?: string;
+  type?: string;
+  poster?: string;
+  remarks?: string;
+}
+
+export interface MediaGroup {
+  key: string;
+  title: string;
+  year?: string;
+  type?: string;
+  poster?: string;
+  candidates: MediaCandidate[];
+  confidence: MergeConfidence;
+}
+
 export interface SourceBadge {
   id: string;
   name: string;

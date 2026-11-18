@@ -83,7 +83,7 @@ test('browser fixtures use an interceptable HTTPS origin', () => {
   assert.equal(sourceArgument(BROWSER_FIXTURE_ORIGIN).sourceConfig.baseUrl, BROWSER_FIXTURE_ORIGIN);
 });
 
-test('selects the newest Cloudflare production deployment', () => {
+test('selects the newest deployment row', () => {
   const output = JSON.stringify([
     { Environment: 'Production', Source: 'abcdef1', Deployment: 'https://new.pages.dev' },
     { Environment: 'Production', Source: '1234567', Deployment: 'https://old.pages.dev' },

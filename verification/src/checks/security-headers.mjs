@@ -30,7 +30,7 @@ export async function checkSecurityHeaders(ctx) {
     status: localEval.missing.length || remoteEval?.missing.length ? 'FAIL' : 'PASS', severity: 'high', expected: 'nosniff, referrer, framing, permissions, CSP, HSTS remotely, no powered-by',
     actual: JSON.stringify({ localMissing: localEval.missing, remoteMissing: remoteEval?.missing || [] }),
     reason: localEval.missing.length || remoteEval?.missing.length ? 'One or more standard browser defenses are absent.' : 'Both surfaces provide the configured defense-in-depth headers.',
-    evidence: [target], remediation: 'Define headers in Next.js/self-hosted responses and Cloudflare configuration; use a restrictive CSP tested against required scripts.',
+    evidence: [target], remediation: 'Define headers in Next.js / Vercel responses or the reverse proxy; use a restrictive CSP tested against required scripts.',
   });
   const assetFailures = assets.filter((item) => item.response.status !== 200);
   finding(ctx, {

@@ -12,9 +12,10 @@ test('action caps skip only quick runs and fail complete runs', () => {
   assert.equal(actionCoverageStatus({ quick: false, cappedRoutes: ['desktop:/settings'], emptyRoutes: [] }), 'FAIL');
 });
 
-test('Next production build runs after the Cloudflare adapter build', () => {
+test('Next production build is the only production build step', () => {
   const source = fs.readFileSync(new URL('../../src/checks/static-tools.mjs', import.meta.url), 'utf8');
-  assert.ok(source.indexOf("'cloudflare-pages-build'") < source.indexOf("'next-build'"));
+  assert.match(source, /'next-build'/);
+  assert.doesNotMatch(source, /cloudflare-pages-build/);
 });
 
 test('action path replay verifies every expected state transition', () => {

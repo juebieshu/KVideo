@@ -44,7 +44,7 @@ test('signed sessions round-trip and reject tampering', async () => {
     username: 'alice',
     name: 'Alice',
     role: 'super_admin',
-    customPermissions: ['iptv_access'],
+    customPermissions: ['danmaku_api'],
     mode: 'managed',
     iat: Date.now(),
   }, 'test-secret');
@@ -58,10 +58,9 @@ test('signed sessions round-trip and reject tampering', async () => {
   assert.equal(await verifySessionToken(tampered, 'test-secret'), null);
 });
 
-test('role permissions preserve IPTV management inheritance', () => {
-  const permissions = resolvePermissions('viewer', ['iptv_access']);
-  assert.ok(permissions.includes('iptv_access'));
-  assert.ok(permissions.includes('iptv_source_management'));
+test('role permissions preserve role defaults', () => {
+  const permissions = resolvePermissions('viewer', ['danmaku_api']);
+  assert.ok(permissions.includes('danmaku_api'));
   assert.equal(hasResolvedPermission('admin', 'player_settings'), true);
   assert.equal(hasResolvedPermission('viewer', 'account_management'), false);
   assert.equal(hasRoleAtLeast('super_admin', 'admin'), true);

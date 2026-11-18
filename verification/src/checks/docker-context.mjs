@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ignoredDirectories = new Set([
-  '.git', '.gradle', '.next', '.vercel', '.wrangler',
+  '.git', '.gradle', '.next', '.vercel',
   'artifacts', 'build', 'cache', 'coverage', 'dist', 'node_modules', 'out',
 ]);
 const ignoredRootFiles = new Set(['README.md', 'next-env.d.ts', 'npm-debug.log']);

@@ -7,7 +7,7 @@ import { FavoritesPageHeader } from '@/components/favorites/FavoritesPageHeader'
 import { FavoritesGrid } from '@/components/favorites/FavoritesGrid';
 import { FavoritesSidebar } from '@/components/favorites/FavoritesSidebar';
 import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { ConfirmDialog } from '@/components/ui/Dialog';
 import { useFavorites } from '@/lib/store/favorites-store';
 
 interface FavoritesPageContentProps {

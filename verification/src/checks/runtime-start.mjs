@@ -10,7 +10,7 @@ export async function startRuntime(ctx) {
   finding(ctx, {
     id: 'runtime.fixture-server', category: 'harness', title: 'Local deterministic fixture server is reachable',
     status: fixture.ok ? 'PASS' : 'FAIL', severity: 'critical', expected: 'HTTP 200', actual: fixture.ok ? fixture.status : fixture.error,
-    reason: fixture.ok ? 'API, proxy, latency, and media tests can use controlled upstream behavior.' : 'Controlled integration tests cannot run.',
+    reason: fixture.ok ? 'API, latency, and media tests can use controlled upstream behavior.' : 'Controlled integration tests cannot run.',
     remediation: 'Free port 34174 and rerun.',
   });
   const production = ctx.state.buildOk;

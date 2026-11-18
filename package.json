@@ -2,18 +2,24 @@
   "name": "kvideo",
   "version": "4.9.20",
   "private": true,
+  "browserslist": [
+    "Chrome >= 130",
+    "Edge >= 130",
+    "Safari >= 17.5",
+    "Firefox >= 121"
+  ],
   "scripts": {
     "dev": "node scripts/next-with-lan-access.mjs dev",
-    "build": "next build --webpack && node scripts/transpile-client-assets.mjs .next/static",
+    "build": "next build --webpack",
     "start": "node scripts/next-with-lan-access.mjs start",
     "lint": "eslint",
-    "test": "tsx --test tests/**/*.test.ts",
-    "pages:build": "next-on-pages && node scripts/transpile-client-assets.mjs .vercel/output/static/_next/static"
+    "test": "tsx --test tests/**/*.test.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@iconify/react": "^6.0.4",
     "@upstash/redis": "^1.37.0",
     "@vercel/analytics": "^2.0.1",
     "hls.js": "^1.6.15",
@@ -25,7 +31,6 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.16",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^25",
     "@types/react": "^19",

@@ -17,7 +17,7 @@ function addPlaybackFinding(ctx, name, results, target) {
     reason: failures.length ? 'At least one real browser playback case stalled, decoded incorrectly, dropped frames, or emitted errors.'
       : 'Every viewport met timing, dimensions, frame-loss, and runtime contracts.',
     evidence: [target, ...results.map((item) => item.screenshot).filter(Boolean)],
-    remediation: 'Inspect the exact viewport, player events, HLS configuration, codecs, proxy mode, and browser evidence.',
+    remediation: 'Inspect the exact viewport, player events, HLS configuration, codecs, and browser evidence.',
   });
 }
 

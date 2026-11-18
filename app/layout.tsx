@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Metadata } from "next";
+import { headers } from 'next/headers';
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AutoSync } from '@/components/AutoSync'; // <-- 引入了自动同步组件
@@ -9,15 +10,16 @@ import { TVNavigationInitializer } from "@/components/TVNavigationInitializer";
 import { Analytics } from "@vercel/analytics/react";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { PasswordGate } from "@/components/PasswordGate";
+import { BrowserUnsupported } from "@/components/BrowserUnsupported";
+import { detectBrowserSupport } from "@/lib/config/browser-support";
 import { siteConfig } from "@/lib/config/site-config";
 import { AdKeywordsInjector } from "@/components/AdKeywordsInjector";
 import { BackToTop } from "@/components/ui/BackToTop";
 import { ScrollPositionManager } from "@/components/ScrollPositionManager";
+import { SettingsModalHost } from "@/components/settings/v2/SettingsModalHost";
 import { LocaleProvider } from "@/components/LocaleProvider";
-import { RuntimeFeaturesProvider } from "@/components/RuntimeFeaturesProvider";
 import { VideoTogetherController } from '@/components/VideoTogetherController';
 import { shouldEnableVercelAnalytics } from '@/lib/config/deployment';
-import { getRuntimeFeatures } from "@/lib/server/runtime-features";
 import { resolveSiteIconSrc } from '@/lib/server/site-icon';
 import fs from 'fs';
 import path from 'path';
@@ -81,8 +83,23 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const requestHeaders = await headers();
+  const browserSupport = detectBrowserSupport(requestHeaders.get('user-agent'));
+
+  if (!browserSupport.supported) {
+    return (
+      <html lang="zh-CN" suppressHydrationWarning>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        </head>
+        <body style={{ margin: 0 }}>
+          <BrowserUnsupported info={browserSupport} />
+        </body>
+      </html>
+    );
+  }
+
   const siteIconSrc = await resolveSiteIconSrc();
-  const runtimeFeatures = getRuntimeFeatures();
   const videoTogetherScriptUrl =
     process.env.VIDEOTOGETHER_SCRIPT_URL?.trim() || DEFAULT_VIDEOTOGETHER_SCRIPT_URL;
   const videoTogetherSettingUrl = process.env.VIDEOTOGETHER_SETTING_URL?.trim();
@@ -110,7 +127,6 @@ export default async function RootLayout({
       >
         <SiteIconProvider iconSrc={siteIconSrc}>
           <ThemeProvider>
-            <RuntimeFeaturesProvider initialFeatures={runtimeFeatures}>
               <VideoTogetherController
                 envEnabled={videoTogetherEnvEnabled}
                 scriptUrl={videoTogetherScriptUrl}
@@ -133,13 +149,13 @@ export default async function RootLayout({
                   <AutoSync />
                   <AdKeywordsWrapper />
                   {children}
+                  <SettingsModalHost />
                   <BackToTop />
                   <ScrollPositionManager />
                 </PasswordGate>
               </TVProvider>
               {vercelAnalyticsEnabled ? <Analytics /> : null}
               <ServiceWorkerRegister />
-            </RuntimeFeaturesProvider>
           </ThemeProvider>
         </SiteIconProvider>
 

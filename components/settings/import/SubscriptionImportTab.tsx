@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/Dialog';
+import { Menu } from '@/components/ui/Menu';
 import type { SourceSubscription } from '@/lib/types';
 import { createSubscription } from '@/lib/utils/source-import-utils';
 
@@ -22,14 +25,18 @@ export function SubscriptionImportTab({
     const [loading, setLoading] = useState(false);
     const [refreshingIds, setRefreshingIds] = useState<Set<string>>(new Set());
     const [error, setError] = useState('');
-
-    const handleAddKeydown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') handleAdd();
-    };
+    const [pendingRemove, setPendingRemove] = useState<SourceSubscription | null>(null);
 
     const handleAdd = async () => {
         if (!url.trim() || !name.trim()) {
-            setError("请输入订阅名称和链接");
+            setError('请输入订阅名称和订阅链接');
+            return;
+        }
+
+        try {
+            new URL(url);
+        } catch {
+            setError('请输入有效的 URL');
             return;
         }
 
@@ -39,7 +46,7 @@ export function SubscriptionImportTab({
         try {
             const newSub = createSubscription(name, url);
             // Immediately try to fetch (test connection)
-            // The parent handler should assume responsibility for fetching content 
+            // The parent handler should assume responsibility for fetching content
             // but here we just pass the object
             await onAdd(newSub);
             setUrl('');
@@ -64,95 +71,126 @@ export function SubscriptionImportTab({
         }
     };
 
+    const inputClassName =
+        'rounded-[var(--radius-2xl)] border border-(--glass-border) bg-(--glass-bg) px-3 py-2 text-sm text-(--text-color) placeholder:text-(--text-color-secondary) focus:border-(--accent-color) focus:outline-none sm:h-8 sm:py-1';
+
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="max-h-[60vh] overflow-y-auto px-1">
-                {/* Add New Subscription */}
-                <div className="p-4 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] space-y-3">
-                    <h4 className="font-semibold text-[var(--text-color)] text-sm">添加新订阅</h4>
-                    <div className="grid gap-3">
+        <div className="mx-auto w-full max-w-2xl">
+            <header className="mb-4 border-b border-(--sv2-border) pb-3">
+                <h2 className="text-[18px] font-semibold text-(--text-color)">订阅源</h2>
+                <p className="mt-1.5 text-[13px] leading-5 text-(--text-color-secondary)">
+                    添加订阅链接后，源列表会自动同步；刷新会立即拉取最新内容。
+                </p>
+            </header>
+
+            <section aria-label="添加订阅" className="border-b border-(--sv2-border) pb-5">
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handleAdd();
+                    }}
+                    className="space-y-3">
+                    <div className="flex flex-wrap gap-2">
                         <input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="订阅名称 (例如: 每日更新源)"
-                            onKeyDown={handleAddKeydown}
-                            className="w-full bg-[color-mix(in_srgb,var(--bg-color)_50%,transparent)] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] px-4 py-2 text-[var(--text-color)] placeholder:text-[var(--text-color-secondary)] focus:outline-none focus:border-[var(--accent-color)]"
+                            placeholder="订阅名称"
+                            aria-label="订阅名称"
+                            className={`w-full sm:w-44 ${inputClassName}`}
                         />
-                        <div className="flex gap-2 flex-wrap">
-                            <input
-                                type="url"
-                                value={url}
-                                onChange={(e) => setUrl(e.target.value)}
-                                placeholder="订阅链接 (URL)"
-                                onKeyDown={handleAddKeydown}
-                                className="flex-1 bg-[color-mix(in_srgb,var(--bg-color)_50%,transparent)] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] px-4 py-2 text-[var(--text-color)] placeholder:text-[var(--text-color-secondary)] focus:outline-none focus:border-[var(--accent-color)]"
-                            />
+                        <input
+                            type="url"
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            placeholder="订阅链接"
+                            aria-label="订阅链接"
+                            className={`min-w-0 flex-1 ${inputClassName}`}
+                        />
+                        <Button type="submit" disabled={loading} className="shrink-0">
+                            {loading ? '添加中' : '添加订阅'}
+                        </Button>
+                    </div>
+                    {error && (
+                        <p role="alert" className="text-[12px] leading-4 text-(--sv2-danger)">
+                            {error}
+                        </p>
+                    )}
+                </form>
+            </section>
+
+            <section aria-label="订阅列表">
+                {subscriptions.length === 0 && (
+                    <p className="py-8 text-center text-[13px] text-(--text-color-secondary)">
+                        暂无订阅
+                    </p>
+                )}
+
+                {subscriptions.map((sub) => (
+                    <div
+                        key={sub.id}
+                        className="flex items-center justify-between gap-4 border-b border-(--sv2-border) py-4 last:border-b-0">
+                        <div className="min-w-0">
+                            <p className="text-[14px] leading-5 font-medium text-(--text-color)">
+                                {sub.name}
+                            </p>
+                            <p
+                                className="mt-1 truncate text-[12px] leading-4 text-(--text-color-secondary)"
+                                title={`${sub.url} · 上次更新 ${new Date(sub.lastUpdated).toLocaleString()}`}>
+                                {sub.url} · 上次更新 {new Date(sub.lastUpdated).toLocaleString()}
+                            </p>
+                        </div>
+
+                        <div className="flex shrink-0 items-center gap-1">
                             <button
-                                onClick={handleAdd}
-                                disabled={loading || !url.trim() || !name.trim()}
-                                className="px-4 py-2 rounded-[var(--radius-2xl)] bg-[var(--accent-color)] text-white font-medium hover:brightness-110 disabled:opacity-50 transition-all shadow-sm"
-                            >
-                                {loading ? '添加中...' : '添加'}
+                                type="button"
+                                onClick={() => handleRefresh(sub)}
+                                disabled={refreshingIds.has(sub.id)}
+                                className="cursor-pointer rounded-[var(--radius-full)] p-2 text-(--text-color-secondary) transition-colors hover:bg-[color-mix(in_srgb,var(--text-color)_10%,transparent)] hover:text-(--text-color) disabled:cursor-not-allowed disabled:opacity-50"
+                                title="立即更新"
+                                aria-label={`更新 ${sub.name}`}>
+                                <svg
+                                    className={`h-4 w-4 ${refreshingIds.has(sub.id) ? 'animate-spin text-(--accent-color)' : ''}`}
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    aria-hidden="true">
+                                    <path d="M23 4v6h-6" />
+                                    <path d="M1 20v-6h6" />
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                </svg>
                             </button>
+
+                            <Menu
+                                ariaLabel={`${sub.name} 操作`}
+                                items={[
+                                    {
+                                        label: '删除',
+                                        danger: true,
+                                        onSelect: () => setPendingRemove(sub),
+                                    },
+                                ]}
+                            />
                         </div>
                     </div>
-                    {error && <p className="text-red-500 text-xs">{error}</p>}
-                </div>
+                ))}
+            </section>
 
-                {/* Subscription List */}
-                <div className="space-y-3 mt-4">
-                    {subscriptions.length === 0 && (
-                        <div className="text-center py-8 text-[var(--text-color-secondary)]">
-                            暂无订阅
-                        </div>
-                    )}
-
-                    {subscriptions.map(sub => (
-                        <div
-                            key={sub.id}
-                            className="flex items-center justify-between p-4 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] hover:border-[var(--accent-color)] transition-colors group"
-                        >
-                            <div className="overflow-hidden mr-4">
-                                <h5 className="font-semibold text-[var(--text-color)] truncate">{sub.name}</h5>
-                                <p className="text-xs text-[var(--text-color-secondary)] truncate" title={sub.url}>{sub.url}</p>
-                                <p className="text-xs text-[var(--text-color-secondary)] mt-1 opacity-70">
-                                    上次更新: {new Date(sub.lastUpdated).toLocaleString()}
-                                </p>
-                            </div>
-
-                            <div className="flex items-center gap-2 shrink-0">
-                                <button
-                                    onClick={() => handleRefresh(sub)}
-                                    disabled={refreshingIds.has(sub.id)}
-                                    className="p-2 rounded-[var(--radius-full)] hover:bg-[color-mix(in_srgb,var(--text-color)_10%,transparent)] text-[var(--text-color)] transition-all"
-                                    title="立即更新"
-                                >
-                                    <svg
-                                        className={`w-5 h-5 ${refreshingIds.has(sub.id) ? 'animate-spin text-[var(--accent-color)]' : ''}`}
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                                    >
-                                        <path d="M23 4v6h-6" />
-                                        <path d="M1 20v-6h6" />
-                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                                    </svg>
-                                </button>
-
-                                <button
-                                    onClick={() => onRemove(sub.id)}
-                                    className="p-2 rounded-[var(--radius-full)] hover:bg-red-100 dark:hover:bg-red-900/30 text-[var(--text-color-secondary)] hover:text-red-500 transition-all"
-                                    title="删除订阅"
-                                >
-                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M3 6h18" />
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            <ConfirmDialog
+                isOpen={pendingRemove !== null}
+                title="删除订阅"
+                message={`确定要删除订阅「${pendingRemove?.name ?? ''}」吗？删除后该订阅将不再自动同步源列表。是否继续？`}
+                confirmText="删除"
+                cancelText="取消"
+                variant="danger"
+                dangerous
+                onConfirm={() => {
+                    if (pendingRemove) onRemove(pendingRemove.id);
+                    setPendingRemove(null);
+                }}
+                onCancel={() => setPendingRemove(null)}
+            />
         </div>
     );
 }

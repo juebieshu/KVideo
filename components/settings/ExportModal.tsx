@@ -42,7 +42,7 @@ export function ExportModal({ isOpen, onClose, onExport }: ExportModalProps) {
             : 'opacity-0 -translate-y-[40%] scale-95 pointer-events-none'
           }`}
       >
-        <div className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-md)] p-6">
+        <div className="settings-dialog-card bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-md)] p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-semibold text-[var(--text-color)]">
               导出设置
@@ -69,10 +69,10 @@ export function ExportModal({ isOpen, onClose, onExport }: ExportModalProps) {
                 type="checkbox"
                 checked={includeSearchHistory}
                 onChange={(e) => setIncludeSearchHistory(e.target.checked)}
-                className="hidden"
+                className="sr-only"
               />
               <div className={`w-6 h-6 rounded-[0.6rem] border-2 flex items-center justify-center transition-all duration-200 ${includeSearchHistory
-                  ? 'bg-[var(--accent-color)] border-[var(--accent-color)]'
+                  ? 'bg-[var(--sv2-control-accent,var(--accent-color))] border-[var(--sv2-control-accent,var(--accent-color))]'
                   : 'border-[var(--text-color-secondary)]'
                 }`}>
                 {includeSearchHistory && (
@@ -90,10 +90,10 @@ export function ExportModal({ isOpen, onClose, onExport }: ExportModalProps) {
                 type="checkbox"
                 checked={includeWatchHistory}
                 onChange={(e) => setIncludeWatchHistory(e.target.checked)}
-                className="hidden"
+                className="sr-only"
               />
               <div className={`w-6 h-6 rounded-[0.6rem] border-2 flex items-center justify-center transition-all duration-200 ${includeWatchHistory
-                  ? 'bg-[var(--accent-color)] border-[var(--accent-color)]'
+                  ? 'bg-[var(--sv2-control-accent,var(--accent-color))] border-[var(--sv2-control-accent,var(--accent-color))]'
                   : 'border-[var(--text-color-secondary)]'
                 }`}>
                 {includeWatchHistory && (
@@ -119,7 +119,7 @@ export function ExportModal({ isOpen, onClose, onExport }: ExportModalProps) {
             </button>
             <button
               onClick={handleExport}
-              className="flex-1 px-6 py-3 rounded-[var(--radius-2xl)] bg-[var(--accent-color)] text-white font-semibold hover:brightness-110 hover:-translate-y-0.5 shadow-[var(--shadow-sm)] transition-all duration-200"
+              className="flex-1 px-6 py-3 rounded-[var(--radius-2xl)] settings-primary bg-[var(--accent-color)] text-white font-semibold hover:brightness-110 hover:-translate-y-0.5 shadow-[var(--shadow-sm)] transition-all duration-200"
             >
               导出
             </button>

@@ -62,7 +62,7 @@ function exactResponse(pathname, request, ctx) {
     '/api/danmaku': [],
   };
   if (pathname === '/api/auth' && request.method() === 'GET') return {
-    hasAuth: false, persistSession: true, loginMode: 'none', subscriptionSources: '', iptvSources: '', mergeSources: '',
+    hasAuth: false, persistSession: true, loginMode: 'none', subscriptionSources: '', mergeSources: '',
   };
   return Object.hasOwn(fixed, pathname) ? fixed[pathname] : undefined;
 }

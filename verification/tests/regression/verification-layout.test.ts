@@ -43,7 +43,6 @@ test('post-publication verification checks every requested release surface', () 
   assert.match(deployment, /refs\/heads\/main/);
   assert.match(deployment, /kuekhaoyang\/kvideo:latest/);
   assert.match(deployment, /kuekhaoyang\/kvideo:\$\{ctx\.state\.version\}/);
-  assert.match(deployment, /cloudflare-deployments/);
   assert.match(deployment, /latestDigest === versionDigest/);
 });
 

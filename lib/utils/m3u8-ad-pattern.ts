@@ -4,23 +4,11 @@ import {
 } from './m3u8-duration-grid';
 import type { Block, MainPattern, SegmentLocation } from './m3u8-ad-types';
 
-function unwrapProxyUrl(url: string): string {
-    if (!url.includes('/api/proxy?url=')) return url;
-
-    try {
-        const match = url.match(/[?&]url=([^&]+)/);
-        return match?.[1] ? decodeURIComponent(match[1]) : url;
-    } catch {
-        return url;
-    }
-}
-
 export function extractFilename(url: string): string {
     try {
-        const unwrappedUrl = unwrapProxyUrl(url);
-        const path = unwrappedUrl.includes('://')
-            ? new URL(unwrappedUrl).pathname
-            : unwrappedUrl;
+        const path = url.includes('://')
+            ? new URL(url).pathname
+            : url;
         return path.split('/').pop() || '';
     } catch {
         return url.split('/').pop() || '';
@@ -41,9 +29,8 @@ function findCommonPrefix(strings: string[]): string {
 
 export function extractSegmentLocation(url: string): SegmentLocation {
     try {
-        const unwrappedUrl = unwrapProxyUrl(url);
-        const parsedUrl = unwrappedUrl.includes('://') ? new URL(unwrappedUrl) : null;
-        const path = parsedUrl?.pathname || unwrappedUrl;
+        const parsedUrl = url.includes('://') ? new URL(url) : null;
+        const path = parsedUrl?.pathname || url;
         const lastSlash = path.lastIndexOf('/');
         return {
             origin: parsedUrl?.origin || '',

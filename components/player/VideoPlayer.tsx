@@ -6,24 +6,19 @@ import { useHistory } from '@/lib/store/history-store';
 import { CustomVideoPlayer } from './CustomVideoPlayer';
 import { VideoPlayerError } from './VideoPlayerError';
 import { VideoPlayerEmpty } from './VideoPlayerEmpty';
-import { usePlayerSettings } from './hooks/usePlayerSettings';
 
 interface VideoPlayerProps {
   playUrl: string;
   videoId?: string;
   currentEpisode: number;
   onBack: () => void;
-  // Episode navigation props for auto-skip/auto-next
   totalEpisodes?: number;
   onNextEpisode?: () => void;
   isReversed?: boolean;
   isPremium?: boolean;
-  // Danmaku props
   videoTitle?: string;
   episodeName?: string;
-  // Expose current time to parent
   externalTimeRef?: React.MutableRefObject<number>;
-  // Resolution callback
   onResolutionDetected?: (info: import('./hooks/useVideoResolution').VideoResolutionInfo) => void;
 }
 
@@ -42,31 +37,21 @@ export function VideoPlayer({
   onResolutionDetected,
 }: VideoPlayerProps) {
   const [videoError, setVideoError] = useState<string>('');
-  const [useProxy, setUseProxy] = useState(false);
   const [shouldAutoPlay, setShouldAutoPlay] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const MAX_MANUAL_RETRIES = 20;
   const lastSaveTimeRef = useRef(0);
   const currentTimeRef = useRef(0);
   const durationRef = useRef(0);
-  const SAVE_INTERVAL = 5000; // 5 seconds throttle
+  const SAVE_INTERVAL = 5000;
 
-  const { showModeIndicator, proxyMode } = usePlayerSettings(isPremium);
-  const effectiveUseProxy = proxyMode === 'always' ? true : proxyMode === 'none' ? false : useProxy;
-
-
-  // Use reactive hook to subscribe to history updates
-  // This ensures the component re-renders when history is hydrated from localStorage
   const { viewingHistory, addToHistory } = useHistory(isPremium);
   const searchParams = useSearchParams();
 
-  // Get video metadata from URL params
   const source = searchParams.get('source') || '';
   const title = searchParams.get('title') || '未知视频';
 
-  // Get saved progress for this video
   const getSavedProgress = () => {
-    // Check for explicit time parameter (from source switch)
     const timeParam = searchParams.get('t');
     if (timeParam) {
       const t = parseFloat(timeParam);
@@ -75,7 +60,6 @@ export function VideoPlayer({
 
     if (!videoId) return 0;
 
-    // Match by normalized title + episode index (source-agnostic)
     const normalizedTitle = title.toLowerCase().trim();
     const historyItem = viewingHistory.find(item =>
       item.title.toLowerCase().trim() === normalizedTitle &&
@@ -85,7 +69,6 @@ export function VideoPlayer({
     return historyItem ? historyItem.playbackPosition : 0;
   };
 
-  // Save progress function (used by throttle and beforeunload)
   const saveProgress = useCallback((currentTime: number, duration: number) => {
     if (!videoId || !playUrl || duration === 0 || currentTime <= 1) return;
     addToHistory(
@@ -101,28 +84,22 @@ export function VideoPlayer({
     );
   }, [videoId, playUrl, title, currentEpisode, source, addToHistory]);
 
-  // Handle time updates and save progress (throttled to every 5 seconds)
   const handleTimeUpdate = useCallback((currentTime: number, duration: number) => {
-    // Always track current time for beforeunload
     currentTimeRef.current = currentTime;
     durationRef.current = duration;
-    // Expose to parent for source switching
     if (externalTimeRef) externalTimeRef.current = currentTime;
 
     if (!videoId || !playUrl || duration === 0) return;
 
     const now = Date.now();
-    // Only save if enough time has passed since last save
     if (currentTime > 1 && now - lastSaveTimeRef.current >= SAVE_INTERVAL) {
       lastSaveTimeRef.current = now;
       saveProgress(currentTime, duration);
     }
-  }, [videoId, playUrl, saveProgress]);
+  }, [videoId, playUrl, saveProgress, externalTimeRef]);
 
-  // Save on page leave/refresh
   useEffect(() => {
     const handleBeforeUnload = () => {
-      // Save current progress before leaving
       if (currentTimeRef.current > 1 && durationRef.current > 0) {
         saveProgress(currentTimeRef.current, durationRef.current);
       }
@@ -132,23 +109,8 @@ export function VideoPlayer({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [saveProgress]);
 
-  // Handle video errors
   const handleVideoError = (error: string) => {
     console.error('Video playback error:', error);
-
-    // Auto-retry with proxy if:
-    // 1. Not already using proxy
-    // 2. Proxy mode is NOT 'none' (so 'retry' or potentially 'always' if it somehow failed locally)
-    // 3. Proxy mode is 'retry' (specifically for the auto-switch logic)
-    // Note: If mode is 'always', we are already using proxy. If it fails, we show error.
-
-    if (!effectiveUseProxy && proxyMode === 'retry') {
-      setUseProxy(true);
-      setShouldAutoPlay(true); // Force autoplay after proxy retry
-      setVideoError('');
-      return;
-    }
-
     setVideoError(error);
   };
 
@@ -158,22 +120,7 @@ export function VideoPlayer({
     setRetryCount(prev => prev + 1);
     setVideoError('');
     setShouldAutoPlay(true);
-    // Toggle proxy to try different path, but since we are already in error state which likely means proxy failed (or direct failed),
-    // we can try toggling or just force re-render.
-    // Requirement says: "try without proxy and proxy and same as before"
-    // We will just toggle useProxy state to force a refresh with/without proxy.
-    // However, if we want to cycle, we can just toggle.
-    // But the requirement says "proxy attempt count to 20".
-    // So we just increment count and maybe toggle proxy or keep it.
-    // Let's toggle it to give best chance.
-    // Actually requirement says "try no proxy and proxy and same as before".
-    // So simple toggle is fine.
-    setUseProxy(prev => proxyMode === 'none' ? false : !prev);
   };
-
-  const finalPlayUrl = effectiveUseProxy
-    ? `/api/proxy?url=${encodeURIComponent(playUrl)}&retry=${retryCount}` // Add retry param to force fresh request
-    : playUrl;
 
   if (!playUrl) {
     return <VideoPlayerEmpty />;
@@ -181,17 +128,6 @@ export function VideoPlayer({
 
   return (
     <div data-no-spatial className="relative">
-      {/* Mode Indicator Badge - controlled by settings */}
-      {showModeIndicator && (
-        <div className="absolute top-3 right-3 z-30">
-          <span className={`px-2 py-1 text-xs font-medium rounded-full backdrop-blur-md transition-all duration-300 ${effectiveUseProxy
-            ? 'bg-orange-500/80 text-white'
-            : 'bg-green-500/80 text-white'
-            }`}>
-            {effectiveUseProxy ? '代理模式' : '直连模式'}
-          </span>
-        </div>
-      )}
       {videoError ? (
         <VideoPlayerError
           error={videoError}
@@ -202,8 +138,8 @@ export function VideoPlayer({
         />
       ) : (
         <CustomVideoPlayer
-          key={`${effectiveUseProxy ? 'proxy' : 'direct'}-${retryCount}-${source}`} // Remount when switching sources, modes, or retrying
-          src={finalPlayUrl}
+          key={`${retryCount}-${source}`}
+          src={playUrl}
           onError={handleVideoError}
           onTimeUpdate={handleTimeUpdate}
           initialTime={getSavedProgress()}

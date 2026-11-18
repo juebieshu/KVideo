@@ -10,11 +10,10 @@ import { createPortal } from 'react-dom';
 interface DesktopMoreMenuProps {
     showMoreMenu: boolean;
     isPremium?: boolean;
-    isProxied?: boolean;
     onToggleMoreMenu: () => void;
     onMouseEnter: () => void;
     onMouseLeave: () => void;
-    onCopyLink: (type?: 'original' | 'proxy') => void;
+    onCopyLink: () => void;
     webFullscreenSize: 'full' | 'large' | 'focused';
     onCycleWebFullscreenSize: () => void;
     containerRef: React.RefObject<HTMLDivElement | null>;
@@ -24,7 +23,6 @@ interface DesktopMoreMenuProps {
 export function DesktopMoreMenu({
     showMoreMenu,
     isPremium = false,
-    isProxied = false,
     onToggleMoreMenu,
     onMouseEnter,
     onMouseLeave,
@@ -40,14 +38,12 @@ export function DesktopMoreMenu({
         skipIntroSeconds,
         autoSkipOutro,
         skipOutroSeconds,
-        showModeIndicator,
         adFilter,
         setAutoNextEpisode,
         setAutoSkipIntro,
         setSkipIntroSeconds,
         setAutoSkipOutro,
         setSkipOutroSeconds,
-        setShowModeIndicator,
         setAdFilter,
         adFilterMode,
         setAdFilterMode,
@@ -303,33 +299,14 @@ export function DesktopMoreMenu({
             onClick={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
         >
-            {/* Copy Link Options */}
-            {isProxied ? (
-                <>
-                    <button
-                        onClick={() => onCopyLink('original')}
-                        className={`w-full ${isRotated ? 'px-2 py-1.5 text-[11px]' : 'px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm'} text-left text-[var(--text-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_15%,transparent)] rounded-[var(--radius-2xl)] transition-colors flex items-center gap-2 group-hover:gap-3 cursor-pointer`}
-                    >
-                        <Icons.Link size={isRotated ? 14 : 16} className="sm:w-[18px] sm:h-[18px]" />
-                        <span>复制原链接</span>
-                    </button>
-                    <button
-                        onClick={() => onCopyLink('proxy')}
-                        className={`w-full ${isRotated ? 'px-2 py-1.5 text-[11px]' : 'px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm'} text-left text-[var(--text-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_15%,transparent)] rounded-[var(--radius-2xl)] transition-colors flex items-center gap-2 mt-0.5 cursor-pointer`}
-                    >
-                        <Icons.Link size={isRotated ? 14 : 16} className="sm:w-[18px] sm:h-[18px]" />
-                        <span>复制代理链接</span>
-                    </button>
-                </>
-            ) : (
-                <button
-                    onClick={() => onCopyLink('original')}
-                    className={`w-full ${isRotated ? 'px-2 py-1.5 text-[11px]' : 'px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm'} text-left text-[var(--text-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_15%,transparent)] rounded-[var(--radius-2xl)] transition-colors flex items-center gap-2 group-hover:gap-3 cursor-pointer`}
-                >
-                    <Icons.Link size={isRotated ? 14 : 16} className="sm:w-[18px] sm:h-[18px]" />
-                    <span>复制链接</span>
-                </button>
-            )}
+            {/* Copy Link */}
+            <button
+                onClick={onCopyLink}
+                className={`w-full ${isRotated ? 'px-2 py-1.5 text-[11px]' : 'px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm'} text-left text-[var(--text-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_15%,transparent)] rounded-[var(--radius-2xl)] transition-colors flex items-center gap-2 group-hover:gap-3 cursor-pointer`}
+            >
+                <Icons.Link size={isRotated ? 14 : 16} className="sm:w-[18px] sm:h-[18px]" />
+                <span>复制链接</span>
+            </button>
 
             {/* Divider */}
             <div className="h-px bg-[var(--glass-border)] my-1.5 sm:my-2" />
@@ -368,28 +345,6 @@ export function DesktopMoreMenu({
                 >
                     <span>{WEB_FULLSCREEN_SIZE_LABELS[webFullscreenSize]}</span>
                     <Icons.ChevronDown size={isRotated ? 10 : 12} className="text-[var(--text-color-secondary)]" />
-                </button>
-            </div>
-
-            {/* Show Mode Indicator Switch */}
-            <div className={`${isRotated ? 'px-2 py-1.5' : 'px-3 py-2 sm:px-4 sm:py-2.5'} flex items-center justify-between gap-4`}>
-                <div className={`flex items-center gap-2 text-[var(--text-color)] ${isRotated ? 'text-[11px]' : 'text-xs sm:text-sm'}`}>
-                    <Icons.Zap size={isRotated ? 14 : 16} className="sm:w-[18px] sm:h-[18px]" />
-                    <span>模式指示器</span>
-                </div>
-                <button
-                    onClick={() => setShowModeIndicator(!showModeIndicator)}
-                    className={`relative rounded-full transition-all duration-300 cursor-pointer flex-shrink-0 border border-white/20 ${showModeIndicator
-                        ? 'bg-[var(--accent-color)] shadow-[0_0_15px_rgba(var(--accent-color-rgb),0.6)]'
-                        : 'bg-white/5 hover:bg-white/10'
-                        } ${isRotated ? 'w-6 h-3.5' : 'w-8 h-[18px] sm:w-10 sm:h-6'}`}
-                    aria-checked={showModeIndicator}
-                    role="switch"
-                >
-                    <span
-                        className={`absolute top-0.5 left-0.5 bg-white rounded-full transition-transform duration-300 shadow-[0_2px_4px_rgba(0,0,0,0.4)] ${isRotated ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5 sm:w-4.5 sm:h-4.5'} ${showModeIndicator ? (isRotated ? 'translate-x-2.5' : 'translate-x-3.5 sm:translate-x-4.5') : 'translate-x-0'
-                            }`}
-                    />
                 </button>
             </div>
 

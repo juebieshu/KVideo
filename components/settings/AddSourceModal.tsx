@@ -46,7 +46,7 @@ export function AddSourceModal({ isOpen, onClose, onAdd, existingIds, initialVal
           : 'opacity-0 -translate-y-[40%] scale-95 pointer-events-none'
           }`}
       >
-        <div className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-md)] p-6">
+        <div className="settings-dialog-card bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-md)] p-6">
           <ModalHeader title={initialValues ? "编辑视频源" : "添加自定义源"} onClose={onClose} />
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -100,7 +100,7 @@ export function AddSourceModal({ isOpen, onClose, onAdd, existingIds, initialVal
             </div>
 
             {error && (
-              <div className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-[var(--radius-2xl)] px-4 py-2">
+              <div className="text-sm settings-error rounded-[var(--radius-2xl)] px-4 py-2">
                 {error}
               </div>
             )}
@@ -115,7 +115,7 @@ export function AddSourceModal({ isOpen, onClose, onAdd, existingIds, initialVal
               </button>
               <button
                 type="submit"
-                className="flex-1 px-6 py-3 rounded-[var(--radius-2xl)] bg-[var(--accent-color)] text-white font-semibold hover:brightness-110 hover:-translate-y-0.5 shadow-[var(--shadow-sm)] transition-all duration-200"
+                className="flex-1 px-6 py-3 rounded-[var(--radius-2xl)] settings-primary bg-[var(--accent-color)] text-white font-semibold hover:brightness-110 hover:-translate-y-0.5 shadow-[var(--shadow-sm)] transition-all duration-200"
               >
                 {initialValues ? "保存" : "添加"}
               </button>

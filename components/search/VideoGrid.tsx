@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useMemo, memo, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { VideoCard } from './VideoCard';
 import { VideoGroupCard, GroupedVideo } from './VideoGroupCard';
-import { settingsStore } from '@/lib/store/settings-store';
+import { getModeSettings, getModeSettingsStore } from '@/lib/store/premium-mode-settings';
 import { Video } from '@/lib/types';
 import { useResolutionProbe } from '@/lib/hooks/useResolutionProbe';
 
@@ -29,9 +29,9 @@ export const VideoGrid = memo(function VideoGrid({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Load display mode from settings
+  // Load display mode from the current mode's settings
   useEffect(() => {
-    const settings = settingsStore.getSettings();
+    const settings = getModeSettings(isPremium);
     setDisplayMode(settings.searchDisplayMode);
 
     // Initial load: Check for saved scroll position to ensure we render enough items
@@ -62,13 +62,12 @@ export const VideoGrid = memo(function VideoGrid({
       }
     }
 
-    const unsubscribe = settingsStore.subscribe(() => {
-      const newSettings = settingsStore.getSettings();
-      setDisplayMode(newSettings.searchDisplayMode);
+    const unsubscribe = getModeSettingsStore(isPremium).subscribe(() => {
+      setDisplayMode(getModeSettings(isPremium).searchDisplayMode);
     });
 
     return () => unsubscribe();
-  }, [pathname, searchParams, videos.length]);
+  }, [pathname, searchParams, videos.length, isPremium]);
 
   if (videos.length === 0) {
     return null;
@@ -83,13 +82,13 @@ export const VideoGrid = memo(function VideoGrid({
     return videos.map(v => ({ id: String(v.vod_id), source: v.source }));
   }, [videos, displayMode]);
 
-  // Group videos by name when in grouped mode
+  // Group videos by exact name when in grouped mode
   const groupedVideos = useMemo<GroupedVideo[]>(() => {
     if (displayMode !== 'grouped') return [];
 
     const groups = new Map<string, Video[]>();
 
-    videos.forEach(video => {
+    videos.forEach((video) => {
       const name = video.vod_name.toLowerCase().trim();
       if (!groups.has(name)) {
         groups.set(name, []);
@@ -98,7 +97,6 @@ export const VideoGrid = memo(function VideoGrid({
     });
 
     return Array.from(groups.entries()).map(([, groupVideos]) => {
-      // Sort by latency (lowest first) 
       const sorted = [...groupVideos].sort((a, b) => {
         if (a.latency === undefined) return 1;
         if (b.latency === undefined) return -1;

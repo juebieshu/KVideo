@@ -3,7 +3,6 @@ import {
     settingsStore,
     getDefaultPremiumSources,
     type SearchDisplayMode,
-    type ProxyMode,
     type LocaleOption,
     DEFAULT_SEEK_STEP_SECONDS,
     normalizeSeekStepSeconds,
@@ -21,7 +20,6 @@ export function usePremiumSettingsPage() {
     const [realtimeLatency, setRealtimeLatency] = useState(false);
     const [searchDisplayMode, setSearchDisplayMode] = useState<SearchDisplayMode>('normal');
     const [fullscreenType, setFullscreenType] = useState<'auto' | 'native' | 'window'>('auto');
-    const [proxyMode, setProxyMode] = useState<ProxyMode>('retry');
     const [seekStepSeconds, setSeekStepSeconds] = useState(DEFAULT_SEEK_STEP_SECONDS);
     const [rememberScrollPosition, setRememberScrollPosition] = useState(true);
     const [locale, setLocale] = useState<LocaleOption>('zh-CN');
@@ -47,7 +45,6 @@ export function usePremiumSettingsPage() {
             setRealtimeLatency(modeSettings.realtimeLatency);
             setSearchDisplayMode(modeSettings.searchDisplayMode);
             setFullscreenType(modeSettings.fullscreenType);
-            setProxyMode(modeSettings.proxyMode);
             setSeekStepSeconds(modeSettings.seekStepSeconds);
             setRememberScrollPosition(modeSettings.rememberScrollPosition);
             setDanmakuApiUrl(modeSettings.danmakuApiUrl);
@@ -121,11 +118,6 @@ export function usePremiumSettingsPage() {
         savePremiumModeSetting({ fullscreenType: type });
     };
 
-    const handleProxyModeChange = (mode: ProxyMode) => {
-        setProxyMode(mode);
-        savePremiumModeSetting({ proxyMode: mode });
-    };
-
     const handleSeekStepSecondsChange = (value: number) => {
         const normalized = normalizeSeekStepSeconds(value);
         setSeekStepSeconds(normalized);
@@ -189,13 +181,11 @@ export function usePremiumSettingsPage() {
         realtimeLatency,
         searchDisplayMode,
         fullscreenType,
-        proxyMode,
         seekStepSeconds,
         rememberScrollPosition,
         handleRealtimeLatencyChange,
         handleSearchDisplayModeChange,
         handleFullscreenTypeChange,
-        handleProxyModeChange,
         handleSeekStepSecondsChange,
         handleRememberScrollPositionChange,
         locale,

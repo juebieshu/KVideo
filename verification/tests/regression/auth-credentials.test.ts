@@ -13,14 +13,14 @@ import {
 
 test('parseBootstrapAccounts supports legacy password:name entries', () => {
   const accounts = parseBootstrapAccounts(
-    'pass1:张三:admin,pass2:李四:viewer:iptv_access|danmaku_api',
+    'pass1:张三:admin,pass2:李四:viewer:danmaku_api',
   );
 
   assert.equal(accounts.length, 2);
   assert.equal(accounts[0].username, 'user-1');
   assert.equal(accounts[0].name, '张三');
   assert.equal(accounts[0].role, 'admin');
-  assert.deepEqual(accounts[1].customPermissions, ['iptv_access', 'danmaku_api']);
+  assert.deepEqual(accounts[1].customPermissions, ['danmaku_api']);
 });
 
 test('parseBootstrapAccounts deduplicates explicit usernames', () => {
@@ -54,7 +54,7 @@ test('createStoredAccount hashes passwords and normalizes permissions', async ()
     password: 'secret',
     name: 'Alice',
     role: 'viewer',
-    customPermissions: ['iptv_access', 'iptv_builtin_sources'],
+    customPermissions: ['danmaku_api'],
   });
 
   assert.equal(account.username, 'alice');

@@ -56,7 +56,7 @@ export function ImportModal({
             : 'opacity-0 -translate-y-[40%] scale-95 pointer-events-none'
           }`}
       >
-        <div className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-md)] p-6 flex flex-col max-h-[85vh]">
+        <div className="settings-dialog-card bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-md)] p-6 flex flex-col max-h-[85vh]">
           <div className="flex items-center justify-between mb-6 shrink-0">
             <h3 className="text-xl font-semibold text-[var(--text-color)]">
               导入设置

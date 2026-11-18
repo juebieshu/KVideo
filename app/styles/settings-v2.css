@@ -1,0 +1,377 @@
+/* Settings v2 · 统一样式入口
+   颜色来自 variables.css 的全局主题与本文件的 settings 语义色映射；
+   本文件其余部分只放设置界面自己的布局、字号与动画规则。 */
+
+/*
+ * 将设置容器内的语义色映射到 KVideo 主题（--kv-*）。
+ * 这些别名需要在 settings-shell 上重新定义：
+ * 仅覆盖子元素上的语义色，不会自动重新计算从根节点继承的别名。
+ */
+.settings-v2.settings-shell {
+  /* 通用语义变量 */
+  --color-bg-surface: var(--kv-color-bg-surface);
+  --color-bg-secondary: var(--kv-color-bg-sidebar);
+  --color-bg-tertiary: var(--kv-color-bg-subtle);
+  --color-bg-hover: var(--kv-color-bg-hover);
+  --color-bg-active: var(--kv-color-bg-active);
+  --color-border: var(--kv-color-border);
+
+  --color-text-primary: var(--kv-color-text);
+  --color-text-secondary: var(--kv-color-text-muted);
+
+  --color-accent: var(--kv-color-accent);
+  --color-accent-soft: var(--kv-color-accent-soft);
+  --color-accent-soft-hover: var(--kv-color-accent-soft-hover);
+
+  /* 现有通用变量 */
+  --bg-color: var(--kv-color-bg-settings);
+  --bg-elevated: var(--color-bg-surface);
+  --bg-secondary: var(--color-bg-secondary);
+  --bg-tertiary: var(--color-bg-tertiary);
+  --bg-hover: var(--color-bg-hover);
+  --bg-active: var(--color-bg-active);
+
+  --text-color: var(--color-text-primary);
+  --text-color-secondary: var(--color-text-secondary);
+  --border-color: var(--color-border);
+
+  --accent-color: var(--color-accent);
+  --accent-soft: var(--color-accent-soft);
+  --accent-soft-hover: var(--color-accent-soft-hover);
+  --accent-solid: var(--kv-color-accent-solid);
+  --accent-solid-hover: var(--kv-color-accent-solid-hover);
+  --accent-solid-active: var(--kv-color-accent-solid-active);
+  --accent-on-solid: var(--kv-color-on-accent-solid);
+
+  /* 现有 glass 变量 */
+  --glass-bg: var(--color-bg-surface);
+  --glass-border: var(--color-border);
+  --glass-hover: var(--color-bg-hover);
+
+  /* Settings v2 变量 */
+  --sv2-bg: var(--kv-color-bg-settings);
+  --sv2-surface: var(--kv-color-bg-sidebar);
+  --sv2-surface-2: var(--kv-color-bg-subtle);
+  --sv2-border: var(--kv-color-border);
+  --sv2-danger: var(--kv-color-danger);
+  --sv2-success: var(--kv-color-success);
+
+  --sv2-text: var(--color-text-primary);
+  --sv2-muted: var(--color-text-secondary);
+  --sv2-accent: var(--color-accent);
+  --sv2-accent-soft: var(--color-accent-soft);
+  --sv2-primary: var(--accent-solid);
+  --sv2-control-accent: var(--color-accent);
+
+  color: var(--text-color);
+  font-size: 14px;
+  line-height: 1.5;
+  isolation: isolate;
+}
+
+.settings-v2 [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+}
+
+.settings-shell:focus {
+  outline: none;
+}
+
+.settings-shell :is(button, a, input, select, textarea, [tabindex]):focus-visible,
+.settings-shell label:focus-within {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+.settings-shell .settings-brand {
+  border-bottom: 1px solid var(--sv2-border);
+}
+
+.settings-shell .settings-nav-item {
+  min-height: 36px;
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.settings-shell .settings-panel {
+  border: 1px solid var(--sv2-border);
+  background: var(--glass-bg);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 0;
+}
+
+.settings-shell .settings-panel:not(.settings-panel-framed) {
+  padding: 20px;
+}
+
+.settings-shell .settings-panel-title,
+.settings-shell .settings-panel > h2 {
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: -.01em;
+}
+
+.settings-shell .settings-panel > h2 {
+  margin-bottom: 12px;
+}
+
+.settings-shell .settings-panel-framed > header h2 {
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: -.01em;
+}
+
+.settings-shell .settings-empty-state {
+  border-color: var(--sv2-border);
+  background: var(--sv2-surface);
+}
+
+.settings-shell .settings-empty-icon {
+  background: var(--sv2-accent-soft);
+  color: var(--accent-color);
+}
+
+.settings-shell .settings-list-item {
+  background: var(--glass-bg);
+  border-color: var(--sv2-border);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.settings-shell .settings-choice-selected {
+  background: var(--sv2-accent-soft);
+  border-color: var(--accent-color);
+  color: var(--text-color);
+  box-shadow: none;
+}
+
+.settings-shell button.settings-primary {
+  background-color: var(--accent-solid);
+  color: var(--accent-on-solid);
+}
+
+.settings-shell button.settings-primary:hover:not(:disabled) {
+  background-color: var(--accent-solid-hover);
+}
+
+.settings-shell button.settings-primary:active:not(:disabled) {
+  background-color: var(--accent-solid-active);
+}
+
+.settings-shell :is(input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
+  min-width: 0;
+}
+
+.settings-shell :is(input, textarea)::placeholder {
+  color: var(--text-color-secondary);
+  opacity: .8;
+}
+
+.settings-shell .settings-inline-form > input {
+  min-width: min(100%, 180px);
+}
+
+.settings-shell .settings-dialog-card {
+  max-height: min(85dvh, 800px);
+  overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .22);
+}
+
+.settings-shell :is(.settings-sidebar-scroll, .settings-content-scroll) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sv2-border) transparent;
+}
+
+.settings-shell .settings-content-scroll::-webkit-scrollbar,
+.settings-shell .settings-sidebar-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settings-shell .settings-content-scroll::-webkit-scrollbar-thumb,
+.settings-shell .settings-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: var(--sv2-border);
+  border-radius: 9999px;
+}
+
+.settings-shell .settings-data-list {
+  border: 1px solid var(--sv2-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.settings-shell .settings-data-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 16px;
+  text-align: left;
+  color: var(--text-color);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.settings-shell .settings-data-action + .settings-data-action {
+  border-top: 1px solid var(--sv2-border);
+}
+
+.settings-shell .settings-data-action:hover {
+  background: var(--sv2-surface);
+}
+
+.settings-shell .settings-data-action strong,
+.settings-shell .settings-data-action small {
+  display: block;
+}
+
+.settings-shell .settings-data-action strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.settings-shell .settings-data-action small {
+  margin-top: 4px;
+  color: var(--text-color-secondary);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.settings-shell .settings-data-danger strong,
+.settings-shell .settings-data-danger svg {
+  color: var(--sv2-danger);
+}
+
+.settings-shell .settings-data-action:focus-visible {
+  outline-offset: -3px;
+}
+
+.settings-shell .settings-setting-row {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--sv2-border);
+}
+
+.settings-shell .settings-error {
+  color: var(--sv2-danger);
+  background: color-mix(in srgb, var(--sv2-danger) 10%, var(--glass-bg));
+  border-color: color-mix(in srgb, var(--sv2-danger) 30%, var(--glass-border));
+}
+
+.settings-shell .settings-success {
+  color: var(--sv2-success);
+  background: color-mix(in srgb, var(--sv2-success) 10%, var(--glass-bg));
+  border-color: color-mix(in srgb, var(--sv2-success) 30%, var(--glass-border));
+}
+
+.settings-shell .settings-content-scroll .text-xs {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.settings-shell .settings-content-scroll .text-sm {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.settings-shell .settings-content-scroll .text-base {
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.settings-shell .settings-content-scroll .text-lg {
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.settings-shell .settings-content-scroll .text-xl {
+  font-size: 16px;
+  line-height: 23px;
+}
+
+.settings-shell .settings-content-scroll .settings-panel-title,
+.settings-shell .settings-content-scroll .settings-panel > h2 {
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.settings-shell .settings-content-scroll .settings-panel h3 {
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.settings-shell .settings-toolbar {
+  min-height: 48px;
+}
+
+.settings-shell .settings-toolbar-button {
+  width: 36px;
+  height: 36px;
+  flex: none;
+}
+
+.settings-modal-overlay.is-open {
+  animation: kv-overlay-in 125ms ease-out both;
+}
+
+.settings-modal-overlay.is-closing {
+  animation: kv-overlay-out 125ms ease-in both;
+}
+
+.settings-modal-overlay.is-open > .settings-shell {
+  animation: kv-panel-in 125ms ease-out both;
+}
+
+.settings-modal-overlay.is-closing > .settings-shell {
+  animation: kv-panel-out 125ms ease-in both;
+}
+
+@media (max-width: 767px) {
+  .settings-shell .settings-panel:not(.settings-panel-framed) {
+    padding: 16px;
+  }
+
+  .settings-shell .settings-inline-form > input {
+    flex: 1 1 100%;
+  }
+
+  .settings-shell .settings-inline-form > button {
+    min-height: 40px;
+  }
+
+  .settings-shell .settings-nav-item {
+    min-height: 40px;
+    font-size: 14px;
+  }
+
+  .settings-shell .settings-toolbar {
+    min-height: 52px;
+  }
+
+  .settings-shell .settings-toolbar-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .settings-shell input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  .settings-shell select,
+  .settings-shell textarea {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-shell *,
+  .settings-shell *::before,
+  .settings-shell *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .settings-modal-overlay,
+  .settings-modal-overlay > .settings-shell {
+    animation-duration: 1ms !important;
+  }
+}

@@ -7,10 +7,7 @@ export type Permission =
   | 'data_management'
   | 'player_settings'
   | 'danmaku_appearance'
-  | 'view_settings'
-  | 'iptv_access'
-  | 'iptv_source_management'
-  | 'iptv_builtin_sources';
+  | 'view_settings';
 
 export const ALL_PERMISSIONS: Permission[] = [
   'source_management',
@@ -20,9 +17,6 @@ export const ALL_PERMISSIONS: Permission[] = [
   'player_settings',
   'danmaku_appearance',
   'view_settings',
-  'iptv_access',
-  'iptv_source_management',
-  'iptv_builtin_sources',
 ];
 
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
@@ -34,17 +28,11 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'player_settings',
     'danmaku_appearance',
     'view_settings',
-    'iptv_access',
-    'iptv_source_management',
-    'iptv_builtin_sources',
   ],
   admin: [
     'player_settings',
     'danmaku_appearance',
     'view_settings',
-    'iptv_access',
-    'iptv_source_management',
-    'iptv_builtin_sources',
   ],
   viewer: ['view_settings'],
 };
@@ -73,10 +61,6 @@ export function resolvePermissions(role: Role, customPermissions?: readonly stri
     ...(ROLE_PERMISSIONS[role] || []),
     ...normalizePermissions(customPermissions),
   ]);
-
-  if (permissions.has('iptv_access')) {
-    permissions.add('iptv_source_management');
-  }
 
   return Array.from(permissions);
 }

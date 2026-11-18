@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Icons } from '@/components/ui/Icon';
 import { SourceBadgeItem } from './SourceBadgeItem';
 import { useKeyboardNavigation } from '@/lib/hooks/useKeyboardNavigation';
@@ -17,7 +17,6 @@ interface Source {
   id: string;
   name: string;
   count: number;
-  typeName?: string;
 }
 
 interface SourceBadgeListProps {
@@ -37,19 +36,6 @@ export function SourceBadgeList({ sources, selectedSources, onToggleSource }: So
   const containerRef = useRef<HTMLDivElement>(null);
   const badgeContainerRef = useRef<HTMLDivElement>(null);
   const badgeRefs = useRef<(HTMLButtonElement | null)[]>([]);
-
-  // Group sources by typeName if type info is available
-  const typeGroups = useMemo(() => {
-    const groups = new Map<string, Source[]>();
-    for (const source of sources) {
-      const type = source.typeName || '';
-      if (!groups.has(type)) groups.set(type, []);
-      groups.get(type)!.push(source);
-    }
-    // Only use grouping if there are meaningful type names
-    const hasTypes = groups.size > 1 || (groups.size === 1 && !groups.has(''));
-    return hasTypes ? groups : null;
-  }, [sources]);
 
   const toggleExpanded = useCallback(() => {
     setIsExpanded(prev => {
@@ -115,47 +101,19 @@ export function SourceBadgeList({ sources, selectedSources, onToggleSource }: So
             ref={badgeContainerRef}
             className="flex items-center gap-2 flex-wrap p-1"
           >
-            {typeGroups ? (
-              Array.from(typeGroups.entries()).map(([typeName, typeSources]) => (
-                <div key={typeName || '__default'} className="flex items-center gap-2 flex-wrap">
-                  {typeName && (
-                    <span className="text-[10px] font-medium text-[var(--text-color-secondary)] uppercase tracking-wider px-1 select-none">
-                      {typeName}:
-                    </span>
-                  )}
-                  {typeSources.map((source) => {
-                    const globalIndex = sources.indexOf(source);
-                    return (
-                      <SourceBadgeItem
-                        key={source.id}
-                        id={source.id}
-                        name={source.name}
-                        count={source.count}
-                        isSelected={selectedSources.has(source.id)}
-                        onToggle={() => onToggleSource(source.id)}
-                        isFocused={focusedIndex === globalIndex}
-                        onFocus={() => setFocusedIndex(globalIndex)}
-                        innerRef={(el: HTMLButtonElement | null) => { badgeRefs.current[globalIndex] = el; }}
-                      />
-                    );
-                  })}
-                </div>
-              ))
-            ) : (
-              sources.map((source, index) => (
-                <SourceBadgeItem
-                  key={source.id}
-                  id={source.id}
-                  name={source.name}
-                  count={source.count}
-                  isSelected={selectedSources.has(source.id)}
-                  onToggle={() => onToggleSource(source.id)}
-                  isFocused={focusedIndex === index}
-                  onFocus={() => setFocusedIndex(index)}
-                  innerRef={(el: HTMLButtonElement | null) => { badgeRefs.current[index] = el; }}
-                />
-              ))
-            )}
+            {sources.map((source, index) => (
+              <SourceBadgeItem
+                key={source.id}
+                id={source.id}
+                name={source.name}
+                count={source.count}
+                isSelected={selectedSources.has(source.id)}
+                onToggle={() => onToggleSource(source.id)}
+                isFocused={focusedIndex === index}
+                onFocus={() => setFocusedIndex(index)}
+                innerRef={(el: HTMLButtonElement | null) => { badgeRefs.current[index] = el; }}
+              />
+            ))}
           </div>
         </div>
 

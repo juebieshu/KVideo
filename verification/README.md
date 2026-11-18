@@ -42,8 +42,7 @@ The regression subset is an internal stage, not a second validation command.
 Only `./verification/run` executes the whole chain: harness self-tests, local
 Issue/pull-request contracts, source policy, static analysis,
 100% application coverage enforcement, verifier dependency/audit checks,
-Android lint/tests/APK build, production builds, Docker, runtime APIs, proxies,
-latency, UI actions, video, performance, visual comparison, and deployment
+Android PiP regressions, production builds, Docker, runtime APIs, latency, UI actions, video, performance, visual comparison, and deployment
 consistency.
 
 Normal verification does not query GitHub. Known Issue and pull-request
@@ -73,7 +72,7 @@ Useful options:
 
 `--candidate` is used by pre-merge/push CI. It runs the full candidate checks
 but explicitly skips only the post-publication convergence check, because an
-unpublished commit cannot already equal GitHub main, Cloudflare, and Docker.
+unpublished commit cannot already equal GitHub main and Docker.
 After release, run the default command without this flag; public consistency is
 then mandatory.
 

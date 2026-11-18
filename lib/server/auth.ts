@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRedisClient } from '@/lib/server/redis';
 import { getRuntimeEnvValue } from '@/lib/server/runtime-env';
-import { getRuntimeFeatures } from '@/lib/server/runtime-features';
 import {
   createStoredAccount,
   ensureUniqueUsername,
@@ -47,7 +46,6 @@ export interface PublicAuthConfig {
   loginMode: LoginMode;
   persistSession: boolean;
   subscriptionSources: string;
-  iptvSources: string;
   mergeSources: string;
   danmakuApiUrl: string;
 }
@@ -81,7 +79,6 @@ const AUTH_SECRET = process.env.AUTH_SECRET || '';
 const PREMIUM_PASSWORD = process.env.PREMIUM_PASSWORD || '';
 const PERSIST_SESSION = process.env.PERSIST_SESSION !== 'false';
 const SUBSCRIPTION_SOURCES = process.env.SUBSCRIPTION_SOURCES || process.env.NEXT_PUBLIC_SUBSCRIPTION_SOURCES || '';
-const IPTV_SOURCES = process.env.IPTV_SOURCES || process.env.NEXT_PUBLIC_IPTV_SOURCES || '';
 const MERGE_SOURCES = process.env.MERGE_SOURCES || process.env.NEXT_PUBLIC_MERGE_SOURCES || '';
 const DANMAKU_API_URL = process.env.DANMAKU_API_URL || process.env.NEXT_PUBLIC_DANMAKU_API_URL || '';
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
@@ -215,12 +212,9 @@ async function getManagedAccountCount(): Promise<number> {
 }
 
 function getPublicRuntimeConfig(): Omit<PublicAuthConfig, 'hasAuth' | 'hasPremiumAuth' | 'loginMode'> {
-  const runtimeFeatures = getRuntimeFeatures();
-
   return {
     persistSession: PERSIST_SESSION,
     subscriptionSources: SUBSCRIPTION_SOURCES,
-    iptvSources: runtimeFeatures.iptvEnabled ? IPTV_SOURCES : '',
     mergeSources: MERGE_SOURCES,
     danmakuApiUrl: DANMAKU_API_URL,
   };

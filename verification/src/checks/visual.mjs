@@ -66,7 +66,7 @@ function visualSummary(results) {
 
 export async function checkVisual(ctx) {
   if (ctx.config.offline || !ctx.state.browser || !ctx.state.pageRoutes) return finding(ctx, {
-    id: 'visual.deployment-diff', category: 'visual', title: 'Local and Cloudflare UI visual comparison', status: 'SKIP', severity: 'high',
+    id: 'visual.deployment-diff', category: 'visual', title: 'Local and reference UI visual comparison', status: 'SKIP', severity: 'high',
     expected: 'Online reference and browser available', actual: ctx.config.offline ? '--offline' : 'browser unavailable',
     reason: 'Pixel comparison requires both surfaces.', remediation: 'Rerun online after local startup.',
   });
@@ -82,7 +82,7 @@ export async function checkVisual(ctx) {
     .filter((item) => item.problems.length);
   const images = results.flatMap((item) => [item.local, item.remote, item.diff]).filter((file) => file && fs.existsSync(file));
   finding(ctx, {
-    id: 'visual.deployment-diff', category: 'visual', title: 'Local and Cloudflare UI stay within visual deviation threshold',
+    id: 'visual.deployment-diff', category: 'visual', title: 'Local and reference UI stay within visual deviation threshold',
     status: unexpected.length ? 'FAIL' : 'PASS', severity: 'high',
     expected: `All viewports: HTTP 200, no runtime errors, exact visible semantics, pixel difference <= ${ctx.config.visualDiffRatio * 100}%`,
     actual: JSON.stringify({ summary: visualSummary(results),

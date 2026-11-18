@@ -27,7 +27,7 @@ interface VideoTogetherControllerProps {
 }
 
 function isSupportedRoute(pathname: string | null): boolean {
-  return pathname?.startsWith('/player') === true || pathname?.startsWith('/iptv') === true;
+  return pathname?.startsWith('/player') === true;
 }
 
 function syncMinimizedDefaults(forceCurrentPageMinimized: boolean) {

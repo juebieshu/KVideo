@@ -12,12 +12,10 @@ type PlayerSettingsSnapshot = {
   skipIntroSeconds: number;
   autoSkipOutro: boolean;
   skipOutroSeconds: number;
-  showModeIndicator: boolean;
   adFilter: boolean;
   adFilterMode: string;
   adKeywords: string[];
   fullscreenType: 'auto' | 'native' | 'window';
-  proxyMode: 'retry' | 'none' | 'always';
   danmakuEnabled: boolean;
   danmakuApiUrl: string;
   danmakuOpacity: number;
@@ -32,12 +30,10 @@ function playerSettingsEqual(a: PlayerSettingsSnapshot, b: PlayerSettingsSnapsho
     a.skipIntroSeconds === b.skipIntroSeconds &&
     a.autoSkipOutro === b.autoSkipOutro &&
     a.skipOutroSeconds === b.skipOutroSeconds &&
-    a.showModeIndicator === b.showModeIndicator &&
     a.adFilter === b.adFilter &&
     a.adFilterMode === b.adFilterMode &&
     a.adKeywords === b.adKeywords &&
     a.fullscreenType === b.fullscreenType &&
-    a.proxyMode === b.proxyMode &&
     a.danmakuEnabled === b.danmakuEnabled &&
     a.danmakuApiUrl === b.danmakuApiUrl &&
     a.danmakuOpacity === b.danmakuOpacity &&
@@ -52,12 +48,10 @@ const base: PlayerSettingsSnapshot = {
   skipIntroSeconds: 90,
   autoSkipOutro: false,
   skipOutroSeconds: 90,
-  showModeIndicator: true,
   adFilter: true,
   adFilterMode: 'heuristic',
   adKeywords: ['ad'],
   fullscreenType: 'auto',
-  proxyMode: 'retry',
   danmakuEnabled: true,
   danmakuApiUrl: '',
   danmakuOpacity: 0.8,

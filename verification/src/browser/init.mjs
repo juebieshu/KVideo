@@ -7,9 +7,9 @@ export function browserInit() {
     const settings = {
       sources: [sourceConfig], premiumSources: [sourceConfig], subscriptions: [], sortBy: 'default', searchHistory: true,
       watchHistory: true, autoNextEpisode: true, autoSkipIntro: false, skipIntroSeconds: 0, autoSkipOutro: false,
-      skipOutroSeconds: 0, seekStepSeconds: 10, showModeIndicator: true, adFilter: false, adFilterMode: 'off',
+      skipOutroSeconds: 0, seekStepSeconds: 10, adFilter: false, adFilterMode: 'off',
       adKeywords: [], realtimeLatency: true, searchDisplayMode: 'normal', episodeReverseOrder: false,
-      fullscreenType: 'auto', proxyMode: 'none', rememberScrollPosition: false, personalizedRecommendations: false,
+      fullscreenType: 'auto', rememberScrollPosition: false, personalizedRecommendations: false,
       videoTogetherEnabled: false, danmakuEnabled: false, danmakuApiUrl: '', danmakuOpacity: .7,
       danmakuFontSize: 20, danmakuDisplayArea: .5, locale: 'zh-CN', blockedCategories: [],
     };

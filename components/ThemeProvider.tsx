@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
+export type Theme = 'light' | 'dark' | 'system';
 
 interface ThemeContextType {
   theme: Theme;
@@ -30,13 +30,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!mounted) return;
 
-    const applyTheme = (newTheme?: 'light' | 'dark') => {
-      const themeToApply = newTheme || (theme === 'system' 
-        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-        : theme);
-      
-      setActualTheme(themeToApply);
-      document.documentElement.classList.toggle('dark', themeToApply === 'dark');
+    const applyTheme = () => {
+      const resolved =
+        theme === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : theme;
+
+      setActualTheme(resolved);
+      document.documentElement.setAttribute('data-theme', theme);
     };
 
     const applyThemeWithTransition = () => {

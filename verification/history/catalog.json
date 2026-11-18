@@ -13,10 +13,10 @@
   "evidence": {
     "auth-sync": ["verification/tests/regression/auth-credentials.test.ts", "verification/tests/regression/auth-session.test.ts", "verification/tests/regression/password-gate-state.test.ts", "verification/tests/regression/sync-records.test.ts"],
     "deployment": ["verification/tests/regression/deployment.test.ts", "verification/tests/regression/lan-access.test.ts", "verification/src/checks/deployment.mjs", "verification/src/checks/docker-local.mjs"],
-    "platform": ["verification/tests/regression/android-pip-utils.test.ts", "verification/tests/regression/webview83-assets.test.ts", "verification/tests/regression/mobile-player-controls.test.ts"],
+    "platform": ["verification/tests/regression/android-pip-utils.test.ts", "verification/tests/regression/mobile-player-controls.test.ts"],
     "player-media": ["verification/tests/regression/m3u8-ad-detector.test.ts", "verification/tests/regression/player-source-list.test.ts", "verification/tests/regression/resolution-probe-utils.test.ts", "verification/src/checks/video.mjs"],
     "search-source": ["verification/tests/regression/search-reliability.test.ts", "verification/tests/regression/tag-management-view.test.ts", "verification/src/checks/api-contracts.mjs", "verification/src/checks/ui-actions.mjs"],
-    "security-proxy": ["verification/src/checks/proxy.mjs", "verification/src/checks/security-headers.mjs", "verification/src/checks/security-scan.mjs", "verification/src/checks/static-tools.mjs"],
+    "security-proxy": ["verification/src/checks/security-headers.mjs", "verification/src/checks/security-scan.mjs", "verification/src/checks/static-tools.mjs"],
     "ui": ["verification/tests/regression/account-actions-view.test.ts", "verification/tests/regression/floating-button-position.test.ts", "verification/src/checks/ui-pages.mjs", "verification/src/checks/visual.mjs"],
     "general": ["verification/src/checks/api-contracts.mjs", "verification/src/checks/ui-actions.mjs", "verification/src/checks/static-tools.mjs"]
   }

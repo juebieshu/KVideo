@@ -7,8 +7,8 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { useSiteIcon } from '@/components/SiteIconProvider';
 import { Icons } from '@/components/ui/Icon';
 import { siteConfig } from '@/lib/config/site-config';
-import { getSession, clearSession, hasPermission, type AuthSession } from '@/lib/store/auth-store';
-import { useRuntimeFeatures } from '@/components/RuntimeFeaturesProvider';
+import { getSession, clearSession, type AuthSession } from '@/lib/store/auth-store';
+import { useSettingsUiStore } from '@/lib/store/settings-ui-store';
 import { LogOut } from 'lucide-react';
 
 interface NavbarProps {
@@ -20,7 +20,7 @@ export function Navbar({ onReset, isPremiumMode = false }: NavbarProps) {
     const settingsHref = isPremiumMode ? '/premium/settings' : '/settings';
     const favoritesHref = isPremiumMode ? '/premium/favorites' : '/favorites';
     const [session] = useState<AuthSession | null>(() => getSession());
-    const { iptvEnabled } = useRuntimeFeatures();
+    const openSettings = useSettingsUiStore((state) => state.open);
     const siteIconSrc = useSiteIcon();
 
     const handleLogout = () => {
@@ -67,19 +67,6 @@ export function Navbar({ onReset, isPremiumMode = false }: NavbarProps) {
                         </Link>
 
                         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                            {/* IPTV Link - only show if user has iptv_access or no auth configured */}
-                            {iptvEnabled && hasPermission('iptv_access') && (
-                            <Link
-                                href="/iptv"
-                                className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-[var(--radius-full)] bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--text-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_10%,transparent)] transition-all duration-200 cursor-pointer"
-                                aria-label="直播"
-                                title="直播"
-                                data-focusable
-                            >
-                                <Icons.TV size={16} className="sm:w-5 sm:h-5" />
-                            </Link>
-                            )}
-
                             {/* User Info */}
                             {session && (
                                 <div className="flex items-center gap-1 sm:gap-2">
@@ -123,6 +110,12 @@ export function Navbar({ onReset, isPremiumMode = false }: NavbarProps) {
                             </Link>
                             <Link
                                 href={settingsHref}
+                                onClick={(event) => {
+                                    if (!isPremiumMode) {
+                                        event.preventDefault();
+                                        openSettings('account');
+                                    }
+                                }}
                                 className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-[var(--radius-full)] bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--text-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_10%,transparent)] transition-all duration-200 cursor-pointer"
                                 aria-label="设置"
                                 data-focusable

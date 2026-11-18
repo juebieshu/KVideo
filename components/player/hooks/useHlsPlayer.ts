@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import Hls from 'hls.js';
 import { usePlayerSettings } from './usePlayerSettings';
 import { filterM3u8Ad } from '@/lib/utils/m3u8-utils';
-import { useRuntimeFeatures } from '@/components/RuntimeFeaturesProvider';
 
 interface UseHlsPlayerProps {
     videoRef: React.RefObject<HTMLVideoElement | null>;
@@ -23,7 +22,6 @@ export function useHlsPlayer({
 }: UseHlsPlayerProps) {
     const hlsRef = useRef<Hls | null>(null);
     const { adFilterMode, adKeywords } = usePlayerSettings(isPremium);
-    const { mediaProxyEnabled } = useRuntimeFeatures();
     const isAdFilterEnabled = adFilterMode !== 'off';
 
     useEffect(() => {
@@ -221,21 +219,10 @@ export function useHlsPlayer({
             // If it's in sub-playlists, it might fail unless we parse and blob those too (complex).
 
             if (isAdFilterEnabled) {
-                const fetchWithFallback = async (url: string): Promise<string> => {
-                    try {
-                        const res = await fetch(url);
-                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                        return await res.text();
-                    } catch (e) {
-                        if (!mediaProxyEnabled) {
-                            throw e;
-                        }
-                        console.warn(`[HLS Native] Fetch failed for ${url}, trying proxy...`, e);
-                        const proxiedUrl = `/api/proxy?url=${encodeURIComponent(url)}`;
-                        const res = await fetch(proxiedUrl);
-                        if (!res.ok) throw new Error(`Proxy fetch failed: HTTP ${res.status}`);
-                        return await res.text();
-                    }
+                const fetchPlaylist = async (url: string): Promise<string> => {
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return await res.text();
                 };
 
                 const processMasterPlaylist = async (masterSrc: string) => {
@@ -251,7 +238,7 @@ export function useHlsPlayer({
                     }
 
                     try {
-                        const masterContent = await fetchWithFallback(absoluteMasterSrc);
+                        const masterContent = await fetchPlaylist(absoluteMasterSrc);
 
                         // If it's a simple playlist (no variants), just filter and play
                         if (!masterContent.includes('#EXT-X-STREAM-INF')) {
@@ -282,7 +269,7 @@ export function useHlsPlayer({
                                     if (isRelative || uri.startsWith('http')) {
                                         try {
                                             const absoluteUrl = isRelative ? new URL(uri, absoluteMasterSrc).toString() : uri;
-                                            const subContent = await fetchWithFallback(absoluteUrl);
+                                            const subContent = await fetchPlaylist(absoluteUrl);
                                             const filteredSub = filterM3u8Ad(subContent, absoluteUrl, adFilterMode, adKeywords);
                                             const subBlob = new Blob([filteredSub], { type: 'application/vnd.apple.mpegurl' });
                                             const subBlobUrl = URL.createObjectURL(subBlob);
@@ -305,7 +292,7 @@ export function useHlsPlayer({
                                 if (isRelative || trimmedLine.startsWith('http')) {
                                     try {
                                         const absoluteUrl = isRelative ? new URL(trimmedLine, absoluteMasterSrc).toString() : trimmedLine;
-                                        const subContent = await fetchWithFallback(absoluteUrl);
+                                        const subContent = await fetchPlaylist(absoluteUrl);
                                         const filteredSub = filterM3u8Ad(subContent, absoluteUrl, adFilterMode, adKeywords);
                                         const subBlob = new Blob([filteredSub], { type: 'application/vnd.apple.mpegurl' });
                                         const subBlobUrl = URL.createObjectURL(subBlob);
@@ -402,16 +389,7 @@ export function useHlsPlayer({
             const handleError = () => {
                 if (directFailed) return;
                 directFailed = true;
-                if (!mediaProxyEnabled) {
-                    onError?.('当前浏览器不支持 HLS 视频播放。建议使用 Chrome、Edge 或 Safari 浏览器。');
-                    return;
-                }
-                // Try proxied URL as final attempt
-                const proxiedUrl = `/api/proxy?url=${encodeURIComponent(src)}`;
-                video.src = proxiedUrl;
-                video.addEventListener('error', () => {
-                    onError?.('当前浏览器不支持 HLS 视频播放。建议使用 Chrome、Edge 或 Safari 浏览器。');
-                }, { once: true });
+                onError?.('当前浏览器不支持 HLS 视频播放。建议使用 Chrome、Edge 或 Safari 浏览器。');
             };
 
             video.addEventListener('canplay', handleCanPlay, { once: true });
@@ -424,5 +402,5 @@ export function useHlsPlayer({
             }
             extraBlobs.forEach(url => URL.revokeObjectURL(url));
         };
-    }, [src, videoRef, autoPlay, onAutoPlayPrevented, onError, isAdFilterEnabled, adFilterMode, adKeywords, mediaProxyEnabled]);
+    }, [src, videoRef, autoPlay, onAutoPlayPrevented, onError, isAdFilterEnabled, adFilterMode, adKeywords]);
 }

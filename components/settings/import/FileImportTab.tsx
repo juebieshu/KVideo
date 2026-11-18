@@ -78,13 +78,13 @@ export function FileImportTab({ onImport }: FileImportTabProps) {
                 </button>
 
                 {error && (
-                    <div className="mt-4 text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-[var(--radius-2xl)] px-4 py-3 border border-red-100 dark:border-red-900/30">
+                    <div className="mt-4 text-sm settings-error rounded-[var(--radius-2xl)] px-4 py-3 border">
                         {error}
                     </div>
                 )}
 
                 {success && (
-                    <div className="mt-4 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 rounded-[var(--radius-2xl)] px-4 py-3 flex items-center gap-2 border border-green-100 dark:border-green-900/30">
+                    <div className="mt-4 text-sm settings-success rounded-[var(--radius-2xl)] px-4 py-3 flex items-center gap-2 border">
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5" />
                         </svg>

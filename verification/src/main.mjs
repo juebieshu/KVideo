@@ -20,12 +20,10 @@ import { checkImportGraph } from './checks/import-graph.mjs';
 import { checkSecurityScan } from './checks/security-scan.mjs';
 import { checkDuplicates } from './checks/duplicates.mjs';
 import { checkStaticTools } from './checks/static-tools.mjs';
-import { checkAndroid } from './checks/android.mjs';
 import { checkDockerLocal } from './checks/docker-local.mjs';
 import { startRuntime } from './checks/runtime-start.mjs';
 import { checkApiDiscovery } from './checks/api-discovery.mjs';
 import { checkApiContracts } from './checks/api-contracts.mjs';
-import { checkProxy } from './checks/proxy.mjs';
 import { checkLatency } from './checks/latency.mjs';
 import { checkSecurityHeaders } from './checks/security-headers.mjs';
 import { checkUiPages } from './checks/ui-pages.mjs';
@@ -55,13 +53,13 @@ async function main() {
     await checkVerifierQuality(ctx); await checkAstMetrics(ctx); await checkImportGraph(ctx);
     await checkSecurityScan(ctx); await checkDuplicates(ctx);
   });
-  await runStage(ctx, 'static', 'unit, coverage, lint, type, dependency, Android, and production builds', async () => {
-    await checkStaticTools(ctx); await checkAndroid(ctx);
+  await runStage(ctx, 'static', 'unit, coverage, lint, type, dependency, and production builds', async () => {
+    await checkStaticTools(ctx);
   });
   await runStage(ctx, 'docker', 'local release container', checkDockerLocal);
   await runStage(ctx, 'runtime', 'deterministic fixtures and local application', startRuntime);
-  await runStage(ctx, 'api', 'API, proxy, latency, headers, and PWA contracts', async () => {
-    await checkApiDiscovery(ctx); await checkApiContracts(ctx); await checkProxy(ctx); await checkLatency(ctx); await checkSecurityHeaders(ctx);
+  await runStage(ctx, 'api', 'API, latency, headers, and PWA contracts', async () => {
+    await checkApiDiscovery(ctx); await checkApiContracts(ctx); await checkLatency(ctx); await checkSecurityHeaders(ctx);
   });
   await runStage(ctx, 'browser', 'UI, accessibility, actions, performance, video, and visual parity', async () => {
     await checkUiPages(ctx); await checkUiActions(ctx); await checkPerformance(ctx); await checkVideo(ctx); await checkVisual(ctx);

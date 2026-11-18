@@ -9,7 +9,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useFavorites } from '@/lib/store/favorites-store';
 import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar';
 import { Icons } from '@/components/ui/Icon';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { ConfirmDialog } from '@/components/ui/Dialog';
 import { FavoritesHeader } from './FavoritesHeader';
 import { FavoritesList } from './FavoritesList';
 import { FavoritesFooter } from './FavoritesFooter';

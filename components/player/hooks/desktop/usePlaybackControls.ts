@@ -138,7 +138,7 @@ export function usePlaybackControls({
         }
     }, [initialTime, videoRef]);
 
-    // Force autoplay when shouldAutoPlay is true (for proxy retry)
+    // Force autoplay when shouldAutoPlay is true
     useEffect(() => {
         if (shouldAutoPlay && videoRef.current) {
             const playPromise = videoRef.current.play();

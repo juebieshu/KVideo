@@ -20,10 +20,3 @@ test('the complete runner repeats the workspace boundary check after all tools',
   const source = fs.readFileSync(new URL('../../src/main.mjs', import.meta.url), 'utf8');
   assert.match(source, /checkWorkspaceBoundary\(ctx, 'postflight'\)/);
 });
-
-test('Gradle caches are redirected below verification', () => {
-  const source = fs.readFileSync(new URL('../../src/checks/android.mjs', import.meta.url), 'utf8');
-  assert.match(source, /ctx\.config\.verifyDir, 'cache', 'gradle'/);
-  assert.match(source, /--project-cache-dir/);
-  assert.match(source, /GRADLE_USER_HOME/);
-});

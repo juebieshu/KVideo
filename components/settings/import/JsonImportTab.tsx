@@ -94,7 +94,7 @@ export function JsonImportTab() {
       {!preview && !imported && (
         <button
           onClick={handleParse}
-          className="w-full px-4 py-2.5 bg-[var(--accent-color)] text-white rounded-[var(--radius-2xl)] text-sm font-medium hover:brightness-110 transition-all cursor-pointer flex items-center justify-center gap-2"
+          className="w-full px-4 py-2.5 settings-primary bg-[var(--accent-color)] text-white rounded-[var(--radius-2xl)] text-sm font-medium hover:brightness-110 transition-all cursor-pointer flex items-center justify-center gap-2"
         >
           <Icons.Search size={14} />
           解析预览
@@ -125,7 +125,7 @@ export function JsonImportTab() {
             </button>
             <button
               onClick={handleImport}
-              className="flex-1 px-4 py-2 bg-[var(--accent-color)] text-white rounded-[var(--radius-2xl)] text-sm font-medium hover:brightness-110 transition-all cursor-pointer flex items-center justify-center gap-1"
+              className="flex-1 px-4 py-2 settings-primary bg-[var(--accent-color)] text-white rounded-[var(--radius-2xl)] text-sm font-medium hover:brightness-110 transition-all cursor-pointer flex items-center justify-center gap-1"
             >
               <Icons.Download size={14} />
               导入

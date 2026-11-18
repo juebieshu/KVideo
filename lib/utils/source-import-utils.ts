@@ -106,21 +106,8 @@ export async function fetchSourcesFromUrl(url: string): Promise<ImportResult> {
     const headers = {
         'Accept': 'application/json',
     };
-    const isExternal = url.startsWith('http') && (typeof window !== 'undefined' && !url.includes(window.location.host));
 
-    let response: Response;
-
-    try {
-        response = await fetch(url, { headers });
-    } catch (directError) {
-        if (!isExternal) {
-            throw directError;
-        }
-
-        response = await fetch(`/api/proxy?url=${encodeURIComponent(url)}`, {
-            headers,
-        });
-    }
+    const response = await fetch(url, { headers });
 
     if (!response.ok) {
         throw new Error(`获取失败: ${response.status} ${response.statusText}`);

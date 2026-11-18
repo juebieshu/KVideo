@@ -89,3 +89,119 @@
         transform: translateY(0);
     }
 }
+/* ---------------------------------------------------------
+   弹窗通用动画（原设置弹窗动画泛化）
+   遮罩：kv-overlay-in / kv-overlay-out（淡入淡出）
+   面板：kv-panel-in / kv-panel-out（淡入淡出 + 0.975 缩放浮入浮出）
+   用法：面板加 .kv-anim-panel-in / .kv-anim-panel-out；
+   原生 <dialog> 的 ::backdrop 由下方规则自动跟随。
+   --------------------------------------------------------- */
+@keyframes kv-overlay-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes kv-overlay-out {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes kv-panel-in {
+    from {
+        opacity: 0;
+        transform: scale(0.975);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes kv-panel-out {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.975);
+    }
+}
+
+.kv-anim-panel-in {
+    animation: kv-panel-in 125ms ease-out both;
+}
+
+.kv-anim-panel-out {
+    animation: kv-panel-out 125ms ease-in both;
+}
+
+dialog[open]::backdrop {
+    animation: kv-overlay-in 125ms ease-out both;
+}
+
+dialog.kv-anim-panel-out::backdrop {
+    animation: kv-overlay-out 125ms ease-in both;
+}
+
+/* ---------------------------------------------------------
+   行内菜单（⋮）展开动画：淡入 + 轻微下移 + 从右上角缩放
+   仅做入场；关闭即时卸载，避免阻塞后续操作。
+   --------------------------------------------------------- */
+@keyframes kv-menu-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.kv-anim-menu-in {
+    transform-origin: top right;
+    animation: kv-menu-in 120ms ease-out both;
+}
+
+@keyframes kv-menu-out {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.98);
+    }
+}
+
+.kv-anim-menu-out {
+    transform-origin: top right;
+    animation: kv-menu-out 100ms ease-in both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .kv-anim-panel-in,
+    .kv-anim-panel-out,
+    .kv-anim-menu-in,
+    .kv-anim-menu-out,
+    dialog[open]::backdrop,
+    dialog.kv-anim-panel-out::backdrop {
+        animation-duration: 1ms;
+    }
+}

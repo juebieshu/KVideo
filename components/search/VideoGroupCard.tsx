@@ -5,7 +5,7 @@
  * Following Liquid Glass design system
  */
 
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
@@ -50,6 +50,7 @@ export const VideoGroupCard = memo<VideoGroupCardProps>(({
     isProbing = false,
 }) => {
     const { representative, videos, name } = group;
+    const [isExpanded, setIsExpanded] = useState(false);
     const displayRemarks = useMemo(() => {
         const preferredVideo = videos.find((video) => video === representative && video.vod_remarks)
             ?? videos.find((video) => video.vod_remarks);
@@ -250,6 +251,53 @@ export const VideoGroupCard = memo<VideoGroupCardProps>(({
                     </div>
                 </Card>
             </Link>
+
+            {videos.length > 1 && (
+                <div className="mt-2 overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--glass-border)] bg-[var(--glass-bg)]/60">
+                    <button
+                        type="button"
+                        onClick={() => setIsExpanded((value) => !value)}
+                        aria-expanded={isExpanded}
+                        className="flex w-full items-center justify-between px-3 py-2 text-xs font-medium text-[var(--text-color-secondary)] transition-colors hover:text-[var(--text-color)]"
+                    >
+                        <span>全部来源 · {videos.length}</span>
+                        <Icons.ChevronDown
+                            size={14}
+                            className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                        />
+                    </button>
+
+                    {isExpanded && (
+                        <ul className="space-y-0.5 border-t border-[var(--glass-border)] p-1">
+                            {videos.map((video) => {
+                                const params = new URLSearchParams({
+                                    id: String(video.vod_id),
+                                    source: video.source,
+                                    title: name,
+                                });
+                                if (isPremium) params.set('premium', '1');
+                                const latency = latencies[video.source] ?? video.latency;
+
+                                return (
+                                    <li key={`${video.source}:${video.vod_id}`}>
+                                        <Link
+                                            href={`/player?${params.toString()}`}
+                                            prefetch={false}
+                                            data-focusable
+                                            className="flex items-center justify-between gap-2 rounded-[var(--radius-xl)] px-2 py-1.5 text-xs text-[var(--text-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_12%,transparent)]"
+                                        >
+                                            <span className="min-w-0 truncate">{video.sourceName || video.source}</span>
+                                            {latency !== undefined && (
+                                                <LatencyBadge latency={latency} className="flex-shrink-0" />
+                                            )}
+                                        </Link>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    )}
+                </div>
+            )}
         </div>
     );
 });

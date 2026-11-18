@@ -23,7 +23,7 @@
 
 **KVideo** 是一个高性能、现代化的视频聚合与播放应用，专注于提供极致的用户体验和视觉设计。本项目利用 Next.js 16 的最新特性，结合 React 19 和 Tailwind CSS v4，打造了一个既美观又强大的视频浏览平台。
 
-> **说明**：仓库默认不内置任何视频源、高级源或 IPTV 源。部署者必须自行配置已获授权、可合法使用且允许当前部署方式访问的内容来源。
+> **说明**：仓库默认不内置任何视频源或高级源。部署者必须自行配置已获授权、可合法使用且允许当前部署方式访问的内容来源。
 
 ### 核心设计理念：Liquid Glass（液态玻璃）
 
@@ -47,7 +47,7 @@
 - **Chromecast 投屏**：支持通过 Google Cast 投屏到电视等设备
 - **画中画 (PiP)**：支持浮动窗口模式播放
 - **全屏模式选择**：支持系统全屏和网页全屏两种模式
-- **代理播放**：三种代理模式（智能重试、仅直连、总是代理），灵活应对不同网络环境
+- **直连播放**：播放地址直接交给浏览器 / hls.js，不支持代理模式
 - **卡顿检测**：自动检测播放卡顿并提示
 - **一起看 (VideoTogether)**：播放器页面内置官方网页集成脚本，可直接创建或加入房间与朋友同步观看
 - **键盘快捷键**：空格/K 播放暂停、F 全屏、M 静音、P 画中画、J/L/方向键 快进快退、上下键 音量调节
@@ -61,13 +61,13 @@
 - **JSON 批量导入**：在导入设置中直接粘贴 JSON 数组格式的视频源进行批量添加
 - **智能解析**：统一的解析器系统，自动处理不同源的数据格式
 - **搜索历史**：自动保存搜索历史，支持快速重新搜索
-- **搜索结果显示**：支持默认显示和合并同名源两种模式
+- **搜索结果显示**：支持逐源显示和合并同名源两种模式（合并模式可展开全部来源）
 - **实时延迟监测**：可选实时显示各源的网络延迟
 - **清晰度标签**：自动解析并显示视频清晰度（4K/蓝光/1080P/720P/HD 等），方便快速分辨源质量
 - **实际分辨率检测**：播放视频时自动检测并显示实际视频分辨率（如 1920x1080），不依赖源标签，显示真实清晰度。分辨率标签 5 秒后自动隐藏，鼠标移动时重新显示
 - **全源分辨率探测**：播放器源列表中所有源均自动通过 m3u8 清单探测实际分辨率，显示精确的分辨率标签（1080P/720P/4K 等），不仅限于当前播放的源
 - **繁体中文搜索**：自动将繁体中文转换为简体中文进行搜索，确保繁体输入也能搜到结果
-- **源过滤**：支持按源和类型筛选搜索结果，源标签支持按类型分组显示，智能合并同名分类标签，展开/折叠状态持久化记忆
+- **源过滤**：支持按源筛选搜索结果，源标签支持展开/折叠并记忆状态
 - **多级标签**：搜索结果和播放器中显示源名称和内容类型双重标签
 - **搜索取消**：搜索进行中可随时点击"取消"按钮终止搜索，释放资源
 - **内容类目过滤**：在设置中添加屏蔽关键词（如"伦理"），匹配类目的视频将自动从搜索结果中过滤
@@ -82,27 +82,6 @@
 - **源切换**：在线路列表中快速切换到其他源，支持断点续播
 - **自动切源**：当当前源不可用时，自动切换到延迟最低的可用源
 - **短链接优化**：使用 sessionStorage 缓存源数据，避免 URL 过长导致 CDN 414 错误
-
-### IPTV 直播
-
-- **M3U 播放列表**：支持导入和管理 M3U/M3U8 格式的 IPTV 源
-- **JSON 频道列表**：支持导入 JSON 格式的频道列表（数组或对象格式，自动识别）
-- **HEVC 智能兼容**：自动检测 HEVC/H.265 编码流，优先选择 H.264 级别以避免音画不同步或仅有声音问题
-- **频道网格**：按分组展示频道，支持分页浏览，大列表搜索优化
-- **多级频道列表**：播放器内按源分组 → 按分类分组 → 频道的三级列表导航
-- **多线路折叠**：频道多线路默认显示前 3 条，可点击展开查看全部
-- **自动切源**：当视频源不可用时，自动选择延迟最低的可用源
-- **自定义请求头**：自动解析 M3U 中的 `http-user-agent` 和 `http-referrer` 属性，通过代理传递
-- **User-Agent 智能代理**：当频道指定自定义 User-Agent 时，自动走代理路径避免浏览器限制，解决 CCTV 等频道仅有声音无画面的问题
-- **流媒体代理**：内置 HLS 流代理，自动处理 CORS 问题和 M3U8 URL 重写
-- **智能内容检测**：当 content-type 不明确时，检查响应体内容自动识别 M3U8 格式，同时保持二进制流数据完整性
-- **重定向跟随**：自动跟随 HTTP 3xx 重定向，提升兼容性
-- **超时保护**：15 秒请求超时、30 秒加载超时、20 秒分片加载超时、3 次清单重试
-- **逐源频道缓存**：每个 IPTV 源的频道独立缓存，避免重复加载
-- **并发控制**：最多同时拉取 3 个源，防止网络拥堵
-- **权限控制**：通过 `iptv_access` 权限控制谁可以访问 IPTV 功能
-- **键盘快捷键**：播放器内支持空格暂停/继续、F 全屏、M 静音、方向键调节音量等
-- **搜索优化**：播放器内搜索使用 `useTransition` 非阻塞渲染，避免大列表卡顿
 
 ### 豆瓣集成
 
@@ -183,7 +162,7 @@
 
 **工作原理：**
 
-1. **服务端存储（Upstash Redis）**：用户配置通过 `/api/user/config` API 存储在 Upstash Redis 中，使用 `user:config:{profileId}` 作为 key。Edge Runtime 兼容，Cloudflare Pages / Vercel 均可部署。
+1. **服务端存储（Upstash Redis）**：用户配置通过 `/api/user/config` API 存储在 Upstash Redis 中，使用 `user:config:{profileId}` 作为 key。Edge Runtime 兼容，Vercel 可部署。
 2. **自动拉取（Pull）**：应用加载时，`useConfigSync` hook 从服务端拉取配置，与本地 `updatedAt` 时间戳比较——服务端更新时自动合并到本地。
 3. **自动推送（Push）**：本地设置变更后，自动延迟 3 秒推送到服务端（防抖），避免频繁写入。
 4. **同步范围**：视频源 (`sources`)、高级源 (`premiumSources`)、订阅列表 (`subscriptions`)、屏蔽分类 (`blockedCategories`)、排序偏好 (`sortBy`)、语言 (`locale`)。
@@ -221,21 +200,6 @@
 - **10 英尺 UI**：TV 模式下自动放大字体、交互元素和间距
 - **焦点高亮**：TV 模式下聚焦元素显示醒目的高亮边框和缩放效果
 - **播放器兼容**：播放器区域不受空间导航干扰，方向键正常控制播放
-
-### Android TV 应用
-
-- **WebView 封装**：基于 Android WebView 的轻量 APK，直接加载 KVideo 网页
-- **遥控器支持**：D-pad 中心键映射为 Enter，Back 键映射为网页后退
-- **全屏沉浸**：自动横屏、全屏、硬件加速
-- **Leanback 启动器**：支持从 Android TV 主屏直接启动
-- **可配置 URL**：在 `MainActivity.kt` 中修改 `KVIDEO_URL` 常量指向你的部署实例
-
-### Apple TV 应用
-
-- **WKWebView 封装**：基于 tvOS WKWebView 的轻量 SwiftUI 应用，直接加载 KVideo 网页
-- **遥控器支持**：滑动手势映射为滚动，点击映射为聚焦/选择，Menu 按钮支持网页后退
-- **TV 模式注入**：页面加载后自动注入 `tv-mode` CSS 类，激活大屏优化样式
-- **可配置 URL**：在 `ContentView.swift` 中修改 `kvideoURL` 常量指向你的部署实例
 
 ### 数据管理
 
@@ -314,9 +278,9 @@ docker run -d -p 3000:3000 \
   -e ACCOUNTS="pass1:张三:admin,pass2:李四:viewer,pass3:王五" \
   --name kvideo kuekhaoyang/kvideo:latest
 
-# 为观众添加额外权限（如 IPTV 访问和源管理）
+# 为观众添加额外权限（如源管理）
 docker run -d -p 3000:3000 \
-  -e ACCOUNTS="pass1:张三:admin,pass2:李四:viewer:iptv_access|source_management" \
+  -e ACCOUNTS="pass1:张三:admin,pass2:李四:viewer:source_management" \
   --name kvideo kuekhaoyang/kvideo:latest
 ```
 
@@ -336,9 +300,8 @@ docker run -d -p 3000:3000 \
 | `player_settings` | 播放器设置 | ✓ | ✓ | - |
 | `danmaku_appearance` | 弹幕外观设置 | ✓ | ✓ | - |
 | `view_settings` | 显示设置 | ✓ | ✓ | ✓ |
-| `iptv_access` | 访问 IPTV 功能 | ✓ | ✓ | - |
 
-> 通过 ACCOUNTS 的第 4 个字段，可以为任何角色添加上表中的额外权限。例如让观众也能访问 IPTV：`password:name:viewer:iptv_access`
+> 通过 ACCOUNTS 的第 4 个字段，可以为任何角色添加额外权限。例如让观众管理视频源：`password:name:viewer:source_management`
 
 ### 个人视频源与弹幕 API
 
@@ -399,11 +362,6 @@ docker run -d -p 3000:3000 \
 **Vercel 部署：**
 在 Vercel 项目设置中添加环境变量：
 
-- 变量名：`NEXT_PUBLIC_SITE_NAME`
-- 变量值：`我的视频平台`
-
-**Cloudflare Pages 部署：**
-在 Cloudflare Pages 项目设置中添加环境变量：
 - 变量名：`NEXT_PUBLIC_SITE_NAME`
 - 变量值：`我的视频平台`
 
@@ -483,12 +441,6 @@ docker run -d -p 3000:3000 -e SUBSCRIPTION_SOURCES='[{"name":"MySource","url":".
 - 变量名：`SUBSCRIPTION_SOURCES`
 - 变量值：`[{"name":"...","url":"..."}]`
 
-**Cloudflare Pages 部署：**
-
-在 Cloudflare Pages 项目设置中添加环境变量：
-- 变量名：`NEXT_PUBLIC_SUBSCRIPTION_SOURCES`
-- 变量值：`[{"name":"...","url":"..."}]`
-
 ## 广告过滤关键词配置
 
 通过环境变量自定义广告过滤关键词，用于在 HLS 播放时识别和过滤广告片段。
@@ -536,7 +488,7 @@ docker run -d -p 3000:3000 \
 
 ## 一起看 (VideoTogether) 配置
 
-播放器页面和 IPTV 页面支持集成 [VideoTogether](https://videotogether.github.io/zh-cn/guide/website.html) 官方网页脚本。应用内默认关闭，用户可在设置页手动开启；开启后仅在播放器和 IPTV 页面显示，并默认折叠为小图标。
+播放器页面支持集成 [VideoTogether](https://videotogether.github.io/zh-cn/guide/website.html) 官方网页脚本。应用内默认关闭，用户可在设置页手动开启；开启后仅在播放器页面显示，并默认折叠为小图标。
 
 | 变量名 | 说明 | 默认值 |
 |--------|------|--------|
@@ -556,32 +508,11 @@ docker run -d -p 3000:3000 \
 
 > 如果部署环境无法稳定访问 jsDelivr，直接自托管 `extension.website.user.js` 并通过 `VIDEOTOGETHER_SCRIPT_URL` 指向自己的地址即可。
 
-## IPTV 直播源配置
+## 搜索结果显示配置
 
-通过环境变量预设 IPTV 直播源，应用启动时会自动添加到直播源列表中。
+搜索结果默认逐源显示。开启“合并同名源”后，`vod_name` 相同的结果会合并为一张卡，卡片可展开全部来源。
 
-> **注意**：在 Vercel / Cloudflare 托管部署的合规模式下，IPTV 页面与流中继默认关闭，`IPTV_SOURCES` / `NEXT_PUBLIC_IPTV_SOURCES` 不会生效。
-
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `IPTV_SOURCES` | IPTV 直播源配置（服务端） | - |
-| `NEXT_PUBLIC_IPTV_SOURCES` | IPTV 直播源配置（客户端） | - |
-
-**格式：** JSON 数组字符串，包含 `name` 和 `url` 字段；或直接提供 M3U 链接（逗号分隔多个）。
-
-**示例：**
-
-```bash
-# JSON 格式
-IPTV_SOURCES='[{"name":"央视","url":"https://example.com/cctv.m3u"},{"name":"地方台","url":"https://example.com/local.m3u"}]'
-
-# 简单 URL 格式
-IPTV_SOURCES='https://example.com/cctv.m3u,https://example.com/local.m3u'
-```
-
-## 合并同名源配置
-
-通过环境变量设置默认启用搜索结果的合并同名源显示模式。
+`MERGE_SOURCES` 用于在启动时强制把本地设置写回合并同名源模式，适合需要覆盖已有用户设置的部署。
 
 | 变量名 | 说明 | 默认值 |
 |--------|------|--------|
@@ -594,7 +525,7 @@ IPTV_SOURCES='https://example.com/cctv.m3u,https://example.com/local.m3u'
 MERGE_SOURCES=true
 ```
 
-设置后搜索结果会自动以合并模式显示，将来自不同源的同名视频合并为一个卡片。用户仍可在设置页面中手动切换显示模式。
+设置后会在启动时强制切换到合并同名源模式，覆盖本地已保存的逐源显示设置。用户仍可在设置页面中手动切换显示模式。
 
 ## 自定义端口
 
@@ -635,18 +566,6 @@ ALLOW_LAN_ACCESS=true LAN_ALLOWED_DEV_ORIGINS="kvideo.lan,192.168.50.10" npm run
 ```
 
 开启后访问地址通常是 `http://<当前设备内网 IP>:3000`。如果仍然无法访问，优先检查系统防火墙、路由器客户端隔离、端口映射、反向代理监听地址以及实际运行端口；这些不是 KVideo 前端代码可以绕过的问题。Docker 镜像已经在容器内绑定 `0.0.0.0`，是否能从局域网访问主要取决于 `-p` 端口映射和宿主机网络策略。
-
-## 内置媒体代理说明
-
-设置页的“代理播放模式”使用的是当前 KVideo 部署内置的 `/api/proxy` 媒体转发端点，不是让用户填写第三方 HTTP/SOCKS 代理服务器。
-
-| 模式 | 行为 |
-|------|------|
-| 智能重试 | 优先直连，播放失败后自动切换到 `/api/proxy` |
-| 仅直连 | 不使用 `/api/proxy`，失败时直接报错 |
-| 总是代理 | 播放地址始终通过 `/api/proxy` 转发 |
-
-`/api/proxy?url=<encoded-video-url>` 只在 Docker 或传统 Node.js 自托管完整模式下启用。Vercel / Cloudflare 托管部署运行合规模式，会禁用外部媒体代理、热链转发和 IPTV 流中继；这种部署环境下设置页会显示仅支持直连播放。
 
 ## 自定义源 JSON 格式
 
@@ -735,8 +654,7 @@ ALLOW_LAN_ACCESS=true LAN_ALLOWED_DEV_ORIGINS="kvideo.lan,192.168.50.10" npm run
 | `SITE_ICON_URL` | Docker 运行时图标 URL 或站内路径 | - |
 | `SUBSCRIPTION_SOURCES` | 自动订阅源配置（服务端） | - |
 | `NEXT_PUBLIC_SUBSCRIPTION_SOURCES` | 自动订阅源配置（客户端） | - |
-| `IPTV_SOURCES` / `NEXT_PUBLIC_IPTV_SOURCES` | IPTV 直播源配置 | - |
-| `MERGE_SOURCES` / `NEXT_PUBLIC_MERGE_SOURCES` | 启用合并同名源显示（`true`/`1`） | - |
+| `MERGE_SOURCES` / `NEXT_PUBLIC_MERGE_SOURCES` | 启动时强制启用合并同名源（`true`/`1`） | - |
 | `AD_KEYWORDS` / `NEXT_PUBLIC_AD_KEYWORDS` | 广告过滤关键词 | - |
 | `AD_KEYWORDS_FILE` | 广告关键词文件路径 | - |
 | `DANMAKU_API_URL` / `NEXT_PUBLIC_DANMAKU_API_URL` | 弹幕聚合 API 地址 | - |
@@ -766,12 +684,11 @@ ALLOW_LAN_ACCESS=true LAN_ALLOWED_DEV_ORIGINS="kvideo.lan,192.168.50.10" npm run
 - **ESLint 10**：代码质量检查
 - **PostCSS 8**：CSS 处理器
 - **Vercel Analytics**：仅在 Vercel 部署中启用的性能监控和分析
-- **Cloudflare Pages**：边缘部署支持
 
 ### 架构特点
 
 - **App Router**：Next.js 的新路由系统，支持服务端组件和流式渲染
-- **API Routes**：内置 API 端点，处理认证、豆瓣数据、弹幕聚合，以及仅在自托管完整模式下启用的媒体代理 / IPTV 中继
+- **API Routes**：内置 API 端点，处理认证、搜索、详情、豆瓣数据与弹幕聚合
 - **Server-Sent Events**：搜索 API 使用 SSE 流式返回实时结果
 - **Service Worker**：PWA 支持和资源缓存
 - **Server Components**：优化首屏加载性能
@@ -784,20 +701,19 @@ ALLOW_LAN_ACCESS=true LAN_ALLOWED_DEV_ORIGINS="kvideo.lan,192.168.50.10" npm run
 Issue [#127](https://github.com/KuekHaoYang/KVideo/issues/127) 之后，仓库的公开部署策略做了调整，目的只有一个：避免把这个项目继续包装成“GitHub 账号直连第三方平台的一键导入仓库”。
 
 - 不再推荐任何 `Deploy with Vercel`、`Connect GitHub`、`Fork 后直接授权第三方读取仓库` 这一类 GitHub 直连导入流程。
-- Vercel / Cloudflare 托管部署现在默认运行在**合规模式**：自动关闭外部媒体代理、热链转发和 IPTV 流中继，仅保留直连播放路径。
-- 需要 `/api/proxy`、`/api/iptv/stream`、自定义 `User-Agent` / `Referer` 转发、IPTV 中继等能力时，请使用 Docker 或传统 Node.js 自托管。
+- 所有部署统一强制合规模式：无外部媒体代理、无热链转发、无 IPTV 中继、无 IPTV 页面，只保留直连播放路径。
+- 需要代理或 IPTV 的场景不再支持。
 - 无论部署到哪里，都只应接入你有权使用、且允许当前部署环境访问的内容来源。
 - 相关政策请直接阅读官方原文：
   - [GitHub Terms of Service](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service)
   - [GitHub Acceptable Use Policies](https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies)
   - [Vercel: why running another CDN / proxy on top of Vercel is not recommended](https://vercel.com/guides/why-running-another-cdn-on-top-of-vercel-is-not-recommended)
-  - [Cloudflare abuse approach](https://www.cloudflare.com/trust-hub/abuse-approach/)
 
 ## 快速部署
 
 ### 部署到自己的服务器
 
-#### 选项 1：Docker 部署（推荐，完整功能）
+#### 选项 1：Docker 部署（推荐）
 
 **从 Docker Hub 拉取（最简单）：**
 
@@ -834,16 +750,15 @@ docker-compose up -d
 docker run -d -p 3000:3000 \
   -e ADMIN_PASSWORD="admin123" \
   -e PREMIUM_PASSWORD="premium456" \
-  -e ACCOUNTS="user1:用户一:admin,user2:用户二:viewer:iptv_access" \
+  -e ACCOUNTS="user1:用户一:admin,user2:用户二:viewer:source_management" \
   -e NEXT_PUBLIC_SITE_NAME="我的视频" \
   -e NEXT_PUBLIC_DANMAKU_API_URL="https://danmaku.example.com" \
   -e SUBSCRIPTION_SOURCES='[{"name":"默认源","url":"https://example.com/sources.json"}]' \
-  -e IPTV_SOURCES='[{"name":"央视","url":"https://example.com/cctv.m3u"}]' \
   -e MERGE_SOURCES=true \
   --name kvideo kuekhaoyang/kvideo:latest
 ```
 
-#### 选项 2：传统 Node.js 部署（完整功能）
+#### 选项 2：传统 Node.js 部署
 
 ```bash
 # 1. 克隆仓库
@@ -864,127 +779,19 @@ npm start
 
 同一局域网设备需要直接访问当前设备 IP 时，使用 `ALLOW_LAN_ACCESS=true npm run start`，并确认系统防火墙允许入站访问对应端口。
 
-#### 选项 3：Vercel / Cloudflare 托管部署（合规模式）
+#### 选项 3：Vercel 托管部署
 
-适用于只需要搜索、账户、设置、直连播放等基础能力，不需要外部媒体代理 / IPTV 中继的场景。
+适用于只需要搜索、账户、设置、直连播放等基础能力的场景。
 
 1. **只从本地工作副本部署**：不要使用 GitHub 一键导入、Fork 后导入、Connect GitHub 读取仓库等流程。
 2. **Vercel**：使用本地 CLI 部署现有项目，参考官方文档：[Import an existing project](https://vercel.com/docs/getting-started-with-vercel/import)。
-3. **Cloudflare**：使用官方 **Direct Upload** 或 CLI 工作流，不要使用 Git integration，参考官方文档：[Getting started with Pages](https://developers.cloudflare.com/pages/get-started)。
-4. **Cloudflare Direct Upload 正确流程**：
-   ```bash
-   npm install
-   npm run pages:build
-   ```
-   构建完成后，上传 **`.vercel/output/static`** 目录，而不是仓库根目录、`.next` 目录或源码文件。上传仓库根目录只会把源码当静态文件托管，根路径没有构建产物可供 Pages 入口加载，结果就是 404。
-5. **Cloudflare CLI 发布**：如果你使用 CLI，请发布同一个构建产物目录：
-   ```bash
-   npx wrangler pages deploy .vercel/output/static
-   ```
-6. **Cloudflare 构建链路**：`npm run pages:build` 现在固定使用仓库内安装的 `next-on-pages` 和兼容版本的 `vercel`，避免构建时临时拉取不受控版本。`wrangler.toml` 继续提供 `nodejs_compat` 兼容标志。
-7. **功能限制**：托管平台会自动禁用外部媒体代理和 IPTV 流中继；请仅使用允许浏览器直连、允许当前来源访问且具备合法授权的内容源。
-8. **如果你需要完整能力**：直接改用 Docker 或传统 Node.js 自托管，不要在托管平台上强行恢复这些能力。
-
-#### 选项 4：Android TV APK 构建
-
-项目内置了一个轻量的 Android TV WebView 壳应用，可以将 KVideo 打包成 APK 安装到 Android TV 或机顶盒上。
-
-**直接下载：**
-
-- 仓库维护者可以通过 GitHub Actions 的 `Android TV APK` 工作流直接发布预构建 APK 到 **Releases**
-- 用户下载安装后，首次启动时填写自己的 KVideo 地址即可，不需要再改源码重新编译
-
-**前置要求：**
-
-- [Android Studio](https://developer.android.com/studio)（推荐）或 Android SDK Command-line Tools
-- JDK 17+
-
-**步骤：**
-
-1. **使用 Android Studio 构建（推荐）**：
-   - 用 Android Studio 打开 `android-tv/` 目录
-   - 等待 Gradle 同步完成
-   - 点击 **Build → Build Bundle(s) / APK(s) → Build APK(s)**
-   - APK 输出在 `android-tv/app/build/outputs/apk/debug/app-debug.apk`
-
-2. **使用命令行构建**：
-   ```bash
-   cd android-tv
-   ./gradlew assembleDebug
-   ```
-   APK 输出在 `app/build/outputs/apk/debug/app-debug.apk`
-
-   如果你希望在构建时预置默认地址，可额外传入 `-PkvideoUrl`：
-   ```bash
-   cd android-tv
-   ./gradlew assembleDebug -PkvideoUrl="https://your-kvideo-instance.com"
-   ```
-
-3. **安装到 Android TV**：
-   ```bash
-   adb install app/build/outputs/apk/debug/app-debug.apk
-   ```
-   或通过 U 盘、文件管理器等方式侧载安装。
-
-4. **首次启动配置**：
-   - 首次打开 APK 时输入你的 KVideo 部署地址
-   - 保存后应用会记住该地址，后续直接打开即可
-   - 需要修改地址时，可在站点根页按返回，或使用部分遥控器的菜单键重新打开设置页
-
-> **注意**：此 APK 是一个 WebView 壳应用，需要你的 KVideo 实例已经部署并可访问。APK 本身不包含 KVideo 代码，仅作为 TV 端的浏览器入口。
->
-> **最低系统要求**：Android 8.0 (API 26) 及以上。Android 7.0 及更低版本的 WebView 不支持本项目使用的 ES2017+ JavaScript 特性和现代 CSS，可能导致白屏。如遇白屏问题，请升级系统 WebView 或使用 Android 8.0+ 设备。
->
-> **发布方式**：GitHub Actions 的 `Android TV APK` 工作流会持续验证壳应用可构建；如需对外发布预构建 APK，可手动触发该工作流并填写 `release_tag`，生成对应的 GitHub Release 资产。
-
-#### 选项 5：Apple TV 应用构建
-
-项目内置了一个轻量的 tvOS WKWebView 壳应用，可以将 KVideo 安装到 Apple TV 上。
-
-**前置要求：**
-
-- macOS + Xcode 15+
-- Apple Developer 账号（免费账号即可侧载到个人设备）
-
-**步骤：**
-
-1. **创建 Xcode 项目**：打开 Xcode → **File → New → Project** → 选择 **tvOS → App** → 设置 Product Name 为 `KVideoTV`，Interface 选 **SwiftUI**，Language 选 **Swift**
-
-2. **替换源文件**：将项目中 `apple-tv/KVideoTV/KVideoTV/` 目录下的 `KVideoTVApp.swift` 和 `ContentView.swift` 复制替换 Xcode 生成的同名文件
-
-3. **修改目标 URL**：编辑 `ContentView.swift`，将 `kvideoURL` 改为你的部署地址：
-   ```swift
-   let kvideoURL = "https://your-kvideo-instance.com"
-   ```
-
-4. **设置部署目标**：将 Deployment Target 设置为 **tvOS 16.0** 或更高
-
-5. **构建运行**：连接 Apple TV（或使用 tvOS 模拟器），按 **Cmd+R** 构建运行
-
-**工作原理：**
-- 全屏 `WKWebView` 加载 KVideo URL
-- 页面加载后自动注入 `tv-mode` CSS 类，激活 TV 优化样式
-- Apple TV 遥控器滑动手势映射为滚动，点击映射为聚焦/选择
-- Menu 按钮支持网页后退导航
-
-> **注意**：Apple TV 应用如果仅是 Web 壳应用，不可上架 App Store。此功能仅供个人侧载使用。也可以直接从 iPhone/iPad/Mac 使用 AirPlay 投屏，无需此应用。
+3. **功能限制**：所有部署都只允许直连播放；请仅使用允许浏览器直连、允许当前来源访问且具备合法授权的内容源。
 
 ## 如何更新
 
 ### Vercel 部署
 
 不要依赖 GitHub 仓库自动导入。请在本地工作副本完成更新后，使用 Vercel CLI 重新发布当前目录。
-
-### Cloudflare 托管部署
-
-请在本地工作副本完成更新后，重新执行：
-
-```bash
-npm install
-npm run pages:build
-```
-
-然后使用 Direct Upload 或 CLI 发布 **`.vercel/output/static`**。不要上传仓库根目录，也不要上传 `.next`，否则 Pages 只会托管源码文件，访问站点时直接 404。
 
 ### Docker 部署
 
@@ -1016,31 +823,6 @@ npm start
 
 ## 常见问题
 
-### Cloudflare Pages 部署报 "Unknown internal error"
-
-这是 Cloudflare 的临时服务端错误，与代码无关。请在 Deployments 列表中重试部署即可。项目已内置 `wrangler.toml` 配置 `nodejs_compat` 兼容性标志。
-
-### Cloudflare Pages Direct Upload 部署后打开是 404
-
-这通常不是应用路由问题，而是上传了错误的目录。Cloudflare Pages 的 Direct Upload 需要上传已经构建完成的产物目录。
-
-正确做法：
-
-```bash
-npm install
-npm run pages:build
-```
-
-然后上传 **`.vercel/output/static`**。
-
-错误做法：
-
-- 上传仓库根目录
-- 上传 `.next`
-- 直接把源码压缩包丢给 Direct Upload
-
-这些做法都不会生成 Pages 可执行入口，部署成功后打开站点就会是 404。
-
 ### IPv6 环境下 HTTPS 访问视频无法播放
 
 如果你的网络使用 IPv6 访问，且通过路由器端口映射（如 20443 → 443），请确保：
@@ -1050,34 +832,22 @@ npm run pages:build
 
 这是网络/反向代理配置问题，非 KVideo 代码问题。
 
-### Android 7.0 设备白屏
+### 旧浏览器无法访问
 
-Android 7.0 (API 24) 的 WebView 基于 Chrome 51，不支持本项目使用的现代 JavaScript（ES2017+）和 CSS 特性。最低要求 Android 8.0 (API 26) 及以上。
+浏览器基线为 Chrome / Edge 120+、Safari 17.5+、Firefox 121+。低于基线时应用会直接显示“当前浏览器版本过低”的静态提示页，请升级浏览器。
 
-### IPTV 部分直播流无法播放
+### 部分视频源无法播放
 
-如果你部署在 Vercel / Cloudflare 托管平台，IPTV 在合规模式下是**默认禁用**的；这不是 Bug，而是刻意限制。下面的说明只适用于 Docker / Node.js 自托管完整模式。
-
-浏览器原生仅支持 HLS (m3u8) 和部分 MP4/WebM 格式。以下格式在浏览器中不受支持：
-- RTMP/RTSP 流（需要专用播放器如 VLC/PotPlayer）
-- 某些加密或受 DRM 保护的流
-- 需要特定客户端验证的流
-
-在自托管完整模式下，KVideo 的 IPTV 代理会处理 CORS 问题和 HLS URL 重写，大部分 HLS 直播流应能正常播放。
-
-### IPTV CCTV 等频道只有声音没有画面
-
-部分 CCTV 和卫视频道使用 HEVC (H.265) 编码，某些浏览器不支持硬件解码 HEVC。KVideo v4.5.0+ 已自动检测 HEVC 流并优先选择 H.264 级别以提高兼容性。如果问题仍存在，建议使用 Chrome 或 Edge 浏览器。
+Phase 0 起所有部署强制合规模式，只允许直连播放，不提供媒体代理或 IPTV 中继。防盗链、CORS 限制或需要特殊请求头的源可能无法播放，这是预期限制；请更换允许浏览器直连的源。
 
 ### 部分浏览器无法播放视频
 
-一些内置浏览器（如 vivo 浏览器、QQ 浏览器等）的 WebView 可能不完整支持 MSE (Media Source Extensions) 和 HLS.js。建议使用以下浏览器：
-- Chrome（推荐）
-- Edge
-- Safari（iOS/macOS）
-- Firefox
+一些内置浏览器的 WebView 可能不完整支持 MSE (Media Source Extensions) 和 HLS.js。建议使用以下浏览器：
+- Chrome / Edge 120+
+- Safari 17.5+
+- Firefox 121+
 
-KVideo v4.5.0+ 已增加多级回退机制，会依次尝试 HLS.js、原生 HLS、代理播放等方式。
+KVideo 会依次尝试 HLS.js、原生 HLS、直接播放等方式，但不再提供代理兜底。
 
 ## 贡献代码
 

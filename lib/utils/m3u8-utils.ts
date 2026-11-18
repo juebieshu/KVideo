@@ -95,21 +95,10 @@ export function filterM3u8Ad(
     // Use keywords passed from AdKeywordsWrapper (already loaded from env/file)
     const normalizedKeywords = normalizeKeywords(customKeywords);
 
-    // Unwrap baseUrl if it's a proxy URL to get correct basePath and origin
-    let effectiveBaseUrl = baseUrl;
-    if (baseUrl.includes('/api/proxy?url=')) {
-        try {
-            const urlMatch = baseUrl.match(/[?&]url=([^&]+)/);
-            if (urlMatch && urlMatch[1]) {
-                effectiveBaseUrl = decodeURIComponent(urlMatch[1]);
-            }
-        } catch { /* ignore */ }
-    }
-
-    const basePath = effectiveBaseUrl.substring(0, effectiveBaseUrl.lastIndexOf('/') + 1);
+    const basePath = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
     let origin = '';
     try {
-        origin = new URL(effectiveBaseUrl).origin;
+        origin = new URL(baseUrl).origin;
     } catch { /* ignore */ }
 
     // 2. Global Scan: Check if any ad keywords exist in the content

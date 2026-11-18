@@ -1,7 +1,7 @@
 'use client';
 
 import { AddSourceModal } from '@/components/settings/AddSourceModal';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { ConfirmDialog } from '@/components/ui/Dialog';
 import { PremiumSourceSettings } from '@/components/settings/PremiumSourceSettings';
 import { DisplaySettings } from '@/components/settings/DisplaySettings';
 import { PlayerSettings } from '@/components/settings/PlayerSettings';
@@ -28,13 +28,11 @@ export default function PremiumSettingsPage() {
         realtimeLatency,
         searchDisplayMode,
         fullscreenType,
-        proxyMode,
         seekStepSeconds,
         rememberScrollPosition,
         handleRealtimeLatencyChange,
         handleSearchDisplayModeChange,
         handleFullscreenTypeChange,
-        handleProxyModeChange,
         handleSeekStepSecondsChange,
         handleRememberScrollPositionChange,
         locale,
@@ -86,8 +84,6 @@ export default function PremiumSettingsPage() {
                 <PlayerSettings
                     fullscreenType={fullscreenType}
                     onFullscreenTypeChange={handleFullscreenTypeChange}
-                    proxyMode={proxyMode}
-                    onProxyModeChange={handleProxyModeChange}
                     seekStepSeconds={seekStepSeconds}
                     onSeekStepSecondsChange={handleSeekStepSecondsChange}
                     danmakuApiUrl={danmakuApiUrl}

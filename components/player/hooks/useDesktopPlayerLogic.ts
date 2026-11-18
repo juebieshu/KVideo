@@ -183,9 +183,8 @@ export function useDesktopPlayerLogic({
         skipForward: skipControls.skipForward,
         skipBackward: skipControls.skipBackward,
         changePlaybackSpeed: playbackControls.changePlaybackSpeed,
-        handleCopyLink: (type: 'original' | 'proxy' = 'original') => {
-            const urlToCopy = getCopyUrl(src, type);
-            utilities.handleCopyLink(urlToCopy);
+        handleCopyLink: () => {
+            utilities.handleCopyLink(getCopyUrl(src));
         },
         startSpeedMenuTimeout: controlsVisibility.startSpeedMenuTimeout,
         clearSpeedMenuTimeout: controlsVisibility.clearSpeedMenuTimeout,

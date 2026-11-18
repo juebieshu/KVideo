@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { SettingsSection } from './SettingsSection';
-import { Icons } from '@/components/ui/Icon';
+import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/Dialog';
+import { Switch } from '@/components/ui/Switch';
+import { Menu } from '@/components/ui/Menu';
 import { userSourcesStore } from '@/lib/store/user-sources-store';
 import type { VideoSource } from '@/lib/types';
 
@@ -11,6 +13,7 @@ export function UserSourceSettings() {
   const [name, setName] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
   const [error, setError] = useState('');
+  const [pendingRemove, setPendingRemove] = useState<VideoSource | null>(null);
 
   useEffect(() => {
     setSources(userSourcesStore.getSources());
@@ -23,7 +26,7 @@ export function UserSourceSettings() {
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !baseUrl.trim()) {
-      setError('名称和接口地址不能为空');
+      setError('请输入源名称和接口地址');
       return;
     }
     try {
@@ -48,78 +51,103 @@ export function UserSourceSettings() {
     setError('');
   };
 
+  const inputClassName =
+    'rounded-[var(--radius-2xl)] border border-(--glass-border) bg-(--glass-bg) px-3 py-2 text-sm text-(--text-color) placeholder:text-(--text-color-secondary) focus:border-(--accent-color) focus:outline-none sm:h-8 sm:py-1';
+
   return (
-    <SettingsSection title="个人视频源" description="添加你自己的视频源，不影响其他用户。">
-      <div className="space-y-4">
-        {/* Add form */}
-        <form onSubmit={handleAdd} className="space-y-3">
-          <div className="flex gap-2 flex-wrap">
-            <input
-              type="text"
-              placeholder="源名称"
-              value={name}
-              onChange={(e) => { setName(e.target.value); setError(''); }}
-              className="flex-1 px-3 py-2 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] text-sm text-[var(--text-color)] placeholder:text-[var(--text-color-secondary)]/50 focus:outline-none focus:border-[var(--accent-color)]"
-            />
-            <input
-              type="text"
-              placeholder="接口地址 (https://...)"
-              value={baseUrl}
-              onChange={(e) => { setBaseUrl(e.target.value); setError(''); }}
-              className="flex-[2] px-3 py-2 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] text-sm text-[var(--text-color)] placeholder:text-[var(--text-color-secondary)]/50 focus:outline-none focus:border-[var(--accent-color)]"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-[var(--accent-color)] text-white rounded-[var(--radius-2xl)] text-sm font-medium hover:brightness-110 transition-all cursor-pointer flex items-center gap-1"
-            >
-              <Icons.Plus size={14} />
-              添加
-            </button>
-          </div>
-          {error && (
-            <p className="text-xs text-red-500">{error}</p>
-          )}
+    <div className="mx-auto w-full max-w-2xl">
+      <header className="mb-4 border-b border-(--sv2-border) pb-3">
+        <h2 className="text-[18px] font-semibold text-(--text-color)">个人视频源</h2>
+        <p className="mt-1.5 text-[13px] leading-5 text-(--text-color-secondary)">
+          添加你自己的视频源，只对当前浏览器生效。
+        </p>
+      </header>
+
+      <section aria-label="添加个人视频源" className="border-b border-(--sv2-border) pb-5">
+        <form onSubmit={handleAdd} className="flex flex-wrap gap-2">
+          <input
+            type="text"
+            placeholder="源名称"
+            aria-label="源名称"
+            value={name}
+            onChange={(e) => { setName(e.target.value); setError(''); }}
+            className={`w-full sm:w-44 ${inputClassName}`}
+          />
+          <input
+            type="text"
+            placeholder="接口地址"
+            aria-label="接口地址"
+            value={baseUrl}
+            onChange={(e) => { setBaseUrl(e.target.value); setError(''); }}
+            className={`min-w-0 flex-1 ${inputClassName}`}
+          />
+          <Button type="submit" variant="solid" color="primary" className="shrink-0">
+            添加源
+          </Button>
         </form>
-
-        {/* Source list */}
-        {sources.length > 0 && (
-          <div className="space-y-2">
-            {sources.map(source => (
-              <div
-                key={source.id}
-                className="flex items-center justify-between px-4 py-2.5 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-[var(--radius-2xl)]"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <button
-                    onClick={() => userSourcesStore.toggleSource(source.id)}
-                    className={`w-8 h-5 rounded-full transition-colors cursor-pointer relative flex-shrink-0 ${source.enabled !== false ? 'bg-[var(--accent-color)]' : 'bg-[var(--glass-border)]'
-                      }`}
-                  >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${source.enabled !== false ? 'left-3.5' : 'left-0.5'
-                      }`} />
-                  </button>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-[var(--text-color)] truncate">{source.name}</p>
-                    <p className="text-[10px] text-[var(--text-color-secondary)] truncate">{source.baseUrl}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => userSourcesStore.removeSource(source.id)}
-                  className="p-1 text-[var(--text-color-secondary)] hover:text-red-500 transition-colors cursor-pointer flex-shrink-0"
-                >
-                  <Icons.Trash size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
+        {error && (
+          <p role="alert" className="mt-3 text-[12px] leading-4 text-(--sv2-danger)">
+            {error}
+          </p>
         )}
+      </section>
 
+      <section aria-label="个人视频源列表">
         {sources.length === 0 && (
-          <p className="text-xs text-[var(--text-color-secondary)] text-center py-4">
+          <p className="py-8 text-center text-[13px] text-(--text-color-secondary)">
             还没有个人视频源，添加一个试试吧。
           </p>
         )}
-      </div>
-    </SettingsSection>
+
+        {sources.map(source => (
+          <div
+            key={source.id}
+            className="flex items-center justify-between gap-4 border-b border-(--sv2-border) py-4 last:border-b-0"
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <Switch
+                checked={source.enabled !== false}
+                onChange={() => userSourcesStore.toggleSource(source.id)}
+                ariaLabel={`切换 ${source.name} 状态`}
+              />
+              <div className="min-w-0">
+                <p className="truncate text-[14px] leading-5 font-medium text-(--text-color)">
+                  {source.name}
+                </p>
+                <p className="mt-1 truncate text-[12px] leading-4 text-(--text-color-secondary)">
+                  {source.baseUrl}
+                </p>
+              </div>
+            </div>
+
+            <Menu
+              ariaLabel={`${source.name} 操作`}
+              items={[
+                {
+                  label: '删除',
+                  danger: true,
+                  onSelect: () => setPendingRemove(source),
+                },
+              ]}
+            />
+          </div>
+        ))}
+      </section>
+
+      <ConfirmDialog
+        isOpen={pendingRemove !== null}
+        title="删除个人视频源"
+        message={`确定要删除「${pendingRemove?.name ?? ''}」吗？删除后需要重新添加才能恢复。是否继续？`}
+        confirmText="删除"
+        cancelText="取消"
+        variant="danger"
+        dangerous
+        onConfirm={() => {
+          if (pendingRemove) userSourcesStore.removeSource(pendingRemove.id);
+          setPendingRemove(null);
+        }}
+        onCancel={() => setPendingRemove(null)}
+      />
+    </div>
   );
 }

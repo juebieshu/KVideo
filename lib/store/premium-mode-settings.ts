@@ -7,10 +7,10 @@
 import {
   type SortOption,
   type SearchDisplayMode,
-  type ProxyMode,
   type AdFilterMode,
   DEFAULT_SEEK_STEP_SECONDS,
   normalizeSeekStepSeconds,
+  settingsStore,
 } from './settings-store';
 
 const PREMIUM_MODE_SETTINGS_KEY = 'kvideo-premium-mode-settings';
@@ -23,10 +23,8 @@ export interface ModeSettings {
   autoSkipOutro: boolean;
   skipOutroSeconds: number;
   seekStepSeconds: number;
-  showModeIndicator: boolean;
   adFilterMode: AdFilterMode;
   fullscreenType: 'auto' | 'native' | 'window';
-  proxyMode: ProxyMode;
   realtimeLatency: boolean;
   searchDisplayMode: SearchDisplayMode;
   episodeReverseOrder: boolean;
@@ -48,10 +46,8 @@ function getDefaultModeSettings(): ModeSettings {
     autoSkipOutro: false,
     skipOutroSeconds: 0,
     seekStepSeconds: DEFAULT_SEEK_STEP_SECONDS,
-    showModeIndicator: false,
     adFilterMode: 'heuristic',
     fullscreenType: 'auto',
-    proxyMode: 'retry',
     realtimeLatency: false,
     searchDisplayMode: 'normal',
     episodeReverseOrder: false,
@@ -86,10 +82,8 @@ export const premiumModeSettingsStore = {
         autoSkipOutro: parsed.autoSkipOutro !== undefined ? parsed.autoSkipOutro : false,
         skipOutroSeconds: typeof parsed.skipOutroSeconds === 'number' ? parsed.skipOutroSeconds : 0,
         seekStepSeconds: normalizeSeekStepSeconds(parsed.seekStepSeconds),
-        showModeIndicator: parsed.showModeIndicator !== undefined ? parsed.showModeIndicator : false,
         adFilterMode: parsed.adFilterMode || 'heuristic',
         fullscreenType: (parsed.fullscreenType === 'window' || parsed.fullscreenType === 'native' || parsed.fullscreenType === 'auto') ? parsed.fullscreenType : 'auto',
-        proxyMode: (parsed.proxyMode === 'retry' || parsed.proxyMode === 'none' || parsed.proxyMode === 'always') ? parsed.proxyMode : 'retry',
         realtimeLatency: parsed.realtimeLatency !== undefined ? parsed.realtimeLatency : false,
         searchDisplayMode: parsed.searchDisplayMode === 'grouped' ? 'grouped' : 'normal',
         episodeReverseOrder: parsed.episodeReverseOrder !== undefined ? parsed.episodeReverseOrder : false,
@@ -136,8 +130,6 @@ export function getModeSettings(isPremium: boolean): ModeSettings {
     return premiumModeSettingsStore.getSettings();
   }
   // For normal mode, extract ModeSettings-shaped data from the main settingsStore
-  // Import dynamically to avoid circular dependencies
-  const { settingsStore } = require('./settings-store');
   const s = settingsStore.getSettings();
   return {
     sortBy: s.sortBy,
@@ -147,10 +139,8 @@ export function getModeSettings(isPremium: boolean): ModeSettings {
     autoSkipOutro: s.autoSkipOutro,
     skipOutroSeconds: s.skipOutroSeconds,
     seekStepSeconds: s.seekStepSeconds,
-    showModeIndicator: s.showModeIndicator,
     adFilterMode: s.adFilterMode,
     fullscreenType: s.fullscreenType,
-    proxyMode: s.proxyMode,
     realtimeLatency: s.realtimeLatency,
     searchDisplayMode: s.searchDisplayMode,
     episodeReverseOrder: s.episodeReverseOrder,
@@ -172,7 +162,6 @@ export function getModeSettingsStore(isPremium: boolean) {
     return premiumModeSettingsStore;
   }
   // Return a wrapper around the main settingsStore that conforms to the same interface
-  const { settingsStore } = require('./settings-store');
   return {
     getSettings: () => getModeSettings(false),
     subscribe: (listener: () => void) => settingsStore.subscribe(listener),

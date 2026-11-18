@@ -6,9 +6,11 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { useSiteIcon } from '@/components/SiteIconProvider';
 import { Icons } from '@/components/ui/Icon';
 import { siteConfig } from '@/lib/config/site-config';
+import { useSettingsUiStore } from '@/lib/store/settings-ui-store';
 
 export function PlayerNavbar({ isPremium }: { isPremium?: boolean }) {
     const router = useRouter();
+    const openSettings = useSettingsUiStore((state) => state.open);
     const siteIconSrc = useSiteIcon();
 
     return (
@@ -42,6 +44,12 @@ export function PlayerNavbar({ isPremium }: { isPremium?: boolean }) {
                     <div className="flex items-center gap-3">
                         <Link
                             href={isPremium ? '/premium/settings' : '/settings'}
+                            onClick={(event) => {
+                                if (!isPremium) {
+                                    event.preventDefault();
+                                    openSettings('account');
+                                }
+                            }}
                             className="w-10 h-10 flex items-center justify-center rounded-[var(--radius-full)] bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--text-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_10%,transparent)] transition-all duration-200 cursor-pointer"
                             aria-label="设置"
                         >

@@ -14,12 +14,10 @@ type PlayerSettingsSnapshot = {
   skipIntroSeconds: number;
   autoSkipOutro: boolean;
   skipOutroSeconds: number;
-  showModeIndicator: boolean;
   adFilter: boolean;
   adFilterMode: string;
   adKeywords: string[];
   fullscreenType: 'auto' | 'native' | 'window';
-  proxyMode: 'retry' | 'none' | 'always';
   danmakuEnabled: boolean;
   danmakuApiUrl: string;
   danmakuOpacity: number;
@@ -29,7 +27,7 @@ type PlayerSettingsSnapshot = {
 
 const comparedFields: (keyof PlayerSettingsSnapshot)[] = [
   'autoNextEpisode', 'autoSkipIntro', 'skipIntroSeconds', 'autoSkipOutro', 'skipOutroSeconds',
-  'showModeIndicator', 'adFilter', 'adFilterMode', 'adKeywords', 'fullscreenType', 'proxyMode',
+  'adFilter', 'adFilterMode', 'adKeywords', 'fullscreenType',
   'danmakuEnabled', 'danmakuApiUrl', 'danmakuOpacity', 'danmakuFontSize', 'danmakuDisplayArea',
 ];
 
@@ -43,12 +41,10 @@ const base: PlayerSettingsSnapshot = {
   skipIntroSeconds: 90,
   autoSkipOutro: false,
   skipOutroSeconds: 90,
-  showModeIndicator: true,
   adFilter: true,
   adFilterMode: 'heuristic',
   adKeywords: ['ad'],
   fullscreenType: 'auto',
-  proxyMode: 'retry',
   danmakuEnabled: true,
   danmakuApiUrl: '',
   danmakuOpacity: 0.8,

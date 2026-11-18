@@ -42,3 +42,8 @@ next-env.d.ts
 
 # unused/generated files
 contrast-test-results.json
+
+# Agent
+.claude
+.workbuddy
+docs/

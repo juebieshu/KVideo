@@ -10,7 +10,6 @@ import {
     premiumModeSettingsStore,
     type ModeSettings,
 } from '@/lib/store/premium-mode-settings';
-import { useRuntimeFeatures } from '@/components/RuntimeFeaturesProvider';
 
 interface PlayerSettingsSnapshot {
     autoNextEpisode: boolean;
@@ -18,12 +17,10 @@ interface PlayerSettingsSnapshot {
     skipIntroSeconds: number;
     autoSkipOutro: boolean;
     skipOutroSeconds: number;
-    showModeIndicator: boolean;
     adFilter: boolean;
     adFilterMode: AdFilterMode;
     adKeywords: string[];
     fullscreenType: 'auto' | 'native' | 'window';
-    proxyMode: 'retry' | 'none' | 'always';
     danmakuEnabled: boolean;
     danmakuApiUrl: string;
     danmakuOpacity: number;
@@ -31,7 +28,7 @@ interface PlayerSettingsSnapshot {
     danmakuDisplayArea: number;
 }
 
-function getPlayerSettingsSnapshot(isPremium: boolean, mediaProxyEnabled: boolean): PlayerSettingsSnapshot {
+function getPlayerSettingsSnapshot(isPremium: boolean): PlayerSettingsSnapshot {
     const globalSettings = settingsStore.getSettings();
     const modeSettings = isPremium ? premiumModeSettingsStore.getSettings() : globalSettings;
 
@@ -41,12 +38,10 @@ function getPlayerSettingsSnapshot(isPremium: boolean, mediaProxyEnabled: boolea
         skipIntroSeconds: modeSettings.skipIntroSeconds,
         autoSkipOutro: modeSettings.autoSkipOutro,
         skipOutroSeconds: modeSettings.skipOutroSeconds,
-        showModeIndicator: modeSettings.showModeIndicator,
         adFilter: globalSettings.adFilter,
         adFilterMode: modeSettings.adFilterMode,
         adKeywords: globalSettings.adKeywords,
         fullscreenType: modeSettings.fullscreenType,
-        proxyMode: mediaProxyEnabled ? modeSettings.proxyMode : 'none',
         danmakuEnabled: modeSettings.danmakuEnabled,
         danmakuApiUrl: modeSettings.danmakuApiUrl,
         danmakuOpacity: modeSettings.danmakuOpacity,
@@ -62,12 +57,10 @@ function playerSettingsEqual(a: PlayerSettingsSnapshot, b: PlayerSettingsSnapsho
         a.skipIntroSeconds === b.skipIntroSeconds &&
         a.autoSkipOutro === b.autoSkipOutro &&
         a.skipOutroSeconds === b.skipOutroSeconds &&
-        a.showModeIndicator === b.showModeIndicator &&
         a.adFilter === b.adFilter &&
         a.adFilterMode === b.adFilterMode &&
         a.adKeywords === b.adKeywords &&
         a.fullscreenType === b.fullscreenType &&
-        a.proxyMode === b.proxyMode &&
         a.danmakuEnabled === b.danmakuEnabled &&
         a.danmakuApiUrl === b.danmakuApiUrl &&
         a.danmakuOpacity === b.danmakuOpacity &&
@@ -81,14 +74,13 @@ function playerSettingsEqual(a: PlayerSettingsSnapshot, b: PlayerSettingsSnapsho
  * Provides reactive updates when settings change
  */
 export function usePlayerSettings(isPremium: boolean = false) {
-    const { mediaProxyEnabled } = useRuntimeFeatures();
-    const [settings, setSettings] = useState(() => getPlayerSettingsSnapshot(isPremium, mediaProxyEnabled));
+    const [settings, setSettings] = useState(() => getPlayerSettingsSnapshot(isPremium));
 
     // Subscribe to settings changes. Reuse the previous snapshot when
     // non-player fields change (e.g. episodeReverseOrder) so HLS is not rebuilt.
     useEffect(() => {
         const syncSettings = () => {
-            const next = getPlayerSettingsSnapshot(isPremium, mediaProxyEnabled);
+            const next = getPlayerSettingsSnapshot(isPremium);
             setSettings((prev) => (playerSettingsEqual(prev, next) ? prev : next));
         };
 
@@ -102,7 +94,7 @@ export function usePlayerSettings(isPremium: boolean = false) {
             unsubscribeModeStore();
             unsubscribeGlobalStore?.();
         };
-    }, [isPremium, mediaProxyEnabled]);
+    }, [isPremium]);
 
     const updateModeSettings = useCallback((partial: Partial<ModeSettings>) => {
         if (isPremium) {
@@ -149,10 +141,6 @@ export function usePlayerSettings(isPremium: boolean = false) {
         updateModeSettings({ skipOutroSeconds: Math.max(0, value) });
     }, [updateModeSettings]);
 
-    const setShowModeIndicator = useCallback((value: boolean) => {
-        updateModeSettings({ showModeIndicator: value });
-    }, [updateModeSettings]);
-
     const setAdFilter = useCallback((value: boolean) => {
         updateGlobalSettings({ adFilter: value });
     }, [updateGlobalSettings]);
@@ -168,10 +156,6 @@ export function usePlayerSettings(isPremium: boolean = false) {
     const setFullscreenType = useCallback((value: 'auto' | 'native' | 'window') => {
         updateModeSettings({ fullscreenType: value });
     }, [updateModeSettings]);
-
-    const setProxyMode = useCallback((value: 'retry' | 'none' | 'always') => {
-        updateModeSettings({ proxyMode: mediaProxyEnabled ? value : 'none' });
-    }, [mediaProxyEnabled, updateModeSettings]);
 
     const setDanmakuEnabled = useCallback((value: boolean) => {
         updateModeSettings({ danmakuEnabled: value });
@@ -200,12 +184,10 @@ export function usePlayerSettings(isPremium: boolean = false) {
         setSkipIntroSeconds,
         setAutoSkipOutro,
         setSkipOutroSeconds,
-        setShowModeIndicator,
         setAdFilter,
         setAdFilterMode,
         setAdKeywords,
         setFullscreenType,
-        setProxyMode,
         setDanmakuEnabled,
         setDanmakuApiUrl,
         setDanmakuOpacity,

@@ -48,13 +48,13 @@ function mockCookieRequest(protocol: 'http:' | 'https:', forwardedProtocol?: str
 }
 
 test('parseBootstrapAccounts supports legacy password:name entries', () => {
-  const accounts = parseBootstrapAccounts('pass1:张三:admin,pass2:李四:viewer:iptv_access|danmaku_api');
+  const accounts = parseBootstrapAccounts('pass1:张三:admin,pass2:李四:viewer:danmaku_api');
 
   assert.equal(accounts.length, 2);
   assert.equal(accounts[0].username, 'user-1');
   assert.equal(accounts[0].name, '张三');
   assert.equal(accounts[0].role, 'admin');
-  assert.deepEqual(accounts[1].customPermissions, ['iptv_access', 'danmaku_api']);
+  assert.deepEqual(accounts[1].customPermissions, ['danmaku_api']);
 });
 
 test('parseBootstrapAccounts supports username:password:name entries and deduplicates usernames', () => {
@@ -89,7 +89,7 @@ test('signSessionPayload and verifySessionToken reject tampering', async () => {
     username: 'alice',
     name: 'Alice',
     role: 'super_admin',
-    customPermissions: ['iptv_access'],
+    customPermissions: ['danmaku_api'],
     mode: 'managed',
     iat: Date.now(),
   }, 'test-secret');
@@ -110,7 +110,7 @@ test('createStoredAccount stores hashed password and normalized permissions', as
     password: 'secret',
     name: 'Alice',
     role: 'viewer',
-    customPermissions: ['iptv_access', 'iptv_builtin_sources'],
+    customPermissions: ['danmaku_api'],
   });
 
   assert.equal(account.username, 'alice');
@@ -134,10 +134,9 @@ test('MANAGED_AUTH_ENABLED does not bypass managed auth hard dependencies', () =
   }), 'managed');
 });
 
-test('resolvePermissions applies role defaults and IPTV management inheritance', () => {
-  const viewerPermissions = resolvePermissions('viewer', ['iptv_access']);
-  assert.ok(viewerPermissions.includes('iptv_access'));
-  assert.ok(viewerPermissions.includes('iptv_source_management'));
+test('resolvePermissions applies role defaults', () => {
+  const viewerPermissions = resolvePermissions('viewer', ['danmaku_api']);
+  assert.ok(viewerPermissions.includes('danmaku_api'));
   assert.equal(hasResolvedPermission('admin', 'player_settings'), true);
   assert.equal(hasResolvedPermission('viewer', 'account_management'), false);
   assert.equal(hasRoleAtLeast('super_admin', 'admin'), true);

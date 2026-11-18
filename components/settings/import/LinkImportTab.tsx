@@ -71,7 +71,7 @@ export function LinkImportTab({ onImport }: LinkImportTabProps) {
                     <button
                         onClick={handleFetch}
                         disabled={!url.trim() || loading || success}
-                        className="px-6 py-2 rounded-[var(--radius-2xl)] bg-[var(--accent-color)] text-white font-medium hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed shadow-[var(--shadow-sm)] transition-all min-w-[100px] flex items-center justify-center"
+                        className="px-6 py-2 rounded-[var(--radius-2xl)] settings-primary bg-[var(--accent-color)] text-white font-medium hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed shadow-[var(--shadow-sm)] transition-all min-w-[100px] flex items-center justify-center"
                     >
                         {loading ? (
                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -86,7 +86,7 @@ export function LinkImportTab({ onImport }: LinkImportTabProps) {
                 </p>
 
                 {error && (
-                    <div className="mt-4 text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-[var(--radius-2xl)] px-4 py-3 border border-red-100 dark:border-red-900/30">
+                    <div className="mt-4 text-sm settings-error rounded-[var(--radius-2xl)] px-4 py-3 border">
                         {error}
                     </div>
                 )}
@@ -114,7 +114,7 @@ export function LinkImportTab({ onImport }: LinkImportTabProps) {
 
                         <button
                             onClick={handleConfirmImport}
-                            className="w-full py-3 rounded-[var(--radius-2xl)] bg-[var(--accent-color)] text-white font-semibold hover:brightness-110 shadow-[var(--shadow-md)] transition-all active:scale-[0.98]"
+                            className="w-full py-3 rounded-[var(--radius-2xl)] settings-primary bg-[var(--accent-color)] text-white font-semibold hover:brightness-110 shadow-[var(--shadow-md)] transition-all active:scale-[0.98]"
                         >
                             确认导入 {preview.totalCount} 个源
                         </button>
@@ -122,7 +122,7 @@ export function LinkImportTab({ onImport }: LinkImportTabProps) {
                 )}
 
                 {success && (
-                    <div className="mt-4 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 rounded-[var(--radius-2xl)] px-4 py-3 flex items-center gap-2 border border-green-100 dark:border-green-900/30">
+                    <div className="mt-4 text-sm settings-success rounded-[var(--radius-2xl)] px-4 py-3 flex items-center gap-2 border">
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5" />
                         </svg>

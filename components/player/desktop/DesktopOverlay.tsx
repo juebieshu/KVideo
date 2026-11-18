@@ -24,11 +24,10 @@ interface DesktopOverlayProps {
     onSkipBackward: () => void;
     showMoreMenu: boolean;
     isPremium?: boolean;
-    isProxied: boolean;
     onToggleMoreMenu: () => void;
     onMoreMenuMouseEnter: () => void;
     onMoreMenuMouseLeave: () => void;
-    onCopyLink: (type?: 'original' | 'proxy') => void;
+    onCopyLink: () => void;
     seekStepSeconds: number;
     // Speed Menu Props
     playbackRate: number;
@@ -64,7 +63,6 @@ export function DesktopOverlay({
     showControls,
     showMoreMenu,
     isPremium = false,
-    isProxied,
     onToggleMoreMenu,
     onMoreMenuMouseEnter,
     onMoreMenuMouseLeave,
@@ -93,7 +91,6 @@ export function DesktopOverlay({
                 <DesktopMoreMenu
                     showMoreMenu={showMoreMenu}
                     isPremium={isPremium}
-                    isProxied={isProxied}
                     onToggleMoreMenu={onToggleMoreMenu}
                     onMouseEnter={onMoreMenuMouseEnter}
                     onMouseLeave={onMoreMenuMouseLeave}

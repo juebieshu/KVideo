@@ -1,170 +1,86 @@
 /**
- * PopularFeatures - Main component for popular movies section
- * Displays Douban movie recommendations with tag filtering and infinite scroll.
- * Includes personalized "为你推荐" tag when user has 2+ watched items.
+ * PopularFeatures - 首页热门内容（网飞 TV 风格）
+ *
+ * 每个标签一行、从上到下排列，每行是一条可左右翻页的横版卡片轮播。
+ * 观看记录 ≥ 2 条时，最上方多一行「为你推荐」。
+ *
+ * 切换 电影 ⇄ 电视剧：
+ * - 每行旧卡片整排向左滑出，完全离开后新分类的卡片再从右侧滑入（两个方向一致）
+ * - 行标题向上淡出滑走，新标题从下方弹入，逐行错开
  */
 
 'use client';
 
 import { useState } from 'react';
-import { TagManager } from './TagManager';
-import { MovieGrid } from './MovieGrid';
+import { HotFeature } from './HotFeature';
+import { TagMovieRow, RecommendRow } from './MovieRow';
+import type { DoubanMovie } from './MovieCard';
+import type { Tag } from './SortableTag';
 import { useTagManager } from './hooks/useTagManager';
-import { usePopularMovies } from './hooks/usePopularMovies';
 import { usePersonalizedRecommendations } from './hooks/usePersonalizedRecommendations';
-
-interface DoubanMovie {
-  id: string;
-  title: string;
-  cover: string;
-  rate: string;
-  url: string;
-}
 
 interface PopularFeaturesProps {
   onSearch?: (query: string) => void;
 }
 
+/** 标签还没拿到时先占几行骨架 */
+const DEFAULT_SKELETON_ROWS = 4;
+
 export function PopularFeatures({ onSearch }: PopularFeaturesProps) {
-  const {
-    tags,
-    selectedTag,
-    contentType,
-    newTagInput,
-    showTagManager,
-    justAddedTag,
-    setContentType,
-    setSelectedTag,
-    setNewTagInput,
-    setShowTagManager,
-    setJustAddedTag,
-    handleAddTag,
-    handleDeleteTag,
-    handleRestoreDefaults,
-    handleDragEnd,
-    isLoadingTags,
-  } = useTagManager();
+  const { tags, tagsReady, contentType } = useTagManager();
 
   const {
     movies: recommendMovies,
     loading: recommendLoading,
     hasMore: recommendHasMore,
     hasHistory,
-    prefetchRef: recommendPrefetchRef,
-    loadMoreRef: recommendLoadMoreRef,
+    loadMore: recommendLoadMore,
   } = usePersonalizedRecommendations(false);
 
-  const [isRecommendSelected, setIsRecommendSelected] = useState(false);
+  // 「热门」已提升为整屏焦点区，不再作为普通横排行出现
+  const rowTags = tags.filter((tag) => tag.id !== 'popular');
 
-  const effectiveRecommendSelected = hasHistory && isRecommendSelected;
-  const isTagManagementMode = showTagManager;
+  const [skeletonRowCount, setSkeletonRowCount] = useState(DEFAULT_SKELETON_ROWS);
+  if (tagsReady && rowTags.length > 0 && rowTags.length !== skeletonRowCount) {
+    setSkeletonRowCount(rowTags.length);
+  }
 
-  const {
-    movies,
-    loading,
-    hasMore,
-    prefetchRef,
-    loadMoreRef,
-  } = usePopularMovies(
-    effectiveRecommendSelected ? '' : selectedTag,
-    tags,
-    contentType
-  );
+  const rows: (Tag | null)[] = tagsReady
+    ? rowTags
+    : Array.from({ length: skeletonRowCount }, () => null);
 
   const handleMovieClick = (movie: DoubanMovie) => {
-    if (onSearch) {
-      onSearch(movie.title);
-    }
+    onSearch?.(movie.title);
   };
 
-  const handleRecommendSelect = () => {
-    setIsRecommendSelected(true);
-  };
-
-  const handleRegularTagSelect = (tagId: string) => {
-    if (tagId === 'custom_高级' || tags.find(t => t.id === tagId)?.label === '高级') {
-      window.location.href = '/premium';
-      return;
-    }
-    setIsRecommendSelected(false);
-    setSelectedTag(tagId);
-  };
+  const rowOffset = hasHistory ? 1 : 0;
 
   return (
     <div className="animate-fade-in">
-      {/* Content Type Toggle (Capsule Liquid Glass - Fixed & Centered) */}
-      {!isTagManagementMode && !effectiveRecommendSelected && (
-        <div className="mb-10 flex justify-center">
-          <div className="relative w-80 p-1 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-full grid grid-cols-2 backdrop-blur-2xl shadow-lg ring-1 ring-white/10 overflow-hidden">
-            {/* Sliding Indicator */}
-            <div
-              className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-[var(--accent-color)] rounded-full transition-transform duration-400 cubic-bezier(0.4, 0, 0.2, 1) shadow-[0_0_15px_rgba(0,122,255,0.4)]"
-              style={{
-                transform: `translateX(${contentType === 'movie' ? '4px' : 'calc(100% + 4px)'})`,
-              }}
-            />
+      <div className="flex flex-col gap-6 md:gap-8">
+        <HotFeature key={contentType} contentType={contentType} onMovieClick={handleMovieClick} />
 
-            <button
-              onClick={() => setContentType('movie')}
-              className={`relative z-10 py-2.5 text-sm font-bold transition-colors duration-300 cursor-pointer flex justify-center items-center ${contentType === 'movie' ? 'text-white' : 'text-[var(--text-color-secondary)] hover:text-[var(--text-color)]'
-                }`}
-            >
-              电影
-            </button>
-            <button
-              onClick={() => setContentType('tv')}
-              className={`relative z-10 py-2.5 text-sm font-bold transition-colors duration-300 cursor-pointer flex justify-center items-center ${contentType === 'tv' ? 'text-white' : 'text-[var(--text-color-secondary)] hover:text-[var(--text-color)]'
-                }`}
-            >
-              电视剧
-            </button>
-          </div>
-        </div>
-      )}
-
-      <TagManager
-        tags={tags}
-        selectedTag={effectiveRecommendSelected ? '' : selectedTag}
-        showTagManager={showTagManager}
-        newTagInput={newTagInput}
-        justAddedTag={justAddedTag}
-        onTagSelect={handleRegularTagSelect}
-        onTagDelete={handleDeleteTag}
-        onToggleManager={() => setShowTagManager(!showTagManager)}
-        onRestoreDefaults={handleRestoreDefaults}
-        onNewTagInputChange={setNewTagInput}
-        onAddTag={handleAddTag}
-        onDragEnd={handleDragEnd}
-        onJustAddedTagHandled={() => setJustAddedTag(false)}
-        isLoadingTags={isLoadingTags}
-        recommendTag={hasHistory ? {
-          label: '为你推荐',
-          isSelected: effectiveRecommendSelected,
-          onSelect: handleRecommendSelect,
-        } : undefined}
-      />
-
-      {!isTagManagementMode && (
-        effectiveRecommendSelected ? (
-          <MovieGrid
+        {hasHistory && (
+          <RecommendRow
             movies={recommendMovies}
             loading={recommendLoading}
             hasMore={recommendHasMore}
+            onLoadMore={recommendLoadMore}
             onMovieClick={handleMovieClick}
-            prefetchRef={recommendPrefetchRef}
-            loadMoreRef={recommendLoadMoreRef}
           />
-        ) : (
-          <MovieGrid
-            movies={movies}
-            loading={loading}
-            hasMore={hasMore}
+        )}
+
+        {/* 按位置作 key：切换分类时同一行原地播放标题滚动和卡片滑动 */}
+        {rows.map((tag, i) => (
+          <TagMovieRow
+            key={i}
+            index={i + rowOffset}
+            tag={tag}
+            contentType={contentType}
             onMovieClick={handleMovieClick}
-            prefetchRef={prefetchRef}
-            loadMoreRef={loadMoreRef}
           />
-        )
-      )}
+        ))}
+      </div>
     </div>
   );
 }

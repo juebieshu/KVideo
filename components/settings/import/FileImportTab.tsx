@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { MIcon, materialIconMap } from '@/components/ui/Icon';
 
 interface FileImportTabProps {
     onImport: (content: string) => Promise<boolean> | boolean;
@@ -67,11 +68,7 @@ export function FileImportTab({ onImport }: FileImportTabProps) {
                 >
                     <div className="flex flex-col items-center gap-3">
                         <div className="p-3 rounded-[var(--radius-full)] bg-[var(--glass-bg)] border border-[var(--glass-border)] group-hover:scale-110 transition-transform duration-200">
-                            <svg className="w-6 h-6 text-[var(--text-color-secondary)] group-hover:text-[var(--accent-color)] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                <polyline points="17 8 12 3 7 8" />
-                                <line x1="12" y1="3" x2="12" y2="15" />
-                            </svg>
+                            <MIcon icon={materialIconMap.Upload} className="w-6 h-6 text-[var(--text-color-secondary)] group-hover:text-[var(--accent-color)] transition-colors" />
                         </div>
                         <span className="font-medium">点击选择文件</span>
                     </div>
@@ -85,9 +82,7 @@ export function FileImportTab({ onImport }: FileImportTabProps) {
 
                 {success && (
                     <div className="mt-4 text-sm settings-success rounded-[var(--radius-2xl)] px-4 py-3 flex items-center gap-2 border">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M20 6L9 17l-5-5" />
-                        </svg>
+                        <MIcon icon={materialIconMap.Check} className="w-5 h-5" />
                         导入成功！正在刷新...
                     </div>
                 )}

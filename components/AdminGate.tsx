@@ -1,7 +1,7 @@
 'use client';
 
 import { isAdmin, getSession } from '@/lib/store/auth-store';
-import { ShieldAlert, User } from 'lucide-react';
+import { MIcon, materialIconMap } from '@/components/ui/Icon';
 
 function ViewerNotice() {
   const session = getSession();
@@ -11,7 +11,7 @@ function ViewerNotice() {
       <div className="w-full max-w-md p-4">
         <div className="bg-[var(--glass-bg)] backdrop-blur-[25px] saturate-[180%] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] p-8 shadow-[var(--shadow-md)] flex flex-col items-center gap-6">
           <div className="w-16 h-16 rounded-[var(--radius-full)] bg-amber-500/10 flex items-center justify-center text-amber-500 mb-2 shadow-[var(--shadow-sm)] border border-[var(--glass-border)]">
-            <ShieldAlert size={32} />
+            <MIcon icon={materialIconMap.ShieldAlert} width={32} height={32} />
           </div>
 
           <div className="text-center space-y-2">
@@ -21,7 +21,7 @@ function ViewerNotice() {
 
           {session && (
             <div className="flex items-center gap-2 px-4 py-2 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-[var(--radius-full)] text-sm">
-              <User size={16} className="text-[var(--text-color-secondary)]" />
+              <MIcon icon={materialIconMap.User} width={16} height={16} className="text-[var(--text-color-secondary)]" />
               <span>当前用户：{session.name}</span>
               <span className="px-2 py-0.5 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-[var(--radius-full)] text-xs text-[var(--text-color-secondary)]">
                 观众

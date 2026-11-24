@@ -76,13 +76,15 @@ export function usePersonalizedRecommendations(isPremium = false) {
           );
           if (!res.ok) return { label: query.label, movies: [] as DoubanMovie[] };
           const data = await res.json();
-          const movies: DoubanMovie[] = (data.subjects || []).map((s: any) => ({
-            id: s.id,
-            title: s.title,
-            cover: s.cover,
-            rate: s.rate,
-            url: s.url,
-          }));
+          const movies: DoubanMovie[] = (Array.isArray(data.subjects) ? data.subjects : []).map(
+            (s: Partial<DoubanMovie>) => ({
+              id: String(s.id ?? ''),
+              title: String(s.title ?? ''),
+              cover: String(s.cover ?? ''),
+              rate: String(s.rate ?? ''),
+              url: String(s.url ?? ''),
+            })
+          );
           return { label: query.label, movies };
         } catch {
           return { label: query.label, movies: [] as DoubanMovie[] };
@@ -227,5 +229,11 @@ export function usePersonalizedRecommendations(isPremium = false) {
     onLoadMore: handleLoadMore,
   });
 
-  return { movies, loading, hasMore, hasHistory, prefetchRef, loadMoreRef };
+  // 供横向轮播翻到末尾时主动加载下一页
+  const loadMore = useCallback(() => {
+    if (loading || !hasMore) return;
+    handleLoadMore(page + 1);
+  }, [loading, hasMore, page, handleLoadMore]);
+
+  return { movies, loading, hasMore, hasHistory, prefetchRef, loadMoreRef, loadMore };
 }

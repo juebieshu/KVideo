@@ -1,7 +1,8 @@
 'use client';
+import { materialIconMap } from '@/components/ui/icons/icon-map';
 
 import { useEffect, useState } from 'react';
-import { Icon } from '@iconify/react';
+import { MIcon as Icon } from '@/components/ui/Icon';
 import { Button } from '@/components/ui/Button';
 import { clearSession, type AuthSession } from '@/lib/store/auth-store';
 import { useAuthSession } from '@/lib/hooks/useAuthSession';
@@ -53,7 +54,7 @@ export function SettingsCurrentAccount() {
 
         <div className="mt-4 flex items-start gap-3 rounded-(--radius-2xl) border border-(--glass-border) bg-(--sv2-surface-2) p-4">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] text-(--text-color-secondary)">
-            <Icon icon="lucide:user" width={20} />
+            <Icon icon={materialIconMap.User} width={20} />
           </span>
           <div className="min-w-0">
             <p className="text-[14px] leading-5 font-medium text-(--text-color)">未启用账户登录</p>
@@ -92,7 +93,7 @@ export function SettingsCurrentAccount() {
           color="danger"
           onClick={logoutAndReload}
           className="shrink-0 gap-1.5">
-          <Icon icon="lucide:log-out" width={16} />
+          <Icon icon={materialIconMap.LogOut} width={16} />
           退出登录
         </Button>
       </div>

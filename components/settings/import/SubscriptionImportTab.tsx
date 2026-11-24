@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/Dialog';
+import { MIcon, materialIconMap } from '@/components/ui/Icon';
 import { Menu } from '@/components/ui/Menu';
 import type { SourceSubscription } from '@/lib/types';
 import { createSubscription } from '@/lib/utils/source-import-utils';
@@ -149,17 +150,12 @@ export function SubscriptionImportTab({
                                 className="cursor-pointer rounded-[var(--radius-full)] p-2 text-(--text-color-secondary) transition-colors hover:bg-[color-mix(in_srgb,var(--text-color)_10%,transparent)] hover:text-(--text-color) disabled:cursor-not-allowed disabled:opacity-50"
                                 title="立即更新"
                                 aria-label={`更新 ${sub.name}`}>
-                                <svg
+                                <MIcon
+                                    icon={materialIconMap.RefreshCw}
                                     className={`h-4 w-4 ${refreshingIds.has(sub.id) ? 'animate-spin text-(--accent-color)' : ''}`}
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    aria-hidden="true">
-                                    <path d="M23 4v6h-6" />
-                                    <path d="M1 20v-6h6" />
-                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                                </svg>
+                                    width={16}
+                                    height={16}
+                                />
                             </button>
 
                             <Menu

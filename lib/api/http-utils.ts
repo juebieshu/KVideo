@@ -4,6 +4,7 @@
  */
 
 // Disable SSL verification for video sources with invalid certificates
+// (several self-hosted sources only serve HTTP or use self-signed certs).
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const REQUEST_TIMEOUT = 15000;

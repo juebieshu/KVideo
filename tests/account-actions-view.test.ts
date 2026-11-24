@@ -5,15 +5,20 @@ import { join } from 'node:path';
 
 const projectRoot = process.cwd();
 
-test('navbar keeps logout available below the desktop breakpoint', () => {
+test('navbar keeps account and settings actions available below the desktop breakpoint', () => {
   const source = readFileSync(
     join(projectRoot, 'components/layout/Navbar.tsx'),
     'utf8',
   );
 
-  assert.match(source, /\{session && \(\s*<div className="flex items-center gap-1 sm:gap-2">/);
-  assert.match(source, /<div className="hidden sm:flex[^>]*>[\s\S]*?session\.name/);
-  assert.doesNotMatch(source, /\{session && \(\s*<div className="hidden sm:flex/);
+  const accountButton = source.match(/<button\b[^>]*aria-label=\{`账户：\$\{displayName\}`\}[^>]*>/)?.[0];
+  const settingsButton = source.match(/<button\b[^>]*aria-label="设置"[^>]*>/)?.[0];
+
+  assert.ok(accountButton);
+  assert.ok(settingsButton);
+  assert.doesNotMatch(accountButton, /\bhidden\b/);
+  assert.doesNotMatch(settingsButton, /\bhidden\b/);
+  assert.match(source, /onClick=\{openAccountSettings\}/);
 });
 
 test('premium settings includes the shared account management section', () => {

@@ -1,8 +1,9 @@
 "use client";
+import { materialIconMap } from '@/components/ui/icons/icon-map';
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Icon } from "@iconify/react";
+import { MIcon as Icon } from "@/components/ui/Icon";
 import { useSettingsPage } from "@/lib/hooks/useSettingsPage";
 import { useAuthSession } from "@/lib/hooks/useAuthSession";
 import { hasResolvedPermission } from "@/lib/auth/permissions";
@@ -188,7 +189,7 @@ export function SettingsSurface({ variant, onClose }: SettingsSurfaceProps) {
             onClick={onClose}
             aria-label="关闭设置"
             className="settings-toolbar-button absolute top-2 right-2 flex items-center justify-center rounded-md text-(--text-color-secondary) transition-colors hover:bg-[var(--sv2-surface-2)] hover:text-[var(--text-color)]">
-            <Icon icon="lucide:x" width={16} />
+            <Icon icon={materialIconMap.X} width={16} />
           </button>
         )}
 

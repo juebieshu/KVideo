@@ -1,22 +1,25 @@
 /**
  * Watch History Sidebar Component
  * 观看历史侧边栏组件 - Main layout and state management
+ * 入口已统一到顶部 Navbar，本组件只负责抽屉本身。
  */
 
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { useHistory } from '@/lib/store/history-store';
-import { Icons } from '@/components/ui/Icon';
+import { useSidebarStore } from '@/lib/store/sidebar-store';
 import { ConfirmDialog } from '@/components/ui/Dialog';
 import { HistoryHeader } from './HistoryHeader';
 import { HistoryList } from './HistoryList';
 import { HistoryFooter } from './HistoryFooter';
 import { trapFocus } from '@/lib/accessibility/focus-management';
-import { useFloatingButtonPosition } from '@/lib/hooks/useFloatingButtonPosition';
 
 export function WatchHistorySidebar({ isPremium = false }: { isPremium?: boolean }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const activePanel = useSidebarStore((state) => state.activePanel);
+  const closePanel = useSidebarStore((state) => state.closePanel);
+  const isOpen = activePanel === 'history';
+
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean;
     showIdentifier?: string;
@@ -25,14 +28,6 @@ export function WatchHistorySidebar({ isPremium = false }: { isPremium?: boolean
   const { viewingHistory, removeFromHistory, clearHistory } = useHistory(isPremium);
   const sidebarRef = useRef<HTMLElement>(null);
   const cleanupFocusTrapRef = useRef<(() => void) | null>(null);
-  const {
-    floatingStyle,
-    onPointerDown,
-    consumeSyntheticClick,
-  } = useFloatingButtonPosition({
-    storageKey: isPremium ? 'kvideo-premium-history-button-position' : 'kvideo-history-button-position',
-    defaultAnchor: 'right',
-  });
 
   // Setup focus trap when sidebar opens
   useEffect(() => {
@@ -52,7 +47,7 @@ export function WatchHistorySidebar({ isPremium = false }: { isPremium?: boolean
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        setIsOpen(false);
+        closePanel();
       }
     };
 
@@ -63,7 +58,7 @@ export function WatchHistorySidebar({ isPremium = false }: { isPremium?: boolean
     return () => {
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen]);
+  }, [isOpen, closePanel]);
 
   // Handle delete confirmation
   const handleDeleteItem = (showIdentifier: string) => {
@@ -89,26 +84,11 @@ export function WatchHistorySidebar({ isPremium = false }: { isPremium?: boolean
 
   return (
     <>
-      {/* Toggle Button */}
-      <button
-        onClick={(event) => {
-          if (consumeSyntheticClick(event)) return;
-          setIsOpen(true);
-        }}
-        onPointerDown={onPointerDown}
-        style={floatingStyle}
-        className="fixed z-40 bg-[var(--glass-bg)] backdrop-blur-[8px] saturate-[120%] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-md)] p-3 hover:scale-105 transition-transform duration-200 cursor-pointer touch-none select-none"
-        aria-label="打开观看历史"
-        title="点击打开观看历史，拖动可调整位置"
-      >
-        <Icons.History size={24} className="text-[var(--text-color)]" />
-      </button>
-
       {/* Backdrop */}
       {isOpen && (
         <div
           className="fixed inset-0 z-[1999] bg-black/40 opacity-0 animate-[fadeIn_0.2s_ease-out_forwards]"
-          onClick={() => setIsOpen(false)}
+          onClick={closePanel}
         />
       )}
 
@@ -124,7 +104,7 @@ export function WatchHistorySidebar({ isPremium = false }: { isPremium?: boolean
         }}
         className={`fixed top-0 right-0 bottom-0 w-[85%] sm:w-[90%] max-w-[420px] z-[2000] bg-[var(--glass-bg)] backdrop-blur-[8px] saturate-[120%] border-l border-[var(--glass-border)] rounded-tl-[var(--radius-2xl)] rounded-bl-[var(--radius-2xl)] p-6 flex flex-col shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-transform duration-250 ease-out`}
       >
-        <HistoryHeader onClose={() => setIsOpen(false)} />
+        <HistoryHeader onClose={closePanel} />
 
         <HistoryList
           history={viewingHistory}

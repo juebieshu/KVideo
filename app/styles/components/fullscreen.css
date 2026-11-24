@@ -1,4 +1,7 @@
-/* Web Fullscreen (Window Fullscreen) Styles */
+/*
+ * 网页全屏（窗口内全屏）：把播放器容器接管成 fixed 铺满视口。
+ * 配合 player.css 的容器使用。
+ */
 .kvideo-container.is-web-fullscreen {
     position: fixed !important;
     top: 0 !important;

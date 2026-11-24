@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { MIcon, materialIconMap } from '@/components/ui/Icon';
 
 export interface MenuItem {
   label: string;
@@ -117,11 +118,7 @@ export function Menu({ items, ariaLabel }: MenuProps) {
           }
         }}
         className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-[var(--radius-full)] text-(--text-color-secondary) transition-colors hover:bg-[color-mix(in_srgb,var(--text-color)_10%,transparent)] hover:text-(--text-color)">
-        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <circle cx="12" cy="5" r="1.6" />
-          <circle cx="12" cy="12" r="1.6" />
-          <circle cx="12" cy="19" r="1.6" />
-        </svg>
+        <MIcon icon={materialIconMap.MoreVertical} className="h-4 w-4" />
       </button>
 
       {mounted && (

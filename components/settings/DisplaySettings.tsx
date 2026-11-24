@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/Switch';
 import { Select } from '@/components/ui/Select';
 import { SettingRow, settingsInputClassName } from '@/components/settings/SettingRow';
 import { useTheme, type Theme } from '@/components/ThemeProvider';
+import { MIcon, materialIconMap } from '@/components/ui/Icon';
 
 interface DisplaySettingsProps {
     realtimeLatency: boolean;
@@ -183,9 +184,7 @@ export function DisplaySettings({
                                             onClick={() => removeCategory(cat)}
                                             aria-label={`移除 ${cat}`}
                                             className="cursor-pointer transition-opacity hover:opacity-70">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M18 6L6 18M6 6l12 12" />
-                                            </svg>
+                                            <MIcon icon={materialIconMap.X} width={12} height={12} />
                                         </button>
                                     </span>
                                 ))}

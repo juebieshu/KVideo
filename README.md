@@ -1,900 +1,374 @@
 [![Upstream Sync](https://github.com/sky06walker/KVideo/actions/workflows/Github_Upstream_Sync.yml/badge.svg)](https://github.com/sky06walker/KVideo/actions/workflows/Github_Upstream_Sync.yml)
-
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/KuekHaoYang/KVideo)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2-blue?style=for-the-badge&logo=react)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-# Buy Me A Coffee
-[![Buy Me A Coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=&slug=kuekhaoyang&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff)](https://www.buymeacoffee.com/kuekhaoyang)
-
-# 视频聚合平台 (KVideo)
+# KVideo · 视频聚合播放平台
 
 ![KVideo Banner](public/icon.png)
 
-> 一个基于 Next.js 16 构建的现代化视频聚合播放平台。采用独特的 "Liquid Glass" 设计语言，提供流畅的视觉体验和强大的视频搜索功能。
+> 基于 Next.js 16 的多源视频聚合播放应用，采用 Liquid Glass 液态玻璃设计语言。
 
-**在线体验：[https://kvideo.pages.dev/](https://kvideo.pages.dev/)**
+**在线体验：<https://kvideo.pages.dev/>** · [项目文档](docs/README.md) · [Buy Me A Coffee](https://www.buymeacoffee.com/kuekhaoyang)
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.1-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19.2-blue?style=for-the-badge&logo=react)](https://react.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+> 仓库默认不内置任何视频源或高级源，使用方需自行接入已获授权且支持浏览器直连的内容来源。所有部署均采用强制合规模式，仅提供直连播放，不含媒体代理与 IPTV 中继（详见[部署合规说明](#部署合规说明)）。
 
-## 项目简介
+---
 
-**KVideo** 是一个高性能、现代化的视频聚合与播放应用，专注于提供极致的用户体验和视觉设计。本项目利用 Next.js 16 的最新特性，结合 React 19 和 Tailwind CSS v4，打造了一个既美观又强大的视频浏览平台。
+## 目录
 
-> **说明**：仓库默认不内置任何视频源或高级源。部署者必须自行配置已获授权、可合法使用且允许当前部署方式访问的内容来源。
+- [快速开始](#快速开始)
+- [功能概览](#功能概览)
+- [认证与账户](#认证与账户)
+- [环境变量](#环境变量)
+- [部署与更新](#部署与更新)
+- [常见问题](#常见问题)
+- [文档索引](#文档索引)
+- [贡献与许可](#贡献与许可)
 
-### 核心设计理念：Liquid Glass（液态玻璃）
+---
 
-项目的视觉设计基于 **"Liquid Glass"** 设计系统，这是一套融合了以下特性的现代化 UI 设计语言：
+## 快速开始
 
-- **玻璃拟态效果**：通过 `backdrop-filter` 实现的磨砂半透明效果，让 UI 元素如同真实的玻璃材质
-- **通用柔和度**：统一使用 `rounded-2xl` 和 `rounded-full` 两种圆角半径，创造和谐的视觉体验
-- **光影交互**：悬停和聚焦状态下的内发光效果，模拟光线被"捕获"的物理现象
-- **流畅动画**：基于物理的 `cubic-bezier` 曲线，实现自然的加速和减速过渡
-- **深度层级**：清晰的 z-axis 层次结构，增强空间感和交互反馈
-
-## 核心功能
-
-### 智能视频播放
-
-- **HLS 流媒体支持**：基于 [hls.js](https://github.com/video-dev/hls.js/) 原生支持 HLS (.m3u8) 格式，提供流畅的视频播放体验
-- **播放控制**：完整的播放控制功能，包括进度条、音量控制、播放速度调节、全屏模式等
-- **自动跳过片头/片尾**：可设置自动跳过片头和片尾的秒数
-- **自动连播**：支持自动播放下一集
-- **移动端优化**：专门为移动设备优化的播放器界面和双击手势控制
-- **Chromecast 投屏**：支持通过 Google Cast 投屏到电视等设备
-- **画中画 (PiP)**：支持浮动窗口模式播放
-- **全屏模式选择**：支持系统全屏和网页全屏两种模式
-- **直连播放**：播放地址直接交给浏览器 / hls.js，不支持代理模式
-- **卡顿检测**：自动检测播放卡顿并提示
-- **一起看 (VideoTogether)**：播放器页面内置官方网页集成脚本，可直接创建或加入房间与朋友同步观看
-- **键盘快捷键**：空格/K 播放暂停、F 全屏、M 静音、P 画中画、J/L/方向键 快进快退、上下键 音量调节
-
-### 多源并行搜索
-
-- **聚合搜索引擎**：同时在多个视频源中并行搜索，通过 Server-Sent Events (SSE) 实时返回结果
-- **自定义视频源**：支持添加、编辑和管理自定义视频源
-- **个人视频源**：非管理员用户可添加个人视频源，不影响其他用户（数据按用户隔离）
-- **订阅源管理**：支持通过 JSON 链接批量导入和自动更新视频源
-- **JSON 批量导入**：在导入设置中直接粘贴 JSON 数组格式的视频源进行批量添加
-- **智能解析**：统一的解析器系统，自动处理不同源的数据格式
-- **搜索历史**：自动保存搜索历史，支持快速重新搜索
-- **搜索结果显示**：支持逐源显示和合并同名源两种模式（合并模式可展开全部来源）
-- **实时延迟监测**：可选实时显示各源的网络延迟
-- **清晰度标签**：自动解析并显示视频清晰度（4K/蓝光/1080P/720P/HD 等），方便快速分辨源质量
-- **实际分辨率检测**：播放视频时自动检测并显示实际视频分辨率（如 1920x1080），不依赖源标签，显示真实清晰度。分辨率标签 5 秒后自动隐藏，鼠标移动时重新显示
-- **全源分辨率探测**：播放器源列表中所有源均自动通过 m3u8 清单探测实际分辨率，显示精确的分辨率标签（1080P/720P/4K 等），不仅限于当前播放的源
-- **繁体中文搜索**：自动将繁体中文转换为简体中文进行搜索，确保繁体输入也能搜到结果
-- **源过滤**：支持按源筛选搜索结果，源标签支持展开/折叠并记忆状态
-- **多级标签**：搜索结果和播放器中显示源名称和内容类型双重标签
-- **搜索取消**：搜索进行中可随时点击"取消"按钮终止搜索，释放资源
-- **内容类目过滤**：在设置中添加屏蔽关键词（如"伦理"），匹配类目的视频将自动从搜索结果中过滤
-- **搜索性能优化**：服务端支持客户端断开检测（AbortSignal），每源超时保护，总结果数上限，防止内存溢出
-
-### 多线路折叠
-
-- **智能折叠**：播放页面的线路列表默认只显示前 5 个源，避免长列表影响体验
-- **展开/收起**：超过 5 个源时显示"展开更多 (N)"按钮，可随时展开查看全部线路
-- **按类型分组**：当线路包含类型信息时，自动按内容类型分组显示（如"电影"、"电视剧"等）
-- **延迟排序**：线路按网络延迟自动排序，最快的源排在前面
-- **源切换**：在线路列表中快速切换到其他源，支持断点续播
-- **自动切源**：当当前源不可用时，自动切换到延迟最低的可用源
-- **短链接优化**：使用 sessionStorage 缓存源数据，避免 URL 过长导致 CDN 414 错误
-
-### 豆瓣集成
-
-- **电影 & 电视剧分类**：支持在电影和电视剧之间无缝切换，方便查找不同类型的影视资源
-- **详细影视信息**：自动获取豆瓣评分、演员阵容、剧情简介等详细信息
-- **推荐系统**：基于豆瓣数据的相关推荐
-- **自定义标签管理**：支持拖拽排序的标签管理器，自定义首页推荐分类
-- **可点击演员/导演**：播放页面的演员、导演名字可直接点击搜索其他作品
-
-### 个性化推荐
-
-- **基于观看历史**：根据观看历史自动分析偏好，推荐相关影视内容
-- **智能分析**：分析最常观看的类型、演员和地区，生成精准推荐
-- **标签集成**：推荐作为首个标签「为你推荐」出现在标签栏中（需观看 2 部以上作品）
-- **自动加载**：无限滚动自动加载更多推荐内容
-- **独立模式**：普通模式和高级模式的推荐互相独立
-- **缓存优化**：推荐结果缓存 30 分钟，避免重复请求
-
-### 收藏管理
-
-- **一键收藏**：在搜索结果和播放页面快速收藏视频
-- **收藏列表**：独立的收藏侧边栏，快速访问已收藏的视频
-- **容量限制**：每个模式最多 100 条收藏
-- **普通/高级隔离**：普通模式和高级模式的收藏互相独立
-- **数据隔离**：多账户场景下，每个用户拥有独立的收藏数据
-
-### 观看历史管理
-
-- **自动记录**：自动记录观看进度和历史
-- **断点续播**：从上次观看位置继续播放
-- **智能去重**：按标题去重（V2），相同标题不同源的历史合并为一条
-- **容量限制**：最多保存 50 条历史记录
-- **历史管理**：支持删除单条历史或清空全部历史
-- **隐私保护**：所有数据存储在本地，不上传到服务器
-
-### 弹幕 (Danmaku)
-
-- **弹幕聚合**：接入自建弹幕聚合 API（兼容 [danmu_api](https://github.com/huangxd-/danmu_api) 格式），自动匹配当前播放内容
-- **Canvas 渲染**：基于 Canvas 的高性能弹幕渲染，支持数百条弹幕同时滚动，不影响播放交互
-- **滚动/顶部/底部弹幕**：支持三种弹幕类型，自动分配轨道防止重叠
-- **自定义显示**：可调节弹幕透明度（10%-100%）和字号（14/18/20/24/28px）
-- **显示区域**：可选 25%/50%/75%/100% 的屏幕区域显示弹幕
-- **播放器联动**：暂停时弹幕冻结，跳转时自动清除，全屏模式下正常显示
-- **多 API 管理**：每个用户可添加多个弹幕 API，选择当前使用的 API
-- **优先级规则**：用户选择的弹幕 API 优先于系统默认配置
-- **环境变量预设**：可通过 `DANMAKU_API_URL` 或 `NEXT_PUBLIC_DANMAKU_API_URL` 为所有用户预设弹幕 API 地址
-
-### 广告过滤
-
-- **多模式选择**：支持关闭、关键词过滤、智能启发式过滤(Beta)和激进模式
-- **UI 集成**：在播放器设置菜单中直接切换模式，实时生效
-- **自定义关键词**：支持通过环境变量或文件扩展过滤关键词
-- **高性能**：基于流式处理，对播放加载速度几乎无影响
-
-### 响应式设计
-
-- **全端适配**：完美支持桌面、平板、移动设备和 TV/机顶盒
-- **移动优先**：专门的移动端组件和交互设计
-- **触摸优化**：针对触摸屏优化的手势和交互（双击快进/快退、滑动音量控制）
-- **TV 适配**：遥控器方向键导航和大屏 UI 优化
-
-### 主题系统
-
-- **深色/浅色模式**：支持系统级主题切换
-- **动态主题**：基于 CSS Variables 的动态主题系统
-- **无缝过渡**：主题切换时的平滑过渡动画
-
-### PWA 支持
-
-- **可安装应用**：支持将 KVideo 安装为独立应用
-- **Service Worker**：离线缓存和资源预加载
-- **全屏体验**：独立应用模式下的沉浸式体验
-- **配置同步**：iOS Safari 添加到主屏幕后，视频源和设置自动从服务端同步，无需重新配置
-
-### 跨设备配置同步
-
-解决 iOS Safari「添加到主屏幕」后 PWA 与浏览器之间 localStorage 不共享的问题（[#119](https://github.com/KuekHaoYang/KVideo/issues/119)），同时实现多设备配置共享（[#115](https://github.com/KuekHaoYang/KVideo/issues/115)）。
-
-**工作原理：**
-
-1. **服务端存储（Upstash Redis）**：用户配置通过 `/api/user/config` API 存储在 Upstash Redis 中，使用 `user:config:{profileId}` 作为 key。Edge Runtime 兼容，Vercel 可部署。
-2. **自动拉取（Pull）**：应用加载时，`useConfigSync` hook 从服务端拉取配置，与本地 `updatedAt` 时间戳比较——服务端更新时自动合并到本地。
-3. **自动推送（Push）**：本地设置变更后，自动延迟 3 秒推送到服务端（防抖），避免频繁写入。
-4. **同步范围**：视频源 (`sources`)、高级源 (`premiumSources`)、订阅列表 (`subscriptions`)、屏蔽分类 (`blockedCategories`)、排序偏好 (`sortBy`)、语言 (`locale`)。
-5. **数据隔离**：按 `profileId`（SHA-256 哈希）隔离，不同账户互不影响。
-
-**使用前提：**
-
-- 需配置 Upstash Redis 环境变量（`UPSTASH_REDIS_REST_URL` 和 `UPSTASH_REDIS_REST_TOKEN`），与观看历史/收藏同步共用同一 Redis 实例。
-- 未配置 Redis 时，配置同步功能静默降级——应用正常运行，仅本地存储生效。
-
-**典型场景：**
-
-- 电脑浏览器配置了视频源 → 手机打开同一实例 → 自动拉取到相同配置
-- iOS Safari「添加到主屏幕」后打开 PWA → 自动从 Redis 同步配置，无需重新设置
-
-### 无障碍设计
-
-- **键盘导航**：完整的键盘快捷键支持（播放控制、音量、进度等）
-- **ARIA 标签**：符合 WCAG 标准的无障碍实现
-- **语义化 HTML**：使用语义化标签提升可访问性
-
-### 高级模式
-
-- **独立入口**：在浏览器地址栏直接输入 `/premium` 即可进入独立的高级视频专区
-- **内容隔离**：高级内容与普通内容完全物理隔离，互不干扰
-- **专属设置**：拥有独立的内容源管理和功能设置（播放器、显示、弹幕等设置完全独立）
-- **独立推荐**：基于高级模式观看历史的个性化推荐，与普通模式互不影响
-- **分类浏览**：支持模糊匹配合并多源的相同分类标签，提供统一浏览体验
-- **交错排列**：多源结果智能交错排列，平衡各源展示
-
-### TV/大屏适配
-
-- **自动检测**：自动检测 TV 浏览器（Smart TV、Tizen、WebOS、Fire TV 等）
-- **空间导航**：支持遥控器/方向键在页面元素间导航
-- **10 英尺 UI**：TV 模式下自动放大字体、交互元素和间距
-- **焦点高亮**：TV 模式下聚焦元素显示醒目的高亮边框和缩放效果
-- **播放器兼容**：播放器区域不受空间导航干扰，方向键正常控制播放
-
-### 数据管理
-
-- **设置导出/导入**：支持将所有设置导出为 JSON 文件，方便备份和迁移
-- **JSON 批量导入**：支持粘贴 JSON 数组格式的视频源进行批量导入
-- **滚动位置记忆**：退出或刷新页面后，自动恢复到之前的滚动位置
-- **返回顶部**：一键返回页面顶部
-- **数据隔离**：多账户场景下，所有用户数据（历史、收藏、设置、个人源）按 profileId 完全隔离
-
-## 隐私保护
-
-本应用注重用户隐私：
-
-- **本地存储**：所有数据存储在本地浏览器中
-- **无服务器数据**：不收集或上传任何用户数据
-- **自定义源**：用户可自行配置视频源
-- **数据隔离**：多账户场景下，每个用户的数据（历史、收藏、设置、个人源）完全隔离
-- **Profile ID**：基于密码的 SHA-256 哈希生成唯一用户标识，密码不可逆推
-
-## 账户与访问控制
-
-KVideo 现在支持两套认证模式：
-
-- **托管账户模式（推荐）**：配置 `AUTH_SECRET` + Upstash Redis 后，登录改为 **用户名 + 密码**，超级管理员可直接在设置页创建、修改、重置和删除账户。
-- **环境变量模式（兼容旧部署）**：未启用托管账户时，继续使用 `ADMIN_PASSWORD` / `ACCESS_PASSWORD` / `ACCOUNTS` 进行密码登录。
-
-### 方式一：托管账户模式（推荐）
-
-启用条件：
-
-- 配置 `AUTH_SECRET`
-- 配置 `UPSTASH_REDIS_REST_URL`
-- 配置 `UPSTASH_REDIS_REST_TOKEN`
-- （可选）配置 `MANAGED_AUTH_ENABLED=true` 强制优先使用托管账户模式
-
-启用后：
-
-- 主登录页使用 **用户名 + 密码**
-- 服务端使用 HTTP-only 签名会话 Cookie 作为认证真源
-- 超级管理员可在设置页直接管理账户和权限
-- 配置同步、历史、收藏等跨设备数据会按登录账户自动隔离
-
-> **强制优先托管模式**：设置 `MANAGED_AUTH_ENABLED=true` 只会改变认证模式选择，不会跳过 `AUTH_SECRET` 和 Redis 检查。缺少 `AUTH_SECRET`、`UPSTASH_REDIS_REST_URL` 或 `UPSTASH_REDIS_REST_TOKEN` 时，托管账户模式仍不会启用。
-首次启用时，如果 Redis 里还没有账户，会自动使用 `ADMIN_PASSWORD` 和 `ACCOUNTS` 作为引导种子创建首批托管账户。
-
-### 方式二：单管理员密码（环境变量模式）
-
-通过 `ADMIN_PASSWORD` 环境变量设置管理员密码：
-
-```bash
-# Docker
-docker run -d -p 3000:3000 -e ADMIN_PASSWORD=your_password --name kvideo kuekhaoyang/kvideo:latest
-```
-
-登录后自动获得超级管理员权限，可管理所有设置。
-
-> **向后兼容**：`ACCESS_PASSWORD` 环境变量仍然有效，当 `ADMIN_PASSWORD` 未设置时，`ACCESS_PASSWORD` 将作为管理员密码使用。
-
-### 方式三：多账户系统（环境变量模式）
-
-通过 `ACCOUNTS` 环境变量配置多个账户，每个账户拥有独立的数据空间（收藏、历史、设置、个人源等）。
-
-**兼容格式：**
-
-- 旧格式：`密码:名称[:角色[:权限1|权限2|...]]`
-- 新格式：`用户名:密码:名称[:角色[:权限1|权限2|...]]`
-
-多个账户之间用逗号分隔。
-
-- **角色**：`super_admin`（超级管理员）、`admin`（管理员）或 `viewer`（观众，默认）
-- **权限**（可选）：使用 `|` 分隔，为该账户添加其角色之外的额外权限
-
-```bash
-# 基本用法
-docker run -d -p 3000:3000 \
-  -e ACCOUNTS="pass1:张三:admin,pass2:李四:viewer,pass3:王五" \
-  --name kvideo kuekhaoyang/kvideo:latest
-
-# 为观众添加额外权限（如源管理）
-docker run -d -p 3000:3000 \
-  -e ACCOUNTS="pass1:张三:admin,pass2:李四:viewer:source_management" \
-  --name kvideo kuekhaoyang/kvideo:latest
-```
-
-**特点：**
-- 每个账户拥有独立的收藏、历史、设置和个人视频源数据
-- 可同时配置 `ADMIN_PASSWORD`（作为超级管理员入口）
-- 支持为任何角色添加额外的自定义权限
-
-### 角色与权限
-
-| 权限 | 说明 | super_admin | admin | viewer |
-|------|------|:-----------:|:-----:|:------:|
-| `source_management` | 管理系统视频源 | ✓ | - | - |
-| `account_management` | 查看账户列表 | ✓ | - | - |
-| `danmaku_api` | 配置系统弹幕 API | ✓ | - | - |
-| `data_management` | 导出/导入/重置数据 | ✓ | - | - |
-| `player_settings` | 播放器设置 | ✓ | ✓ | - |
-| `danmaku_appearance` | 弹幕外观设置 | ✓ | ✓ | - |
-| `view_settings` | 显示设置 | ✓ | ✓ | ✓ |
-
-> 通过 ACCOUNTS 的第 4 个字段，可以为任何角色添加额外权限。例如让观众管理视频源：`password:name:viewer:source_management`
-
-### 个人视频源与弹幕 API
-
-所有已登录的用户（包括观众）都可以：
-
-- **添加个人视频源**：在设置页面添加自己的视频源，仅对自己可见，不影响其他用户
-- **管理弹幕 API**：添加多个弹幕 API 端点，选择当前使用的 API（优先于系统默认）
-
-这些数据按用户 profileId 隔离存储，切换账户后自动加载对应的个人配置。
-
-> 说明：旧环境变量模式下仍然支持“仅输入密码”登录；托管账户模式下则统一改为“用户名 + 密码”登录。
-
-### 方式四：高级内容独立密码
-
-通过 `PREMIUM_PASSWORD` 环境变量为高级内容（`/premium`）设置独立的访问密码，实现与主密码的分离控制。
-
-适合场景：给家人分享普通密码，但高级内容需要额外密码才能访问。
-
-```bash
-# Docker
-docker run -d -p 3000:3000 \
-  -e ADMIN_PASSWORD="admin123" \
-  -e PREMIUM_PASSWORD="premium456" \
-  --name kvideo kuekhaoyang/kvideo:latest
-```
-
-**特点：**
-- 访问 `/premium` 页面时需输入此专用密码
-- 管理员密码和 admin/super_admin 账号也可以解锁高级内容
-- 密码仅在当前浏览器会话有效，关闭浏览器后需重新输入
-- 不设置此变量时，高级内容无额外密码保护
-
-### 方式五：会话持久化设置
-
-通过 `PERSIST_SESSION` 环境变量控制用户登录后是否在设备上记住会话：
-
-| 变量名 | 选项 | 说明 | 默认值 |
-|--------|------|------|--------|
-| `PERSIST_SESSION` | `true` / `false` | 是否在本地浏览器持久化保存登录状态。设置为 `true` 时，用户只需登录一次，后续访问无需再次登录。 | `true` |
-
-> [!NOTE]
-> 此功能仅在设置了 `ADMIN_PASSWORD`、`ACCESS_PASSWORD` 或 `ACCOUNTS` 时才会生效。
-
-## 站点名称自定义配置
-
-通过环境变量可以自定义站点名称、标题和描述，无需修改源代码。
-
-### 可用环境变量：
-
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `NEXT_PUBLIC_SITE_TITLE` | 浏览器标签页标题 | `KVideo - 视频聚合平台` |
-| `NEXT_PUBLIC_SITE_DESCRIPTION` | 站点描述 | `视频聚合平台` |
-| `NEXT_PUBLIC_SITE_NAME` | 站点头部名称 | `KVideo` |
-
-### 配置示例：
-
-**Vercel 部署：**
-在 Vercel 项目设置中添加环境变量：
-
-- 变量名：`NEXT_PUBLIC_SITE_NAME`
-- 变量值：`我的视频平台`
-
-**本地开发：**
-在项目根目录创建 `.env.local` 文件：
-```env
-NEXT_PUBLIC_SITE_NAME=我的视频平台
-NEXT_PUBLIC_SITE_TITLE=我的视频 - 聚合播放平台
-NEXT_PUBLIC_SITE_DESCRIPTION=专属视频聚合播放平台
-```
-
-> [!NOTE]
-> `NEXT_PUBLIC_SITE_*` 属于构建时变量。直接运行 Docker Hub 的预构建镜像时，`docker run -e NEXT_PUBLIC_SITE_* ...` 不会覆盖已经打包进前端的文案。
-
-## Docker 图标自定义
-
-Docker 预构建镜像支持在运行时替换图标，无需重新构建镜像。该配置会作用于顶部 Logo 和浏览器 favicon；如果你还要同步替换安装后的 PWA 图标，请直接覆盖仓库中的 `public/icon.png` 后重新构建镜像。
-
-### 可用环境变量：
-
-| 变量名 | 说明 |
-|--------|------|
-| `SITE_ICON_FILE` | 从容器内文件路径读取图标，适合 Docker 挂载，优先级高于 `SITE_ICON_URL` |
-| `SITE_ICON_URL` | 直接使用外部 URL 或站内路径作为图标 |
-
-### 配置示例：
-
-**Docker 挂载文件（推荐）：**
-```bash
-docker run -d -p 3000:3000 \
-  -v /path/to/icon.png:/app/custom/icon.png:ro \
-  -e SITE_ICON_FILE=/app/custom/icon.png \
-  --name kvideo kuekhaoyang/kvideo:latest
-```
-
-**Docker 使用 URL：**
-```bash
-docker run -d -p 3000:3000 \
-  -e SITE_ICON_URL="https://example.com/icon.png" \
-  --name kvideo kuekhaoyang/kvideo:latest
-```
-
-**Docker 使用站内路径：**
-```bash
-docker run -d -p 3000:3000 \
-  -e SITE_ICON_URL="/placeholder-poster.svg" \
-  --name kvideo kuekhaoyang/kvideo:latest
-```
-
-## 自动订阅源配置
-
-可以通过环境变量自动配置订阅源，应用启动时会自动加载并设置为自动更新。
-
-支持两种环境变量名：`SUBSCRIPTION_SOURCES`（服务端） 和 `NEXT_PUBLIC_SUBSCRIPTION_SOURCES`（客户端构建时嵌入）。
-
-**格式：** JSON 数组字符串，包含 `name` 和 `url` 字段；或直接提供订阅 URL（逗号分隔多个）。
-
-**示例：**
-
-```bash
-# JSON 格式
-SUBSCRIPTION_SOURCES='[{"name":"每日更新源","url":"https://example.com/api.json"},{"name":"备用源","url":"https://backup.com/api.json"}]'
-
-# 简单 URL 格式
-SUBSCRIPTION_SOURCES='https://example.com/api.json,https://backup.com/api.json'
-```
-
-**Docker 部署：**
-
-```bash
-docker run -d -p 3000:3000 -e SUBSCRIPTION_SOURCES='[{"name":"MySource","url":"..."}]' --name kvideo kuekhaoyang/kvideo:latest
-```
-
-**Vercel 部署：**
-
-在 Vercel 项目设置中添加环境变量：
-- 变量名：`SUBSCRIPTION_SOURCES`
-- 变量值：`[{"name":"...","url":"..."}]`
-
-## 广告过滤关键词配置
-
-通过环境变量自定义广告过滤关键词，用于在 HLS 播放时识别和过滤广告片段。
-
-| 变量名 | 说明 |
-|--------|------|
-| `AD_KEYWORDS` 或 `NEXT_PUBLIC_AD_KEYWORDS` | 广告关键词，逗号或换行分隔 |
-| `AD_KEYWORDS_FILE` | 广告关键词文件路径（适用于 Docker 挂载） |
-
-**示例：**
-
-```bash
-# 环境变量方式
-AD_KEYWORDS="ad,sponsor,preroll,midroll"
-
-# Docker 挂载文件方式
-docker run -d -p 3000:3000 \
-  -v /path/to/keywords.txt:/app/keywords.txt \
-  -e AD_KEYWORDS_FILE=/app/keywords.txt \
-  --name kvideo kuekhaoyang/kvideo:latest
-```
-
-## 弹幕 API 配置
-
-通过环境变量预设弹幕聚合 API 地址，用户无需手动配置即可使用弹幕功能。
-
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `DANMAKU_API_URL` / `NEXT_PUBLIC_DANMAKU_API_URL` | 弹幕聚合 API 地址 | - |
-
-需要自建或使用兼容 [danmu_api](https://github.com/huangxd-/danmu_api) 格式的弹幕聚合服务。
-
-**示例：**
-
-```bash
-# Docker
-docker run -d -p 3000:3000 \
-  -e NEXT_PUBLIC_DANMAKU_API_URL="https://your-danmu-api.example.com" \
-  --name kvideo kuekhaoyang/kvideo:latest
-```
-
-设置后用户在播放器菜单中即可直接开启弹幕，也可在设置页面中覆盖此地址。
-
-> 用户还可以在设置页面的「弹幕 API」区域添加多个 API 端点并选择当前使用的，用户选择的 API 优先于系统默认配置。
-
-## 一起看 (VideoTogether) 配置
-
-播放器页面支持集成 [VideoTogether](https://videotogether.github.io/zh-cn/guide/website.html) 官方网页脚本。应用内默认关闭，用户可在设置页手动开启；开启后仅在播放器页面显示，并默认折叠为小图标。
-
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `VIDEOTOGETHER_ENABLED` | 设为 `false` 时彻底禁用一起看集成（即使用户在设置页开启也不会加载） | `true` |
-| `VIDEOTOGETHER_SCRIPT_URL` | 自定义 VideoTogether 脚本地址，适合自托管或替换 CDN | `https://fastly.jsdelivr.net/gh/VideoTogether/VideoTogether@latest/release/extension.website.user.js` |
-| `VIDEOTOGETHER_SETTING_URL` | 自定义 VideoTogether 设置页地址，对应官方 `window.videoTogetherWebsiteSettingUrl` 接口 | - |
-
-**示例：**
-
-```bash
-# Docker
-docker run -d -p 3000:3000 \
-  -e VIDEOTOGETHER_SCRIPT_URL="https://your-domain.example.com/extension.website.user.js" \
-  -e VIDEOTOGETHER_SETTING_URL="https://your-domain.example.com/videotogether-settings.html" \
-  --name kvideo kuekhaoyang/kvideo:latest
-```
-
-> 如果部署环境无法稳定访问 jsDelivr，直接自托管 `extension.website.user.js` 并通过 `VIDEOTOGETHER_SCRIPT_URL` 指向自己的地址即可。
-
-## 搜索结果显示配置
-
-搜索结果默认逐源显示。开启“合并同名源”后，`vod_name` 相同的结果会合并为一张卡，卡片可展开全部来源。
-
-`MERGE_SOURCES` 用于在启动时强制把本地设置写回合并同名源模式，适合需要覆盖已有用户设置的部署。
-
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `MERGE_SOURCES` | 启用合并同名源（`true` 或 `1`） | - |
-| `NEXT_PUBLIC_MERGE_SOURCES` | 启用合并同名源（客户端） | - |
-
-**示例：**
-
-```bash
-MERGE_SOURCES=true
-```
-
-设置后会在启动时强制切换到合并同名源模式，覆盖本地已保存的逐源显示设置。用户仍可在设置页面中手动切换显示模式。
-
-## 自定义端口
-
-通过 `PORT` 环境变量自定义应用端口，默认为 3000。
-
-```bash
-# 开发模式
-PORT=8080 npm run dev
-
-# 生产模式
-PORT=8080 npm run start
-
-# Docker
-docker run -e PORT=8080 -p 8080:8080 --name kvideo kuekhaoyang/kvideo:latest
-```
-
-## 局域网 IP 访问
-
-通过 `ALLOW_LAN_ACCESS` 环境变量控制本机开发或传统 Node.js 自托管时是否允许同一局域网设备直接访问当前设备 IP。
-
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `ALLOW_LAN_ACCESS` | 设为 `true` / `1` / `yes` / `on` 时，`npm run dev` 和 `npm run start` 会绑定 `0.0.0.0`，并在开发模式下放行常见内网 IPv4 来源；未开启时默认只绑定 `localhost` | `false` |
-| `NEXT_PUBLIC_ALLOW_LAN_ACCESS` | `ALLOW_LAN_ACCESS` 的构建时兼容名称；优先使用 `ALLOW_LAN_ACCESS` | `false` |
-| `LAN_ALLOWED_DEV_ORIGINS` | 追加 Next.js 开发模式允许访问 dev 资源的主机名或通配符，逗号、空格或换行分隔 | - |
-
-**示例：**
-
-```bash
-# 开发模式允许同局域网设备访问
-ALLOW_LAN_ACCESS=true npm run dev
-
-# 传统 Node.js 生产模式允许同局域网设备访问
-ALLOW_LAN_ACCESS=true npm run start
-
-# 追加自定义开发来源；Next.js 需要主机名，不要填写路径
-ALLOW_LAN_ACCESS=true LAN_ALLOWED_DEV_ORIGINS="kvideo.lan,192.168.50.10" npm run dev
-```
-
-开启后访问地址通常是 `http://<当前设备内网 IP>:3000`。如果仍然无法访问，优先检查系统防火墙、路由器客户端隔离、端口映射、反向代理监听地址以及实际运行端口；这些不是 KVideo 前端代码可以绕过的问题。Docker 镜像已经在容器内绑定 `0.0.0.0`，是否能从局域网访问主要取决于 `-p` 端口映射和宿主机网络策略。
-
-## 自定义源 JSON 格式
-
-如果你想创建自己的订阅源或批量导入源，可以使用以下 JSON 格式。
-
-**基本结构：**
-
-可以是单个对象数组，也可以是包含 `sources` 或 `list` 字段的对象。
-
-**源对象字段说明：**
-
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `id` | string | 否 | 唯一标识符，自动生成或自定义 |
-| `name` | string | 是 | 显示名称 |
-| `baseUrl` | string | 是 | API 地址 (例如: `https://example.com/api.php/provide/vod`) |
-| `searchPath` | string | 否 | 搜索路径，默认 `/provide/vod` |
-| `detailPath` | string | 否 | 详情路径，默认 `/provide/vod` |
-| `group` | string | 否 | 分组，可选值: `"normal"` (默认) 或 `"premium"` |
-| `enabled` | boolean | 否 | 是否启用，默认为 `true` |
-| `priority` | number | 否 | 优先级，数字越小优先级越高，默认为 1 |
-| `headers` | object | 否 | 自定义请求头 |
-
-**示例 JSON：**
-
-```json
-[
-  {
-    "id": "my_source_1",
-    "name": "我的精选源",
-    "baseUrl": "https://api.example.com/vod",
-    "group": "normal",
-    "priority": 1
-  },
-  {
-    "id": "premium_source_1",
-    "name": "特殊资源",
-    "baseUrl": "https://api.premium-source.com/vod",
-    "group": "premium",
-    "enabled": true
-  }
-]
-```
-
-### JSON 批量导入
-
-除了通过订阅 URL 或文件导入外，还可以在导入设置中选择 **JSON** 标签页，直接粘贴上述格式的 JSON 数组进行批量导入。系统会解析、预览数量后再确认导入。
-
-### 重要的区别说明：订阅源 vs 视频源
-
-**这是一个常见的误区，请仔细阅读：**
-
-- **视频源 (Source)**：
-  - 指向单个 CMS/App API 接口
-  - 例如：`https://api.example.com/vod`
-  - 这种链接**不能**直接作为"订阅"添加
-  - 只能在"自定义源管理"中作为单个源添加
-
-- **订阅源 (Subscription)**：
-  - 指向一个 **JSON 文件**（如上面的示例）的 URL
-  - 这个 JSON 文件里包含了一个或多个视频源的列表
-  - 例如：`https://mysite.com/kvideo-sources.json`
-  - 这是一个**配置文件**的链接，不是视频 API 的链接
-  - 只有这种返回 JSON 列表的链接才能在"订阅管理"中添加
-
-> **简单来说**：如果你只有一个 m3u8 或 API 接口地址，请去"自定义源"添加。如果你有一个包含多个源的 JSON 文件链接，请去"订阅管理"添加。
-
-## 全部环境变量参考
-
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `AUTH_SECRET` | 托管账户模式的会话签名密钥；启用 Redis 托管账户时必填 | - |
-| `MANAGED_AUTH_ENABLED` | 设为 `true` 时强制优先使用托管账户模式；仍要求 `AUTH_SECRET` 和 Upstash Redis 配置完整 | - |
-| `ADMIN_PASSWORD` | 管理员密码；环境变量模式直接生效，也可作为托管模式首次引导的超级管理员种子 | - |
-| `ACCESS_PASSWORD` | 访问密码（向后兼容，等同于 `ADMIN_PASSWORD`） | - |
-| `ACCOUNTS` | 多账户配置；支持 `密码:名称[:角色[:权限1\|权限2]]` 和 `用户名:密码:名称[:角色[:权限1\|权限2]]` 两种格式 | - |
-| `PREMIUM_PASSWORD` | 高级内容独立密码，访问 `/premium` 时需输入 | - |
-| `PERSIST_SESSION` | 是否持久化登录会话 | `true` |
-| `PORT` | 自定义应用端口 | `3000` |
-| `ALLOW_LAN_ACCESS` / `NEXT_PUBLIC_ALLOW_LAN_ACCESS` | 允许同局域网设备通过当前设备 IP 访问本机开发或传统 Node.js 自托管服务 | `false` |
-| `LAN_ALLOWED_DEV_ORIGINS` / `NEXT_PUBLIC_LAN_ALLOWED_DEV_ORIGINS` | 追加 Next.js 开发模式允许访问 dev 资源的主机名或通配符 | - |
-| `NEXT_PUBLIC_SITE_TITLE` | 浏览器标签页标题 | `KVideo - 视频聚合平台` |
-| `NEXT_PUBLIC_SITE_DESCRIPTION` | 站点描述 | `视频聚合平台` |
-| `NEXT_PUBLIC_SITE_NAME` | 站点头部名称 | `KVideo` |
-| `SITE_ICON_FILE` | Docker 运行时图标文件路径（优先于 `SITE_ICON_URL`） | - |
-| `SITE_ICON_URL` | Docker 运行时图标 URL 或站内路径 | - |
-| `SUBSCRIPTION_SOURCES` | 自动订阅源配置（服务端） | - |
-| `NEXT_PUBLIC_SUBSCRIPTION_SOURCES` | 自动订阅源配置（客户端） | - |
-| `MERGE_SOURCES` / `NEXT_PUBLIC_MERGE_SOURCES` | 启动时强制启用合并同名源（`true`/`1`） | - |
-| `AD_KEYWORDS` / `NEXT_PUBLIC_AD_KEYWORDS` | 广告过滤关键词 | - |
-| `AD_KEYWORDS_FILE` | 广告关键词文件路径 | - |
-| `DANMAKU_API_URL` / `NEXT_PUBLIC_DANMAKU_API_URL` | 弹幕聚合 API 地址 | - |
-| `VIDEOTOGETHER_ENABLED` | 是否允许 VideoTogether 一起看集成（`false` 时关闭） | `true` |
-| `VIDEOTOGETHER_SCRIPT_URL` | VideoTogether 脚本地址 | `https://fastly.jsdelivr.net/gh/VideoTogether/VideoTogether@latest/release/extension.website.user.js` |
-| `VIDEOTOGETHER_SETTING_URL` | VideoTogether 设置页地址 | - |
-| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL（跨设备同步：配置、历史、收藏） | - |
-| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST Token | - |
-
-## 技术栈
-
-### 前端核心
-
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| **[Next.js](https://nextjs.org/)** | 16.1.7 | React 框架，使用 App Router |
-| **[React](https://react.dev/)** | 19.2.4 | UI 组件库 |
-| **[TypeScript](https://www.typescriptlang.org/)** | 5.x | 类型安全的 JavaScript |
-| **[Tailwind CSS](https://tailwindcss.com/)** | 4.x | 实用优先的 CSS 框架 |
-| **[Zustand](https://github.com/pmndrs/zustand)** | 5.x | 轻量级状态管理 |
-| **[hls.js](https://github.com/video-dev/hls.js/)** | 1.x | HLS 流媒体播放引擎 |
-| **[Lucide React](https://lucide.dev/)** | 0.x | 图标库 |
-| **[@dnd-kit](https://dndkit.com/)** | 6.x | 拖拽交互（标签排序等） |
-
-### 开发工具
-
-- **ESLint 10**：代码质量检查
-- **PostCSS 8**：CSS 处理器
-- **Vercel Analytics**：仅在 Vercel 部署中启用的性能监控和分析
-
-### 架构特点
-
-- **App Router**：Next.js 的新路由系统，支持服务端组件和流式渲染
-- **API Routes**：内置 API 端点，处理认证、搜索、详情、豆瓣数据与弹幕聚合
-- **Server-Sent Events**：搜索 API 使用 SSE 流式返回实时结果
-- **Service Worker**：PWA 支持和资源缓存
-- **Server Components**：优化首屏加载性能
-- **Client Components**：复杂交互和状态管理
-- **Edge Runtime**：API 路由运行在 Edge Runtime 上，提供更低延迟
-- **Profile-based Storage**：所有用户数据按 profileId（SHA-256 哈希）隔离存储
-
-## 部署合规说明
-
-Issue [#127](https://github.com/KuekHaoYang/KVideo/issues/127) 之后，仓库的公开部署策略做了调整，目的只有一个：避免把这个项目继续包装成“GitHub 账号直连第三方平台的一键导入仓库”。
-
-- 不再推荐任何 `Deploy with Vercel`、`Connect GitHub`、`Fork 后直接授权第三方读取仓库` 这一类 GitHub 直连导入流程。
-- 所有部署统一强制合规模式：无外部媒体代理、无热链转发、无 IPTV 中继、无 IPTV 页面，只保留直连播放路径。
-- 需要代理或 IPTV 的场景不再支持。
-- 无论部署到哪里，都只应接入你有权使用、且允许当前部署环境访问的内容来源。
-- 相关政策请直接阅读官方原文：
-  - [GitHub Terms of Service](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service)
-  - [GitHub Acceptable Use Policies](https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies)
-  - [Vercel: why running another CDN / proxy on top of Vercel is not recommended](https://vercel.com/guides/why-running-another-cdn-on-top-of-vercel-is-not-recommended)
-
-## 快速部署
-
-### 部署到自己的服务器
-
-#### 选项 1：Docker 部署（推荐）
-
-**从 Docker Hub 拉取（最简单）：**
-
-```bash
-# 拉取最新版本
-docker pull kuekhaoyang/kvideo:latest
-docker run -d -p 3000:3000 --name kvideo kuekhaoyang/kvideo:latest
-```
-
-应用将在 `http://localhost:3000` 启动。
-
-> **多架构支持**：镜像支持 2 种主流平台架构：
-> - `linux/amd64` - Intel/AMD 64位（大多数服务器、PC、Intel Mac）
-> - `linux/arm64` - ARM 64位（Apple Silicon Mac、AWS Graviton、树莓派 4/5）
-
-**自己构建镜像：**
+本地开发需 Node.js 20+：
 
 ```bash
 git clone https://github.com/KuekHaoYang/KVideo.git
 cd KVideo
-docker build -t kvideo .
-docker run -d -p 3000:3000 --name kvideo kvideo
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-**使用 Docker Compose：**
+生产构建使用 `npm run build && npm start`。更多命令参见 [09 开发工作流](docs/09-development-workflow.md)。
+
+使用 Docker 快速启动：
 
 ```bash
-docker-compose up -d
+docker run -d -p 3000:3000 --name kvideo kuekhaoyang/kvideo:latest
+# 打开 http://localhost:3000
 ```
 
-**完整配置示例（Docker）：**
+首次启动不包含任何视频源，需在「设置 → 视频源管理」中添加，或在部署时通过环境变量预设（见[环境变量](#环境变量)）。
+
+---
+
+## 功能概览
+
+- **多源并行搜索**。多个视频源同时检索，结果通过 SSE 实时返回；支持自定义源、订阅源批量导入、同名源合并、繁体转简体、清晰度标签与实测分辨率标签。
+- **HLS 直连播放**。基于 hls.js 与原生 HLS，支持进度控制、倍速、音量、断点续播、自动切源、跳过片头尾、画中画、全屏、投屏、弹幕与广告过滤。快捷键，`空格/K` 播放暂停、`F` 全屏、`M` 静音、`P` 画中画、`J/L/←/→` 快进快退、`↑/↓` 音量。
+- **豆瓣数据与推荐**。提供影视详情、评分、演职员及相关推荐；基于观看历史自动生成「为你推荐」。
+- **收藏与观看历史**。数据存储在本地，支持断点续播与容量限制，可导出为 JSON 备份。
+- **账户与数据隔离**。提供公开访问、环境变量密码、托管账户三种模式；登录后历史、收藏、个人源等数据按账户隔离（见[认证与账户](#认证与账户)）。
+- **跨设备同步**。配置 Upstash Redis 后，配置、历史、收藏可在设备间同步，并解决 iOS「添加到主屏幕」后 localStorage 不共享的问题；未配置时仅使用本地存储，不影响其他功能。
+- **PWA 与响应式**。支持安装为独立应用；适配桌面、平板、手机与 TV 机顶盒，支持键盘导航与遥控器方向键导航。
+- **高级模式**。访问 `/premium` 进入独立专区，内容、设置、推荐与普通模式完全隔离，可设置独立密码。
+
+完整功能清单参见 [02 功能与路由](docs/02-features-and-routes.md)。
+
+---
+
+## 认证与账户
+
+登录模式共三种，由服务端按优先级自动判定，通常无需手动指定。仅 `MANAGED_AUTH_ENABLED` 需要显式配置。
+
+| 模式 | 触发条件 | 登录方式 | 适用场景 |
+| --- | --- | --- | --- |
+| **公开访问** | 未配置任何密码 / 账户 | 无需登录 | 自用、可信内网 |
+| **环境变量密码** | 配置了 `ADMIN_PASSWORD` / `ACCESS_PASSWORD` / `ACCOUNTS`，但未启用托管账户 | 仅密码，或用户名 + 密码 | 简单自托管、兼容旧部署 |
+| **托管账户** | 配置了 `AUTH_SECRET` + Upstash Redis，且 Redis 中已有账户；或 `MANAGED_AUTH_ENABLED=true` | 用户名 + 密码 | 多用户、需要在设置页管理账户 |
+
+判定顺序为 **托管账户 > 环境变量密码 > 公开访问**。需注意，仅设置 `MANAGED_AUTH_ENABLED=true` 而缺少 `AUTH_SECRET` 或 Redis 时，托管模式不会启用，将退回环境变量密码模式。
+
+### 环境变量密码模式
+
+以下三种方式任选其一：
+
+| 变量 | 写法 | 效果 |
+| --- | --- | --- |
+| `ADMIN_PASSWORD` | 单个密码 | 登录后为超级管理员 |
+| `ACCESS_PASSWORD` | 单个密码 | 向后兼容，等同 `ADMIN_PASSWORD`；两者都在时以 `ADMIN_PASSWORD` 为准 |
+| `ACCOUNTS` | 多个账户，逗号分隔 | 每个账户独立数据空间 |
+
+`ACCOUNTS` 支持两种格式：
+
+```text
+密码:名称[:角色[:权限1|权限2]]
+用户名:密码:名称[:角色[:权限1|权限2]]
+```
+
+解析规则如下：
+
+- 2 段 = `密码:名称`；3 段且第 3 段是角色 = `密码:名称:角色`，否则按 `用户名:密码:名称` 解析；4 段 = `密码:名称:角色:权限`；5 段 = `用户名:密码:名称:角色:权限`。
+- 角色有 `super_admin`（超管）、`admin`（管理员）、`viewer`（观众，默认）。
+- 权限用 `|` 分隔，在角色默认权限之上追加；用户名自动转小写并去重。
+
+```bash
+# 单管理员
+ADMIN_PASSWORD="your_password"
+
+# 多账户，旧格式，仅使用密码登录
+ACCOUNTS="pass1:张三:admin,pass2:李四:viewer,pass3:王五"
+
+# 多账户，新格式，用户名 + 密码，并为观众追加源管理权限
+ACCOUNTS="user1:pass1:张三:admin,user2:pass2:李四:viewer:source_management"
+```
+
+> 此模式下账户信息仅保存在环境变量中，不写入 Redis。`profileId` 由密码哈希生成，因此**修改密码等同于切换账户**，原有数据不会保留。支持以用户名与密码同时登录。
+
+### 托管账户模式
+
+启用条件（缺一不可）：
+
+- 配置 `AUTH_SECRET`（会话签名密钥）；
+- 配置 `UPSTASH_REDIS_REST_URL` 和 `UPSTASH_REDIS_REST_TOKEN`；
+- Redis 中已有账户，或设置 `MANAGED_AUTH_ENABLED=true` 强制启用。
+
+启用后：
+
+- 主登录页改为**用户名 + 密码**，服务端以 HTTP-only 签名 Cookie 作为认证凭据；
+- 超级管理员可在设置页创建、修改、重置、删除账户并分配权限；
+- 配置同步、历史、收藏等跨设备数据按登录账户自动隔离；
+- 首次启用时若 Redis 中无账户，将以 `ADMIN_PASSWORD` 创建 `admin` 超级管理员，并依据 `ACCOUNTS` 创建其余账户作为引导种子。账户密码采用 PBKDF2-SHA256 加盐存储，不可逆向推导。
+
+### 角色与权限
+
+| 权限 | 控制内容 | super_admin | admin | viewer |
+| --- | --- | :---: | :---: | :---: |
+| `source_management` | 全局视频源管理 | ✓ | — | — |
+| `account_management` | 账户管理入口 | ✓ | — | — |
+| `danmaku_api` | 全局弹幕 API 设置 | ✓ | — | — |
+| `data_management` | 导入 / 导出 / 清除数据 | ✓ | — | — |
+| `player_settings` | 播放器设置区 | ✓ | ✓ | — |
+| `danmaku_appearance` | 弹幕外观 | ✓ | ✓ | — |
+| `view_settings` | 显示设置 | ✓ | ✓ | ✓ |
+
+自定义权限与角色默认权限取并集，可通过 `ACCOUNTS` 的第 4 或第 5 字段追加。请注意，客户端权限仅用于控制界面显示；服务端数据接口独立校验，账户管理接口仅限 `super_admin` 访问。
+
+### 独立配置项（非登录模式）
+
+| 变量 | 作用 | 默认值 |
+| --- | --- | --- |
+| `PREMIUM_PASSWORD` | `/premium` 高级内容的独立密码。未设置时无额外保护；管理员密码及 admin/super_admin 账户亦可解锁。仅在当前浏览器会话内有效。 | — |
+| `PERSIST_SESSION` | 是否持久化登录状态（`true`/`false`，会话有效期 30 天）。仅在配置登录密码或账户时生效。 | `true` |
+
+### 数据隔离范围
+
+登录用户的**观看历史、收藏、搜索历史、个人视频源、个人弹幕 API** 按账户（`profileId`）隔离，切换账户后自动加载对应数据。以下数据**不按账户隔离**，同一浏览器内所有账户共享：全局设置、高级模式设置、搜索缓存、播放器音量与倍速等。若登录或退出后个人数据未同步切换，刷新页面即可。
+
+详见 [06 认证、存储与同步](docs/06-auth-storage-sync.md)。
+
+---
+
+## 环境变量
+
+### 配置原则
+
+1. **`NEXT_PUBLIC_*` 为构建时内联变量**。在 `next build` 阶段写入前端代码，运行时修改（包括 `docker run -e`）不会生效。如需调整品牌文案等配置，必须重新构建，或覆盖仓库文件后自行构建镜像。
+2. **其余变量为服务端运行时变量**。可在启动容器或进程时通过环境变量注入，无需重新构建。部分变量同时提供 `NEXT_PUBLIC_*` 别名以兼容旧部署，**建议优先使用不带前缀的版本**。
+3. **托管账户与跨设备同步依赖 Upstash Redis**。未配置 Redis 时应用正常运行，仅账户管理与云同步功能不可用。
+
+### 变量总表
+
+下表列出常用变量。开发及内部变量未收录，完整清单参见 [08 部署与运维](docs/08-deployment-and-ops.md)。
+
+**认证与账户**
+
+| 变量 | 说明 | 生效时机 | 默认值 |
+| --- | --- | --- | --- |
+| `AUTH_SECRET` | 托管账户会话签名密钥，托管模式必填 | 运行时 | — |
+| `MANAGED_AUTH_ENABLED` | `true` 强制优先托管账户模式（仍需 `AUTH_SECRET` + Redis） | 运行时 | — |
+| `ADMIN_PASSWORD` | 管理员密码 / 托管模式超级管理员引导种子 | 运行时 | — |
+| `ACCESS_PASSWORD` | 兼容旧部署，等同 `ADMIN_PASSWORD` | 运行时 | — |
+| `ACCOUNTS` | 多账户配置，逗号分隔 | 运行时 | — |
+| `PREMIUM_PASSWORD` | 高级内容独立密码 | 运行时 | — |
+| `PERSIST_SESSION` | 是否持久化登录（`true`/`false`） | 运行时 | `true` |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL（账户存储与云同步） | 运行时 | — |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST Token | 运行时 | — |
+
+**服务与网络**
+
+| 变量 | 说明 | 生效时机 | 默认值 |
+| --- | --- | --- | --- |
+| `PORT` | 应用端口 | 运行时 | `3000` |
+| `ALLOW_LAN_ACCESS` / `NEXT_PUBLIC_ALLOW_LAN_ACCESS` | `true`/`1`/`yes`/`on` 时监听 `0.0.0.0` 并放行开发来源 | 运行时 / 构建时 | `false` |
+| `LAN_ALLOWED_DEV_ORIGINS` / `NEXT_PUBLIC_LAN_ALLOWED_DEV_ORIGINS` | 追加允许访问 dev 资源的主机名或通配符，逗号/空格/换行分隔 | 运行时 / 构建时 | — |
+
+**站点品牌**
+
+| 变量 | 说明 | 生效时机 | 默认值 |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_SITE_TITLE` | 浏览器标签页标题 | 构建时 | `KVideo - 视频聚合平台` |
+| `NEXT_PUBLIC_SITE_DESCRIPTION` | 站点描述 | 构建时 | `视频聚合平台` |
+| `NEXT_PUBLIC_SITE_NAME` | 站点头部名称 | 构建时 | `KVideo` |
+| `SITE_ICON_FILE` | Docker 运行时从容器文件路径读取图标，优先于 URL | 运行时 | — |
+| `SITE_ICON_URL` / `NEXT_PUBLIC_SITE_ICON_URL` | 图标 URL 或站内路径 | 运行时 / 构建时 | — |
+
+> 图标查找顺序为 `SITE_ICON_URL`、`SITE_ICON_FILE`、`/icon.png`。该配置作用于顶部 Logo 与 favicon；安装后的 PWA 图标不受影响，如需同步替换，需覆盖 `public/icon.png` 后重新构建镜像。
+
+**内容源与功能**
+
+| 变量 | 说明 | 生效时机 | 默认值 |
+| --- | --- | --- | --- |
+| `SUBSCRIPTION_SOURCES` / `NEXT_PUBLIC_SUBSCRIPTION_SOURCES` | 自动订阅源，JSON 数组或逗号分隔的 URL | 运行时 / 构建时 | — |
+| `MERGE_SOURCES` / `NEXT_PUBLIC_MERGE_SOURCES` | `true`/`1` 启动时强制开启合并同名源 | 运行时 / 构建时 | — |
+| `AD_KEYWORDS` / `NEXT_PUBLIC_AD_KEYWORDS` | 广告过滤关键词，逗号或换行分隔 | 运行时 / 构建时 | — |
+| `AD_KEYWORDS_FILE` | 广告关键词文件路径（Docker 挂载） | 运行时 | — |
+| `DANMAKU_API_URL` / `NEXT_PUBLIC_DANMAKU_API_URL` | 弹幕聚合 API 地址预设 | 运行时 / 构建时 | — |
+| `VIDEOTOGETHER_ENABLED` | `false` 时彻底禁用「一起看」集成 | 运行时 | `true` |
+| `VIDEOTOGETHER_SCRIPT_URL` | 一起看脚本地址（自托管时可替换） | 运行时 | jsDelivr 官方地址 |
+| `VIDEOTOGETHER_SETTING_URL` | 一起看设置页地址 | 运行时 | — |
+
+### 配置示例
+
+本地开发需在项目根目录创建 `.env.local`：
+
+```env
+# 认证（可选，不配置即公开访问）
+ADMIN_PASSWORD=your_password
+# AUTH_SECRET=replace-with-a-long-random-string
+# UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
+# UPSTASH_REDIS_REST_TOKEN=xxx
+
+# 站点品牌（构建时生效，改后需重启 dev 或重新构建）
+NEXT_PUBLIC_SITE_NAME=我的视频平台
+NEXT_PUBLIC_SITE_TITLE=我的视频 - 聚合播放平台
+NEXT_PUBLIC_SITE_DESCRIPTION=专属视频聚合播放平台
+
+# 预设功能（可选）
+NEXT_PUBLIC_DANMAKU_API_URL=https://danmaku.example.com
+SUBSCRIPTION_SOURCES='[{"name":"默认源","url":"https://example.com/sources.json"}]'
+```
+
+Docker 部署通过运行时变量配置：
 
 ```bash
 docker run -d -p 3000:3000 \
-  -e ADMIN_PASSWORD="admin123" \
-  -e PREMIUM_PASSWORD="premium456" \
+  -e ADMIN_PASSWORD="your_password" \
+  -e PREMIUM_PASSWORD="premium_password" \
   -e ACCOUNTS="user1:用户一:admin,user2:用户二:viewer:source_management" \
-  -e NEXT_PUBLIC_SITE_NAME="我的视频" \
-  -e NEXT_PUBLIC_DANMAKU_API_URL="https://danmaku.example.com" \
+  -e SITE_ICON_URL="https://example.com/icon.png" \
   -e SUBSCRIPTION_SOURCES='[{"name":"默认源","url":"https://example.com/sources.json"}]' \
   -e MERGE_SOURCES=true \
   --name kvideo kuekhaoyang/kvideo:latest
 ```
 
-#### 选项 2：传统 Node.js 部署
+**订阅源格式**。`SUBSCRIPTION_SOURCES` 接受 JSON 数组（包含 `name` 与 `url` 字段），或直接提供订阅 URL，多个 URL 以逗号分隔。需区分两个概念，**订阅源**是返回视频源列表的 JSON 文件链接，**视频源**是单个 CMS/API 接口地址，后者需通过「设置 → 视频源管理」添加。源 JSON 的字段格式参见 [03 搜索与视频源](docs/03-search-and-sources.md)。
+
+---
+
+## 部署与更新
+
+### 部署合规说明
+
+自 [Issue #127](https://github.com/KuekHaoYang/KVideo/issues/127) 起，公开部署策略调整如下：
+
+- 不再推荐 GitHub 直连导入流程，包括 `Deploy with Vercel`、`Connect GitHub`、Fork 后授权第三方读取仓库等。
+- 所有部署统一采用强制合规模式，仅保留直连播放路径，不提供媒体代理、热链转发、IPTV 中继及 IPTV 页面。
+- 仅可接入有权使用且允许当前部署环境访问的内容来源。依赖代理或 IPTV 的场景不再支持。
+- 相关规则参见 [GitHub ToS](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service)、[GitHub AUP](https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies)、[Vercel 关于 CDN/代理的说明](https://vercel.com/guides/why-running-another-cdn-on-top-of-vercel-is-not-recommended)。
+
+### Docker（推荐）
 
 ```bash
-# 1. 克隆仓库
-git clone https://github.com/KuekHaoYang/KVideo.git
-cd KVideo
-
-# 2. 安装依赖
-npm install
-
-# 3. 构建项目
-npm run build
-
-# 4. 启动生产服务器
-npm start
-```
-
-应用将在 `http://localhost:3000` 启动。
-
-同一局域网设备需要直接访问当前设备 IP 时，使用 `ALLOW_LAN_ACCESS=true npm run start`，并确认系统防火墙允许入站访问对应端口。
-
-#### 选项 3：Vercel 托管部署
-
-适用于只需要搜索、账户、设置、直连播放等基础能力的场景。
-
-1. **只从本地工作副本部署**：不要使用 GitHub 一键导入、Fork 后导入、Connect GitHub 读取仓库等流程。
-2. **Vercel**：使用本地 CLI 部署现有项目，参考官方文档：[Import an existing project](https://vercel.com/docs/getting-started-with-vercel/import)。
-3. **功能限制**：所有部署都只允许直连播放；请仅使用允许浏览器直连、允许当前来源访问且具备合法授权的内容源。
-
-## 如何更新
-
-### Vercel 部署
-
-不要依赖 GitHub 仓库自动导入。请在本地工作副本完成更新后，使用 Vercel CLI 重新发布当前目录。
-
-### Docker 部署
-
-当有新版本发布时：
-
-```bash
-# 停止并删除旧容器
-docker stop kvideo
-docker rm kvideo
-
-# 拉取最新镜像
+# 拉取预构建镜像，支持 linux/amd64 与 linux/arm64
 docker pull kuekhaoyang/kvideo:latest
-
-# 运行新容器
 docker run -d -p 3000:3000 --name kvideo kuekhaoyang/kvideo:latest
+
+# 或使用 docker-compose
+docker-compose up -d
+
+# 自行构建
+git clone https://github.com/KuekHaoYang/KVideo.git && cd KVideo
+docker build -t kvideo . && docker run -d -p 3000:3000 --name kvideo kvideo
 ```
 
-### Node.js 部署
+### 传统 Node.js
 
 ```bash
-cd KVideo
-git pull origin main
+git clone https://github.com/KuekHaoYang/KVideo.git && cd KVideo
 npm install
 npm run build
 npm start
 ```
 
-> **自动化部署**：本项目使用 GitHub Actions 自动构建和发布 Docker 镜像。每次代码推送到 main 分支时，会自动构建多架构镜像并推送到 Docker Hub。
+如需局域网设备通过本机 IP 访问，使用 `ALLOW_LAN_ACCESS=true npm run start`，并确认防火墙已放行对应端口。Docker 镜像在容器内监听 `0.0.0.0`，能否从局域网访问取决于 `-p` 端口映射与宿主机网络策略。
+
+### Vercel
+
+仅从**本地工作副本**部署，使用 Vercel CLI，不使用 GitHub 一键导入或 Connect GitHub 流程。适用于仅需搜索、账户、设置与直连播放的场景。详见 [Vercel 导入文档](https://vercel.com/docs/getting-started-with-vercel/import)。
+
+### 更新
+
+```bash
+# Docker
+docker stop kvideo && docker rm kvideo
+docker pull kuekhaoyang/kvideo:latest
+docker run -d -p 3000:3000 --name kvideo kuekhaoyang/kvideo:latest
+
+# Node.js
+cd KVideo && git pull origin main
+npm install && npm run build && npm start
+```
+
+Vercel 部署需在本地工作副本通过 CLI 重新发布，不依赖仓库自动导入。仓库在代码推送至 main 分支后，由 GitHub Actions 自动构建并推送多架构镜像至 Docker Hub。
+
+---
 
 ## 常见问题
 
-### IPv6 环境下 HTTPS 访问视频无法播放
+**浏览器版本要求？** Chrome / Edge 130+、Safari 17.5+、Firefox 121+、iOS/iPadOS 17.5+。低于基线版本时，应用将显示静态提示页且不加载主程序。Chromium 基线设为 130 是为了原生支持 `light-dark()` 主题色。
 
-如果你的网络使用 IPv6 访问，且通过路由器端口映射（如 20443 → 443），请确保：
-- 反向代理（如 Caddy/Nginx）正确监听 IPv6 地址
-- 路由器的 IPv6 端口映射规则与 IPv4 一致
-- 如使用非标准端口，确保 IPv6 防火墙规则也已放行
+**部分视频源无法播放？** 合规模式仅支持浏览器直连，不提供代理兜底。依赖特殊请求头、防盗链或受 CORS 限制的源可能无法播放，属预期限制，建议更换允许直连的源。部分内置浏览器的 WebView 对 MSE/HLS.js 支持不完整，建议使用上述基线浏览器。
 
-这是网络/反向代理配置问题，非 KVideo 代码问题。
+**IPv6 环境下 HTTPS 视频无法播放？** 请检查反向代理（Caddy / Nginx）是否正确监听 IPv6、路由器 IPv6 端口映射规则，以及非标准端口的防火墙放行情况。此问题属于网络配置范畴，与 KVideo 代码无关。
 
-### 旧浏览器无法访问
-
-浏览器基线为 Chrome / Edge 120+、Safari 17.5+、Firefox 121+。低于基线时应用会直接显示“当前浏览器版本过低”的静态提示页，请升级浏览器。
-
-### 部分视频源无法播放
-
-Phase 0 起所有部署强制合规模式，只允许直连播放，不提供媒体代理或 IPTV 中继。防盗链、CORS 限制或需要特殊请求头的源可能无法播放，这是预期限制；请更换允许浏览器直连的源。
-
-### 部分浏览器无法播放视频
-
-一些内置浏览器的 WebView 可能不完整支持 MSE (Media Source Extensions) 和 HLS.js。建议使用以下浏览器：
-- Chrome / Edge 120+
-- Safari 17.5+
-- Firefox 121+
-
-KVideo 会依次尝试 HLS.js、原生 HLS、直接播放等方式，但不再提供代理兜底。
-
-## 贡献代码
-
-我们非常欢迎各种形式的贡献！无论是报告 Bug、提出新功能建议、改进文档，还是提交代码，你的每一份贡献都让这个项目变得更好。
-
-**想要参与开发？请查看 [贡献指南](CONTRIBUTING.md) 了解详细的开发规范和流程。**
-
-快速开始：
-1. **报告 Bug**：[提交 Issue](https://github.com/KuekHaoYang/KVideo/issues)
-2. **功能建议**：在 Issues 中提出你的想法
-3. **代码贡献**：Fork → Branch → PR
-4. **文档改进**：直接提交 PR
-
-## 许可证
-
-本项目基于 [MIT 许可证](LICENSE) 开源。
-
-## 致谢
-
-感谢以下开源项目：
-
-- [Next.js](https://nextjs.org/) - React 框架
-- [Tailwind CSS](https://tailwindcss.com/) - CSS 框架
-- [Zustand](https://github.com/pmndrs/zustand) - 状态管理
-- [React](https://react.dev/) - UI 库
-- [hls.js](https://github.com/video-dev/hls.js/) - HLS 播放引擎
-- [Lucide](https://lucide.dev/) - 图标库
-- [dnd-kit](https://dndkit.com/) - 拖拽交互
-
-## 联系方式
-
-- **作者**：[KuekHaoYang](https://github.com/KuekHaoYang)
-- **项目主页**：[https://github.com/KuekHaoYang/KVideo](https://github.com/KuekHaoYang/KVideo)
-- **问题反馈**：[GitHub Issues](https://github.com/KuekHaoYang/KVideo/issues)
+**移动端与 TV 体验如何？** 移动端提供专用组件，支持双击快进、滑动调节音量；TV 模式支持方向键空间导航、10 英尺 UI 与焦点高亮。
 
 ---
+
+## 文档索引
+
+README 为快速入口，深入开发与维护请参阅 [项目文档](docs/README.md)：
+
+| 主题 | 文档 |
+| --- | --- |
+| 技术栈、目录结构、运行时拓扑 | [01 架构总览](docs/01-architecture.md) |
+| 页面路由、功能地图、模式差异 | [02 功能与路由](docs/02-features-and-routes.md) |
+| 视频源模型、SSE 搜索、分辨率探测 | [03 搜索与视频源](docs/03-search-and-sources.md) |
+| API 路由、请求/响应、SSE 协议 | [04 API 参考](docs/04-api-reference.md) |
+| 播放器组件树、HLS、弹幕、广告过滤 | [05 播放器](docs/05-player.md) |
+| 三种认证、角色权限、profile 隔离、云同步 | [06 认证、存储与同步](docs/06-auth-storage-sync.md) |
+| 高级模式密码门与独立设置 | [07 高级模式](docs/07-premium.md) |
+| Docker/Node/Vercel、环境变量、运维排查 | [08 部署与运维](docs/08-deployment-and-ops.md) |
+| 本地启动、常用命令、改造配方 | [09 开发工作流](docs/09-development-workflow.md) |
+| 单元测试、严格验证套件 | [10 测试与验证](docs/10-testing-and-verification.md) |
+| 已知陷阱、复杂度热点、安全事项 | [11 陷阱与热点](docs/11-pitfalls-and-hotspots.md) |
+| 精简与架构升级计划（含 Phase 进度） | [12 重构计划](docs/12-refactor-plan.md) |
+| 主题色定义与改色清单 | [13 主题与配色](docs/13-theme-and-color.md) |
+| UI 基础组件清单与改造待办 | [14 UI 基础组件](docs/14-ui-components.md) |
+
+---
+
+## 贡献与许可
+
+欢迎报告 Bug、提出建议、改进文档或提交代码，详见 [贡献指南](CONTRIBUTING.md)。
+
+- 报告 Bug：[GitHub Issues](https://github.com/KuekHaoYang/KVideo/issues)
+- 代码贡献：Fork → Branch → PR
+
+本项目基于 [MIT 许可证](LICENSE) 开源，感谢 Next.js、Tailwind CSS、Zustand、React、hls.js、@iconify/react、dnd-kit 等开源项目。
+
+**作者**：[KuekHaoYang](https://github.com/KuekHaoYang) · [项目主页](https://github.com/KuekHaoYang/KVideo)
+
+---
+
+[![Star History Chart](https://api.star-history.com/svg?repos=KuekHaoYang/KVideo&type=date&legend=top-left)](https://www.star-history.com/#KuekHaoYang/KVideo&type=date&legend=top-left)
 
 <div align="center">
   Made with ❤️ by <a href="https://github.com/KuekHaoYang">KuekHaoYang</a>
   <br>
   如果这个项目对你有帮助，请考虑给一个 ⭐️
 </div>
-
-# Buy Me A Coffee
-# Buy Me A Coffee
-[![Buy Me A Coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=&slug=kuekhaoyang&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff)](https://www.buymeacoffee.com/kuekhaoyang)
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=KuekHaoYang/KVideo&type=date&legend=top-left)](https://www.star-history.com/#KuekHaoYang/KVideo&type=date&legend=top-left)

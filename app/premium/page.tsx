@@ -8,6 +8,7 @@ import { SearchResults } from '@/components/home/SearchResults';
 import { usePremiumHomePage } from '@/lib/hooks/usePremiumHomePage';
 import { PremiumContent } from '@/components/premium/PremiumContent';
 import { FavoritesSidebar } from '@/components/favorites/FavoritesSidebar';
+import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar';
 import { PremiumPasswordGate } from '@/components/PremiumPasswordGate';
 
 function PremiumHomePage() {
@@ -73,8 +74,9 @@ function PremiumHomePage() {
                 )}
             </main>
 
-            {/* Favorites Sidebar - Left */}
+            {/* Favorites / History Sidebar - 入口在顶部 Navbar */}
             <FavoritesSidebar isPremium={true} />
+            <WatchHistorySidebar isPremium={true} />
         </div>
     );
 }

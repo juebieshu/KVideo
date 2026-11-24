@@ -1,4 +1,6 @@
-/* Search History Dropdown */
+/*
+ * 搜索历史下拉：输入框下方的历史记录面板。
+ */
 .search-history-dropdown {
     max-height: 400px;
     overflow-y: auto;

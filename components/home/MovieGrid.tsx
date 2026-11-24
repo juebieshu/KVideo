@@ -3,7 +3,7 @@
  * Handles movie display and loading states
  */
 
-import { MovieCard } from './MovieCard';
+import { MovieCard, MovieCardSkeleton } from './MovieCard';
 import { Icons } from '@/components/ui/Icon';
 
 interface DoubanMovie {
@@ -37,7 +37,7 @@ export function MovieGrid({
 
   return (
     <>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
         {movies.map((movie) => (
           <MovieCard
             key={movie.id}
@@ -63,12 +63,14 @@ export function MovieGrid({
 }
 
 function MovieGridLoading() {
+  // 骨架屏代替旋转加载动画
   return (
-    <div className="flex justify-center py-12">
-      <div className="flex flex-col items-center gap-3">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-color)] border-t-transparent"></div>
-        <p className="text-sm text-[var(--text-color-secondary)]">加载中...</p>
-      </div>
+    <div className="mt-4 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 md:mt-6" aria-busy="true">
+      {Array.from({ length: 8 }, (_, i) => (
+        <div key={i} style={{ ['--vi' as string]: i % 4 }}>
+          <MovieCardSkeleton />
+        </div>
+      ))}
     </div>
   );
 }

@@ -21,7 +21,7 @@ test('narrow player controls reserve space for both fullscreen actions', () => {
     'utf8',
   );
   const styles = readFileSync(
-    join(projectRoot, 'app/styles/video-player.css'),
+    join(projectRoot, 'app/styles/components/player.css'),
     'utf8',
   );
 

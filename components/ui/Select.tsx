@@ -6,6 +6,8 @@
  * 外观与设置项输入框一致，右侧自绘箭头。
  */
 
+import { MIcon, materialIconMap } from '@/components/ui/Icon';
+
 interface SelectOption<T extends string | number> {
     value: T;
     label: string;
@@ -45,17 +47,7 @@ export function Select<T extends string | number>({
                     </option>
                 ))}
             </select>
-            <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="pointer-events-none absolute top-1/2 right-3 h-3.5 w-3.5 -translate-y-1/2 text-(--text-color-secondary)">
-                <path d="m6 9 6 6 6-6" />
-            </svg>
+            <MIcon icon={materialIconMap.ChevronDown} className="pointer-events-none absolute top-1/2 right-3 h-3.5 w-3.5 -translate-y-1/2 text-(--text-color-secondary)" />
         </div>
     );
 }

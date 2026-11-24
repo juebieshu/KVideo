@@ -1,10 +1,10 @@
 'use client';
 
 import { Suspense, useMemo } from 'react';
-import { SearchForm } from '@/components/search/SearchForm';
 import { NoResults } from '@/components/search/NoResults';
 import { PopularFeatures } from '@/components/home/PopularFeatures';
 import { FavoritesSidebar } from '@/components/favorites/FavoritesSidebar';
+import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar';
 import { Navbar } from '@/components/layout/Navbar';
 import { SearchResults } from '@/components/home/SearchResults';
 import { useHomePage } from '@/lib/hooks/useHomePage';
@@ -12,16 +12,12 @@ import { useLatencyPing } from '@/lib/hooks/useLatencyPing';
 
 function HomePage() {
   const {
-    query,
     hasSearched,
     loading,
     results,
     availableSources,
-    completedSources,
-    totalSources,
     handleSearch,
     handleReset,
-    handleCancelSearch,
   } = useHomePage();
 
   // Real-time latency pinging
@@ -42,50 +38,34 @@ function HomePage() {
       {/* Glass Navbar */}
       <Navbar onReset={handleReset} />
 
-      {/* Search Form - Separate from navbar */}
-      <div className="max-w-7xl mx-auto px-4 mt-6 mb-8 relative" style={{
-        transform: 'translate3d(0, 0, 0)',
-        zIndex: 1000
-      }}>
-        <SearchForm
-          onSearch={handleSearch}
-          onClear={handleReset}
-          onCancelSearch={handleCancelSearch}
-          isLoading={loading}
-          initialQuery={query}
-          currentSource=""
-          checkedSources={completedSources}
-          totalSources={totalSources}
-        />
-      </div>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        {/* Results Section */}
-        {(results.length >= 1 || (!loading && results.length > 0)) && (
-          <SearchResults
-            results={results}
-            availableSources={availableSources}
-            loading={loading}
-            latencies={latencies}
-          />
+      {/* 主内容：不设统一宽度，各部件自行配置 */}
+      <main className="pb-20">
+        {/* 搜索结果 */}
+        {results.length > 0 && (
+          <div className="kv-content">
+            <SearchResults
+              results={results}
+              availableSources={availableSources}
+              loading={loading}
+              latencies={latencies}
+            />
+          </div>
         )}
 
-        {/* Popular Features - Homepage */}
-        {!loading && !hasSearched && (
-          <>
-            <PopularFeatures onSearch={handleSearch} />
-          </>
-        )}
+        {/* 首页内容行：通栏铺开，边缘渐隐由每一行自己处理 */}
+        {!loading && !hasSearched && <PopularFeatures onSearch={handleSearch} />}
 
-        {/* No Results */}
+        {/* 无结果 */}
         {!loading && hasSearched && results.length === 0 && (
-          <NoResults onReset={handleReset} />
+          <div className="kv-content">
+            <NoResults onReset={handleReset} />
+          </div>
         )}
       </main>
 
-      {/* Favorites Sidebar - Left */}
+      {/* Favorites / History Sidebar - 入口在顶部 Navbar */}
       <FavoritesSidebar />
+      <WatchHistorySidebar />
     </div>
   );
 }

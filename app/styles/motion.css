@@ -1,3 +1,8 @@
+/*
+ * 动画与过渡：通用 keyframes、入场动画、页内元素切换。
+ * 首页卡片行的滑出 / 滑入在 home.css，不在这里。
+ */
+
 @keyframes fade-in {
     from {
         opacity: 0;
@@ -205,3 +210,7 @@ dialog.kv-anim-panel-out::backdrop {
         animation-duration: 1ms;
     }
 }
+
+
+/* 首页内容行的切换动画在 app/styles/home.css（kv-lane 体系），
+   这里不再保留旧的 kv-cards-* 网格版动画 */

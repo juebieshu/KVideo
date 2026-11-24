@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Icons } from '@/components/ui/Icon';
+import { Icons, MIcon, materialIconMap } from '@/components/ui/Icon';
 
 interface FavoritesPageHeaderProps {
   count: number;
@@ -24,9 +24,7 @@ export function FavoritesPageHeader({
         onClick={() => router.back()}
         className="inline-flex items-center gap-2 text-[var(--accent-color)] hover:underline mb-4 cursor-pointer"
       >
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
+        <MIcon icon={materialIconMap.ArrowLeft} className="w-5 h-5" />
         返回上一页
       </button>
       <div className="flex items-center justify-between gap-4 flex-wrap">

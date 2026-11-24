@@ -1,5 +1,5 @@
 /* Settings v2 · 统一样式入口
-   颜色来自 variables.css 的全局主题与本文件的 settings 语义色映射；
+   颜色来自 tokens.css 的全局主题与本文件的 settings 语义色映射；
    本文件其余部分只放设置界面自己的布局、字号与动画规则。 */
 
 /*

@@ -108,8 +108,12 @@ export function useSearchAction({ state, onCacheUpdate, onUrlUpdate }: UseSearch
                 onPageInfo: (pageCount) => {
                     setMaxPageCount((prev) => Math.max(prev, pageCount));
                 },
-                onComplete: () => {
+                onComplete: (info) => {
                     setLoading(false);
+                    if (info?.maxPageCount) setMaxPageCount(info.maxPageCount);
+                    if (info?.fetchedPage && info.fetchedPage > 0) {
+                        setCurrentPage(info.fetchedPage);
+                    }
 
                     // Update available sources with correct property names
                     const sources = Array.from(sourcesMap.entries()).map(([id, info]) => ({
@@ -148,7 +152,7 @@ export function useSearchAction({ state, onCacheUpdate, onUrlUpdate }: UseSearch
             }
             setLoading(false);
         }
-    }, [startSearch, onUrlUpdate, onCacheUpdate, setTotalSources, setResults, setCompletedSources, setTotalVideosFound, setLoading, setAvailableSources, setMaxPageCount]);
+    }, [startSearch, onUrlUpdate, onCacheUpdate, setTotalSources, setResults, setCompletedSources, setTotalVideosFound, setLoading, setAvailableSources, setMaxPageCount, setCurrentPage]);
 
     const loadMore = useCallback(async () => {
         const params = lastSearchParamsRef.current;
@@ -192,8 +196,13 @@ export function useSearchAction({ state, onCacheUpdate, onUrlUpdate }: UseSearch
                 onPageInfo: (pageCount) => {
                     setMaxPageCount((prev) => Math.max(prev, pageCount));
                 },
-                onComplete: () => {
-                    setCurrentPage(nextPage);
+                onComplete: (info) => {
+                    setCurrentPage(
+                        info?.fetchedPage && info.fetchedPage > 0
+                            ? info.fetchedPage
+                            : nextPage
+                    );
+                    if (info?.maxPageCount) setMaxPageCount(info.maxPageCount);
                     setLoadingMore(false);
                 },
                 onError: (message) => {

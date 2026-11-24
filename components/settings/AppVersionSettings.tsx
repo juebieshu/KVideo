@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ExternalLink, RefreshCw } from "lucide-react";
+import { MIcon, materialIconMap } from "@/components/ui/Icon";
 
 import { Button } from "@/components/ui/Button";
 import { APP_VERSION } from "@/lib/app-version";
@@ -217,7 +217,7 @@ export function AppVersionSettings() {
             className="shrink-0 gap-1.5"
             onClick={handleRefresh}
             disabled={isChecking}>
-            <RefreshCw size={13} className={isChecking ? "animate-spin" : ""} />
+            <MIcon icon={materialIconMap.RefreshCw} width={13} height={13} className={isChecking ? "animate-spin" : ""} />
 
             {isChecking ? "检查中" : "检查更新"}
           </Button>
@@ -243,7 +243,7 @@ export function AppVersionSettings() {
               rel="noreferrer"
               className="inline-flex items-center gap-1 text-(--text-color-secondary) transition-colors hover:text-(--text-color)">
               更新日志
-              <ExternalLink size={12} />
+              <MIcon icon={materialIconMap.ExternalLink} width={12} height={12} />
             </Link>
 
             <Link
@@ -252,7 +252,7 @@ export function AppVersionSettings() {
               rel="noreferrer"
               className="inline-flex items-center gap-1 text-(--text-color-secondary) transition-colors hover:text-(--text-color)">
               GitHub 仓库
-              <ExternalLink size={12} />
+              <MIcon icon={materialIconMap.ExternalLink} width={12} height={12} />
             </Link>
           </div>
         </div>

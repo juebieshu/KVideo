@@ -1,0 +1,70 @@
+/**
+ * 工具类：与具体模块无关、可被任意页面复用的单职责类。
+ * 只放「一个类解决一件事」的东西，组件样式请放到各自的模块文件里。
+ */
+
+/* ── 内容列 ─────────────────────────────────────────────
+   与导航栏的 max-w-7xl 对齐。边距算进 max-width，
+   内容区宽度正好 80rem，和首页卡片行的 --inset 完全对上，
+   不会差出半个 gutter */
+.kv-content {
+    width: 100%;
+    max-width: calc(80rem + 2 * clamp(1rem, 3vw, 1.5rem));
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 3vw, 1.5rem);
+}
+
+/* ── 无障碍 ───────────────────────────────────────────── */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* ── 隐藏滚动条 ───────────────────────────────────────── */
+.scrollbar-hide,
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* ── 数字输入框去掉上下箭头 ───────────────────────────── */
+.no-spinner::-webkit-inner-spin-button,
+.no-spinner::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.no-spinner {
+    -moz-appearance: textfield;
+}
+
+/* ── 抖动（错误态提示） ───────────────────────────────── */
+@keyframes jiggle {
+    0% {
+        transform: rotate(-1deg);
+    }
+
+    50% {
+        transform: rotate(1deg);
+    }
+
+    100% {
+        transform: rotate(-1deg);
+    }
+}
+
+.animate-jiggle {
+    animation: jiggle 0.2s infinite;
+}

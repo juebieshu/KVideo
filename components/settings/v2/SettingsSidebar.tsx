@@ -1,6 +1,7 @@
 'use client';
+import { materialIconMap } from '@/components/ui/icons/icon-map';
 
-import { Icon } from '@iconify/react';
+import { MIcon as Icon } from '@/components/ui/Icon';
 import type { SettingsSectionId } from '@/lib/store/settings-ui-store';
 import './icons';
 
@@ -30,30 +31,30 @@ function getGroups(props: SettingsSidebarProps): SidebarGroup[] {
     {
       label: '账户',
       items: [
-        { id: 'account', label: '个人账户', icon: 'lucide:user' },
-        { id: 'users', label: '用户管理', icon: 'lucide:users', visible: props.canManageUsers },
+        { id: 'account', label: '个人账户', icon: materialIconMap.User },
+        { id: 'users', label: '用户管理', icon: materialIconMap.Users, visible: props.canManageUsers },
       ],
     },
     {
       label: '偏好',
       items: [
-        { id: 'playback', label: '播放设置', icon: 'lucide:play', visible: props.canUsePlayerSettings },
-        { id: 'display', label: '显示与搜索', icon: 'lucide:sliders-horizontal' },
+        { id: 'playback', label: '播放设置', icon: materialIconMap.PlayCircle, visible: props.canUsePlayerSettings },
+        { id: 'display', label: '显示与搜索', icon: materialIconMap.Sliders },
       ],
     },
     {
       label: '内容源',
       items: [
-        { id: 'public-sources', label: '公共视频源', icon: 'lucide:database', visible: props.canManageSources },
-        { id: 'personal-sources', label: '个人视频源', icon: 'lucide:user-plus' },
-        { id: 'subscriptions', label: '订阅源', icon: 'lucide:rss', visible: props.canManageSources },
+        { id: 'public-sources', label: '公共视频源', icon: materialIconMap.Database, visible: props.canManageSources },
+        { id: 'personal-sources', label: '个人视频源', icon: materialIconMap.UserPlus },
+        { id: 'subscriptions', label: '订阅源', icon: materialIconMap.Rss, visible: props.canManageSources },
       ],
     },
     {
       label: '系统',
       items: [
-        { id: 'privacy', label: '隐私与数据', icon: 'lucide:shield', visible: props.canManageData },
-        { id: 'about', label: '关于', icon: 'lucide:info' },
+        { id: 'privacy', label: '隐私与数据', icon: materialIconMap.Shield, visible: props.canManageData },
+        { id: 'about', label: '关于', icon: materialIconMap.Info },
       ],
     },
   ];

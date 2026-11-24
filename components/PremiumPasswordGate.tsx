@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Lock } from 'lucide-react';
+import { MIcon, materialIconMap } from '@/components/ui/Icon';
 
 const PREMIUM_UNLOCK_KEY = 'kvideo-premium-unlocked';
 
@@ -91,7 +91,7 @@ export function PremiumPasswordGate({ children }: { children: React.ReactNode })
                     className="bg-[var(--glass-bg)] backdrop-blur-[25px] saturate-[180%] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] p-8 shadow-[var(--shadow-md)] flex flex-col items-center gap-6 transition-all duration-[0.4s] cubic-bezier(0.2,0.8,0.2,1)"
                 >
                     <div className="w-16 h-16 rounded-[var(--radius-full)] bg-amber-500/10 flex items-center justify-center text-amber-500 mb-2 shadow-[var(--shadow-sm)] border border-[var(--glass-border)]">
-                        <Lock size={32} />
+                        <MIcon icon={materialIconMap.Lock} width={32} height={32} />
                     </div>
 
                     <div className="text-center space-y-2">

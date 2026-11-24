@@ -13,7 +13,6 @@ import { traditionalToSimplified } from '@/lib/utils/chinese-convert';
 export const runtime = 'nodejs';
 
 const MAX_TOTAL_VIDEOS = 2000;
-const MAX_PAGES_PER_SOURCE = 3;
 const PER_SOURCE_TIMEOUT_MS = 20000;
 
 export async function POST(request: NextRequest) {
@@ -35,13 +34,17 @@ export async function POST(request: NextRequest) {
 
       try {
         const body = await request.json();
-        const { query, sources: sourceConfigs } = body;
+        const { query, sources: sourceConfigs, page: requestedPage } = body;
 
         if (!query || typeof query !== 'string' || query.trim().length === 0) {
           safeSend({ type: 'error', message: 'Invalid query' });
           controller.close();
           return;
         }
+
+        const pageNumber = Number(requestedPage);
+        const startPage =
+          Number.isFinite(pageNumber) && pageNumber > 0 ? Math.floor(pageNumber) : 1;
 
         const normalizedQuery = traditionalToSimplified(query.trim());
         const sources = Array.isArray(sourceConfigs) && sourceConfigs.length > 0
@@ -58,6 +61,7 @@ export async function POST(request: NextRequest) {
 
         let completedSources = 0;
         let totalVideosFound = 0;
+        let maxPageCount = 1;
 
         const searchPromises = sources.map(async (source: any) => {
           if (signal.aborted) return;
@@ -77,12 +81,16 @@ export async function POST(request: NextRequest) {
 
           try {
             const result = await searchVideos(
-              normalizedQuery, [source], 1, sourceController.signal
+              normalizedQuery, [source], startPage, sourceController.signal
             );
             const endTime = performance.now();
             const latency = Math.round(endTime - startTime);
-            const videos = result[0]?.results || [];
+            const rawVideos = result[0]?.results || [];
             const pagecount = result[0]?.pagecount ?? 1;
+            if (pagecount > maxPageCount) maxPageCount = pagecount;
+
+            const remaining = Math.max(0, MAX_TOTAL_VIDEOS - totalVideosFound);
+            const videos = rawVideos.slice(0, remaining);
 
             completedSources++;
             totalVideosFound += videos.length;
@@ -96,6 +104,7 @@ export async function POST(request: NextRequest) {
                   latency,
                 })),
                 source: source.id,
+                pagecount,
                 completedSources,
                 totalSources: sources.length,
                 latency,
@@ -108,50 +117,6 @@ export async function POST(request: NextRequest) {
               totalSources: sources.length,
               totalVideosFound,
             });
-
-            // Auto-fetch remaining pages (capped)
-            if (pagecount > 1 && totalVideosFound < MAX_TOTAL_VIDEOS && !signal.aborted) {
-              const maxPages = Math.min(pagecount, MAX_PAGES_PER_SOURCE);
-              const remainingPages = Array.from(
-                { length: maxPages - 1 }, (_, i) => i + 2
-              );
-
-              for (const pg of remainingPages) {
-                if (signal.aborted || totalVideosFound >= MAX_TOTAL_VIDEOS) break;
-
-                try {
-                  const pageResult = await searchVideos(
-                    normalizedQuery, [source], pg, sourceController.signal
-                  );
-                  const pageVideos = pageResult[0]?.results || [];
-                  totalVideosFound += pageVideos.length;
-
-                  if (pageVideos.length > 0 && !signal.aborted) {
-                    safeSend({
-                      type: 'videos',
-                      videos: pageVideos.map((video: any) => ({
-                        ...video,
-                        sourceDisplayName: getSourceName(source.id),
-                        latency,
-                      })),
-                      source: source.id,
-                      completedSources,
-                      totalSources: sources.length,
-                      latency,
-                    });
-                  }
-
-                  safeSend({
-                    type: 'progress',
-                    completedSources,
-                    totalSources: sources.length,
-                    totalVideosFound,
-                  });
-                } catch {
-                  // Page fetch failed, continue
-                }
-              }
-            }
           } catch (error) {
             const endTime = performance.now();
             const latency = Math.round(endTime - startTime);
@@ -180,7 +145,7 @@ export async function POST(request: NextRequest) {
             type: 'complete',
             totalVideosFound,
             totalSources: sources.length,
-            maxPageCount: MAX_PAGES_PER_SOURCE,
+            maxPageCount,
           });
         }
 

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { SourceManager } from '@/components/settings/SourceManager';
 import type { VideoSource } from '@/lib/types';
 import { DEFAULT_SOURCES } from '@/lib/api/default-sources';
+import { MIcon, materialIconMap } from '@/components/ui/Icon';
 
 interface PremiumSourceSettingsProps {
     sources: VideoSource[];
@@ -87,15 +88,7 @@ export function PremiumSourceSettings({
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full rounded-[var(--radius-2xl)] border border-(--glass-border) bg-(--glass-bg) py-2 pl-9 pr-3 text-sm text-(--text-color) placeholder:text-(--text-color-secondary) transition-colors focus:border-(--accent-color) focus:outline-none sm:h-8 sm:py-1"
                     />
-                    <svg
-                        className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-(--text-color-secondary)"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                    <MIcon icon={materialIconMap.Lock} className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-(--text-color-secondary)" />
                 </div>
             </section>
 

@@ -1,4 +1,7 @@
-/* Base Styles */
+/*
+ * 基础层：重置、指针光标、焦点样式、滚动条、性能优化、TV 模式。
+ * 只放作用于整个文档的规则，组件自己的样式不要写进来。
+ */
 *,
 *::before,
 *::after {
@@ -7,7 +10,7 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Global Pointer Cursor for Interactive Elements */
+/* 可交互元素的指针光标 */
 button,
 [role="button"],
 [type="button"],
@@ -24,7 +27,7 @@ html {
     scroll-behavior: auto;
 }
 
-/* Focus Styles */
+/* 焦点样式 */
 *:focus-visible {
     outline: 2px solid var(--accent-color);
     outline-offset: 2px;
@@ -44,7 +47,7 @@ select:focus-visible {
     border-radius: var(--radius-full);
 }
 
-/* Scrollbar Styles */
+/* 滚动条 */
 ::-webkit-scrollbar {
     width: 10px;
 }
@@ -81,31 +84,7 @@ select:focus-visible {
     border-radius: var(--radius-full);
 }
 
-/* Utilities */
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
-}
-
-.scrollbar-hide,
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar,
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-
-/* Performance Optimizations */
+/* ── 性能优化 ─────────────────────────────────────────── */
 nav:where(.sticky, .fixed),
 .sticky,
 .fixed {
@@ -138,7 +117,6 @@ body.scrolling * {
 }
 
 .group:hover img,
-.glass-card,
 nav {
     transform: translateZ(0);
     backface-visibility: hidden;
@@ -156,7 +134,7 @@ nav {
     -webkit-overflow-scrolling: touch;
 }
 
-/* TV Mode Styles */
+/* TV 模式：遥控器焦点放大 */
 body.tv-mode [data-focusable]:focus {
     outline: 3px solid var(--accent-color);
     outline-offset: 4px;

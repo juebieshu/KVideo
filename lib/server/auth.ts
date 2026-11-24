@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRedisClient } from '@/lib/server/redis';
 import { getRuntimeEnvValue } from '@/lib/server/runtime-env';
+// dev:test 本地调试账户模式用，提交前删除这段 import 和 lib/server/dev-account-store.ts
+import {
+  isDevAccountStoreEnabled,
+  readDevAccounts,
+  writeDevAccounts,
+} from '@/lib/server/dev-account-store';
+// dev:test end
 import {
   createStoredAccount,
   ensureUniqueUsername,
@@ -96,8 +103,17 @@ export class ManagedAuthStorageError extends Error {
   }
 }
 
+// dev:test 本地无 Redis 时的内存账户存储开关，提交前整段删除
+function isDevAccountStoreActive(): boolean {
+  return isDevAccountStoreEnabled() && !getRedisClient();
+}
+// dev:test end
+
 function isManagedAuthEnabled(): boolean {
-  return !!getRuntimeEnvValue('AUTH_SECRET', AUTH_SECRET) && !!getRedisClient();
+  // dev:test 原实现：return !!getRuntimeEnvValue('AUTH_SECRET', AUTH_SECRET) && !!getRedisClient();
+  return !!getRuntimeEnvValue('AUTH_SECRET', AUTH_SECRET) &&
+    (!!getRedisClient() || isDevAccountStoreActive());
+  // dev:test end
 }
 
 function isLegacyAuthConfigured(): boolean {
@@ -126,6 +142,12 @@ function normalizeStoredAccount(value: StoredAccountRecord): StoredAccountRecord
 }
 
 async function readManagedAccounts(): Promise<StoredAccountRecord[]> {
+  // dev:test 内存账户优先，提交前删除这 3 行
+  if (isDevAccountStoreActive()) {
+    return readDevAccounts();
+  }
+  // dev:test end
+
   const redis = getRedisClient();
   if (!redis) return [];
 
@@ -140,6 +162,13 @@ async function readManagedAccounts(): Promise<StoredAccountRecord[]> {
 }
 
 async function saveManagedAccounts(accounts: StoredAccountRecord[]): Promise<void> {
+  // dev:test 内存账户优先，提交前删除这 4 行
+  if (isDevAccountStoreActive()) {
+    writeDevAccounts(accounts);
+    return;
+  }
+  // dev:test end
+
   const redis = getRedisClient();
   if (!redis) {
     throw new ManagedAuthStorageError(
@@ -177,6 +206,18 @@ function getBootstrapSeeds(): SeedAccountInput[] {
     usernames.add(username);
     seeds.push({ ...account, username });
   }
+
+  // dev:test 本地兜底种子 admin/admin，提交前整段删除
+  if (seeds.length === 0 && isDevAccountStoreActive()) {
+    seeds.push({
+      username: 'admin',
+      password: 'admin',
+      name: '超级管理员',
+      role: 'super_admin',
+      customPermissions: [],
+    });
+  }
+  // dev:test end
 
   return seeds;
 }
@@ -333,6 +374,35 @@ export function isSuperAdminSession(session: ServerAuthSession): boolean {
 async function authenticateManagedLogin(username: string, password: string): Promise<ServerAuthSession | null> {
   const normalizedUsername = normalizeUsername(username);
   if (!normalizedUsername || !password) return null;
+
+  // dev:test 本地调试：不校验密码，任意用户名+密码按超管登录，提交前整段删除
+  if (isDevAccountStoreActive()) {
+    const devAccounts = await ensureManagedAccountsBootstrapped();
+    const existing = devAccounts.find((item) => item.username === normalizedUsername);
+    const account = existing ?? await createStoredAccount({
+      username: normalizedUsername,
+      password,
+      name: normalizedUsername,
+      role: 'super_admin',
+      customPermissions: [],
+    });
+
+    if (!existing) {
+      await saveManagedAccounts([...devAccounts, account]);
+    }
+
+    return {
+      accountId: account.id,
+      profileId: account.id,
+      username: account.username,
+      name: account.name,
+      role: account.role,
+      customPermissions: account.customPermissions,
+      mode: 'managed',
+      iat: Date.now(),
+    };
+  }
+  // dev:test end
 
   const usesBootstrapAdminCredential = isBootstrapAdminCredential(
     normalizedUsername,
@@ -595,9 +665,11 @@ function ensureOneSuperAdmin(accounts: StoredAccountRecord[]): void {
 }
 
 export async function createManagedAccount(body: unknown): Promise<AccountInfo> {
-  if (!getRedisClient() || !isManagedAuthEnabled()) {
+  // dev:test 提交前改回：if (!getRedisClient() || !isManagedAuthEnabled()) {
+  if (!isManagedAuthEnabled()) {
     throw new Error('Managed accounts unavailable');
   }
+  // dev:test end
 
   const input = sanitizeAccountInput(body);
   if (!input.username || !input.name || !input.password || !input.role) {

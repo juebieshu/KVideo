@@ -248,7 +248,7 @@
   --accent-border: color-mix(in srgb, var(--kv-color-accent) 45%, transparent);
   --accent-focus: var(--kv-color-focus);
 
-  /* 播放器（固定深色控件，保持既有硬编码，见 video-player.css） */
+  /* 播放器（固定深色控件，保持既有硬编码，见 player.css） */
   --player-accent: var(--kv-color-accent-solid);
   --player-control-bg: rgba(20, 20, 20, 0.64);
   --player-control-hover: rgba(20, 20, 20, 0.8);

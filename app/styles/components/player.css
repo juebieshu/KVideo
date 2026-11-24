@@ -1,4 +1,7 @@
-/* Video Player Components */
+/*
+ * 播放器控件：固定深色 UI，色值硬编码，不跟随主题。
+ * 网页全屏相关规则在 fullscreen.css。
+ */
 .kvideo-container {
     container-type: inline-size;
 }

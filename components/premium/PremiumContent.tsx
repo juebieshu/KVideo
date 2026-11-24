@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { TagManager } from '@/components/home/TagManager';
 import { MovieGrid } from '@/components/home/MovieGrid';
 import { PremiumContentGrid } from './PremiumContentGrid';
@@ -19,7 +18,6 @@ export function PremiumContent({ onSearch }: PremiumContentProps) {
         newTagInput,
         showTagManager,
         justAddedTag,
-        setSelectedTag,
         setNewTagInput,
         setShowTagManager,
         setJustAddedTag,
@@ -39,15 +37,8 @@ export function PremiumContent({ onSearch }: PremiumContentProps) {
     } = usePersonalizedRecommendations(true);
 
     // Track whether the recommendation tab is active
-    const [isRecommendSelected, setIsRecommendSelected] = useState(hasHistory);
-
-    useEffect(() => {
-        if (hasHistory) {
-            setIsRecommendSelected(true);
-        }
-    }, [hasHistory]);
-
-    const effectiveRecommendSelected = hasHistory && isRecommendSelected;
+    // 标签选择入口已移除，有观看记录时推荐始终生效，不再需要本地 state 同步
+    const effectiveRecommendSelected = hasHistory;
 
     // Get the category value from selected tag
     const categoryValue = tags.find(t => t.id === selectedTag)?.value || '';
@@ -60,30 +51,19 @@ export function PremiumContent({ onSearch }: PremiumContentProps) {
         loadMoreRef,
     } = usePremiumContent(effectiveRecommendSelected ? '' : categoryValue);
 
-    const handleVideoClick = (video: any) => {
+    const handleVideoClick = (video: { vod_name?: string; title?: string }) => {
         if (onSearch) {
-            onSearch(video.vod_name || video.title);
+            onSearch(video.vod_name || video.title || '');
         }
-    };
-
-    const handleRecommendSelect = () => {
-        setIsRecommendSelected(true);
-    };
-
-    const handleRegularTagSelect = (tagId: string) => {
-        setIsRecommendSelected(false);
-        setSelectedTag(tagId);
     };
 
     return (
         <div className="animate-fade-in">
             <TagManager
                 tags={tags}
-                selectedTag={effectiveRecommendSelected ? '' : selectedTag}
                 showTagManager={showTagManager}
                 newTagInput={newTagInput}
                 justAddedTag={justAddedTag}
-                onTagSelect={handleRegularTagSelect}
                 onTagDelete={handleDeleteTag}
                 onToggleManager={() => setShowTagManager(!showTagManager)}
                 onRestoreDefaults={handleRestoreDefaults}
@@ -91,11 +71,6 @@ export function PremiumContent({ onSearch }: PremiumContentProps) {
                 onAddTag={handleAddTag}
                 onDragEnd={handleDragEnd}
                 onJustAddedTagHandled={() => setJustAddedTag(false)}
-                recommendTag={hasHistory ? {
-                    label: '为你推荐',
-                    isSelected: effectiveRecommendSelected,
-                    onSelect: handleRecommendSelect,
-                } : undefined}
             />
 
             {effectiveRecommendSelected ? (

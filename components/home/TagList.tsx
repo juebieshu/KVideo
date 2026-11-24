@@ -106,6 +106,9 @@ export function TagList({
     };
 
     const activeTag = tags.find((t) => t.id === activeId);
+    // 热门已是整屏首屏，固定展示，不参与拖拽排序
+    const fixedTags = tags.filter((tag) => tag.id === 'popular');
+    const sortableTags = tags.filter((tag) => tag.id !== 'popular');
 
     return (
         <DndContext
@@ -141,11 +144,24 @@ export function TagList({
                         </button>
                     </div>
                 )}
+                {fixedTags.map((tag) => (
+                    <div key={tag.id} className="relative flex-shrink-0">
+                        <button
+                            type="button"
+                            disabled
+                            title="热门为固定首屏，不参与排序"
+                            className="px-6 py-2.5 text-sm font-semibold whitespace-nowrap rounded-[var(--radius-full)] cursor-default select-none flex items-center gap-1.5 bg-[var(--glass-bg)] text-[var(--text-color-secondary)] border border-[var(--glass-border)] opacity-80"
+                        >
+                            <Icons.Sparkles size={14} />
+                            {tag.label} · 固定
+                        </button>
+                    </div>
+                ))}
                 <SortableContext
-                    items={tags.map((t) => t.id)}
+                    items={sortableTags.map((t) => t.id)}
                     strategy={showTagManager ? rectSortingStrategy : horizontalListSortingStrategy}
                 >
-                    {tags.map((tag) => (
+                    {sortableTags.map((tag) => (
                         <SortableTag
                             key={tag.id}
                             tag={tag}

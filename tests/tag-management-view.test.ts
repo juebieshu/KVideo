@@ -20,9 +20,9 @@ test('popular tag management mode stays out of discovery grids', () => {
     'utf8',
   );
 
-  assert.match(source, /const isTagManagementMode = showTagManager;/);
-  assert.match(source, /!\s*isTagManagementMode && !effectiveRecommendSelected/);
-  assert.match(source, /!\s*isTagManagementMode && \(/);
+  assert.doesNotMatch(source, /<TagManager\b|\bshowTagManager\b|\bisTagManagementMode\b/);
+  assert.match(source, /<HotFeature\b/);
+  assert.match(source, /<TagMovieRow\b/);
 });
 
 test('tag management list uses wrapping chip layout instead of a horizontal search filter row', () => {

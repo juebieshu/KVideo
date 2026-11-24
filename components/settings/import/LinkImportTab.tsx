@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { fetchSourcesFromUrl, type ImportResult } from '@/lib/utils/source-import-utils';
+import { MIcon, materialIconMap } from '@/components/ui/Icon';
 
 interface LinkImportTabProps {
     onImport: (result: ImportResult) => Promise<boolean> | boolean;
@@ -94,10 +95,7 @@ export function LinkImportTab({ onImport }: LinkImportTabProps) {
                 {preview && (
                     <div className="mt-6 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] p-4 animate-in fade-in zoom-in-95 duration-200">
                         <h4 className="font-semibold text-[var(--text-color)] mb-3 flex items-center gap-2">
-                            <svg className="w-5 h-5 text-[var(--accent-color)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                                <polyline points="22 4 12 14.01 9 11.01" />
-                            </svg>
+                            <MIcon icon={materialIconMap.CheckCircle} className="w-5 h-5 text-[var(--accent-color)]" />
                             解析成功
                         </h4>
 
@@ -123,9 +121,7 @@ export function LinkImportTab({ onImport }: LinkImportTabProps) {
 
                 {success && (
                     <div className="mt-4 text-sm settings-success rounded-[var(--radius-2xl)] px-4 py-3 flex items-center gap-2 border">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M20 6L9 17l-5-5" />
-                        </svg>
+                        <MIcon icon={materialIconMap.Check} className="w-5 h-5" />
                         导入成功！正在刷新...
                     </div>
                 )}

@@ -7,7 +7,9 @@ import {
   validatePremiumAccess,
 } from '@/lib/server/auth';
 
-export const runtime = 'edge';
+// dev:test 提交前恢复为：export const runtime = 'edge';（账户体系在本地 dev 下需要跨接口共享进程内状态）
+// 因此这里使用 Node runtime；Upstash REST 与 crypto.subtle 在 Node 下同样可用。
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {

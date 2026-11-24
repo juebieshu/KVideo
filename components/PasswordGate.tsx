@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Lock, User } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { siteConfig } from '@/lib/config/site-config';
 import { clearSession, getSession, setSession, type AuthSession } from '@/lib/store/auth-store';
 import { resolvePasswordGateState } from '@/lib/auth/password-gate-state';
 import { useSubscriptionSync } from '@/lib/hooks/useSubscriptionSync';
@@ -81,9 +81,11 @@ export function PasswordGate({
 }) {
   useSubscriptionSync();
 
+  const formRef = useRef<HTMLFormElement>(null);
   const [isLocked, setIsLocked] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isClient, setIsClient] = useState(false);
   const [persistSession, setPersistSession] = useState(true);
@@ -107,7 +109,9 @@ export function PasswordGate({
         }
 
         const config = await configRes.json();
-        const sessionStatus = sessionRes.ok ? await sessionRes.json() : { authenticated: false, session: null };
+        const sessionStatus = sessionRes.ok
+          ? await sessionRes.json()
+          : { authenticated: false, session: null };
 
         if (!mounted) return;
 
@@ -115,9 +119,10 @@ export function PasswordGate({
         setLoginMode(config.loginMode || 'none');
         applyRuntimeConfig(config);
 
-        const serverSession = sessionStatus.authenticated && sessionStatus.session
-          ? toAuthSession(sessionStatus.session)
-          : null;
+        const serverSession =
+          sessionStatus.authenticated && sessionStatus.session
+            ? toAuthSession(sessionStatus.session)
+            : null;
         const gateState = resolvePasswordGateState({
           hasAuth: !!config.hasAuth,
           serverSession,
@@ -158,6 +163,14 @@ export function PasswordGate({
     };
   }, [initialHasAuth]);
 
+  const triggerShake = () => {
+    const form = formRef.current;
+    if (!form) return;
+    form.classList.remove('kv-gate-shake');
+    void form.offsetWidth;
+    form.classList.add('kv-gate-shake');
+  };
+
   const handleUnlock = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsValidating(true);
@@ -193,9 +206,7 @@ export function PasswordGate({
 
     setError(loginMode === 'managed' ? '用户名或密码错误' : '密码错误');
     setIsValidating(false);
-    const form = document.getElementById('password-form');
-    form?.classList.add('animate-shake');
-    setTimeout(() => form?.classList.remove('animate-shake'), 500);
+    triggerShake();
   };
 
   if (!isClient) return null;
@@ -207,85 +218,126 @@ export function PasswordGate({
   const showManagedFields = loginMode === 'managed';
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[var(--bg-color)] bg-[image:var(--bg-image)] text-[var(--text-color)]">
-      <div className="w-full max-w-md p-4">
+    <div className="kv-gate">
+      <div className="kv-gate-inner">
+        <h1 className="kv-gate-title">{siteConfig.name}</h1>
+
         <form
+          ref={formRef}
           id="password-form"
           onSubmit={handleUnlock}
-          className="bg-[var(--glass-bg)] backdrop-blur-[25px] saturate-[180%] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] p-8 shadow-[var(--shadow-md)] flex flex-col items-center gap-6 transition-all duration-[0.4s] cubic-bezier(0.2,0.8,0.2,1)"
+          onAnimationEnd={(event) => {
+            if (event.animationName === 'kv-gate-shake') {
+              event.currentTarget.classList.remove('kv-gate-shake');
+            }
+          }}
+          className="kv-gate-form"
         >
-          <div className="w-16 h-16 rounded-[var(--radius-full)] bg-[var(--accent-color)]/10 flex items-center justify-center text-[var(--accent-color)] mb-2 shadow-[var(--shadow-sm)] border border-[var(--glass-border)]">
-            <Lock size={32} />
-          </div>
-
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold">访问受限</h2>
-            <p className="text-[var(--text-color-secondary)]">
-              {showManagedFields ? '请输入用户名和密码以继续' : '请输入访问密码以继续'}
-            </p>
-          </div>
-
-          <div className="w-full space-y-4">
-            {showManagedFields && (
-              <div className="space-y-2">
-                <div className="relative">
-                  <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-color-secondary)]" />
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(event) => {
-                      setUsername(event.target.value);
-                      setError('');
-                    }}
-                    placeholder="输入用户名..."
-                    className="w-full pl-11 pr-4 py-3 rounded-[var(--radius-2xl)] bg-[var(--glass-bg)] border border-[var(--glass-border)] focus:outline-none focus:border-[var(--accent-color)] focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--accent-color)_30%,transparent)] transition-all duration-[0.4s] cubic-bezier(0.2,0.8,0.2,1) text-[var(--text-color)] placeholder-[var(--text-color-secondary)]"
-                    autoComplete="username"
-                    autoFocus
-                  />
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-2">
+          {showManagedFields && (
+            <div className="kv-gate-field">
+              <label htmlFor="login-username" className="kv-gate-label">
+                用户名
+              </label>
               <input
-                type="password"
+                id="login-username"
+                type="text"
+                value={username}
+                onChange={(event) => {
+                  setUsername(event.target.value);
+                  setError('');
+                }}
+                placeholder="输入用户名"
+                className="kv-gate-input"
+                autoComplete="username"
+                autoFocus
+                data-focusable
+              />
+            </div>
+          )}
+
+          <div className="kv-gate-field">
+            <label htmlFor="login-password" className="kv-gate-label">
+              密码
+            </label>
+            <div className="kv-gate-input-wrap">
+              <input
+                id="login-password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(event) => {
                   setPassword(event.target.value);
                   setError('');
                 }}
-                placeholder={showManagedFields ? '输入密码...' : '输入密码...'}
-                className={`w-full px-4 py-3 rounded-[var(--radius-2xl)] bg-[var(--glass-bg)] border ${error ? 'border-red-500' : 'border-[var(--glass-border)]'} focus:outline-none focus:border-[var(--accent-color)] focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--accent-color)_30%,transparent)] transition-all duration-[0.4s] cubic-bezier(0.2,0.8,0.2,1) text-[var(--text-color)] placeholder-[var(--text-color-secondary)]`}
+                placeholder="输入密码"
+                className={`kv-gate-input kv-gate-input--with-toggle${
+                  error ? ' kv-gate-input--error' : ''
+                }`}
                 autoFocus={!showManagedFields}
                 autoComplete={showManagedFields ? 'current-password' : 'off'}
+                data-focusable
               />
-              {error && (
-                <p className="text-sm text-red-500 text-center animate-pulse">
-                  {error}
-                </p>
-              )}
+              <button
+                type="button"
+                className="kv-gate-eye"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? '隐藏密码' : '显示密码'}
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.77 21.77 0 0 1 5.06-5.94" />
+                    <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-3.17 4.49" />
+                    <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                ) : (
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
             </div>
-
-            <button
-              type="submit"
-              disabled={isValidating}
-              className="w-full py-3 px-4 bg-[var(--accent-color)] text-white font-bold rounded-[var(--radius-2xl)] hover:translate-y-[-2px] hover:brightness-110 shadow-[var(--shadow-sm)] hover:shadow-[0_4px_8px_var(--shadow-color)] active:translate-y-0 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isValidating ? '验证中...' : '登录'}
-            </button>
           </div>
+
+          <button
+            type="submit"
+            disabled={isValidating}
+            className="kv-gate-submit"
+            data-focusable
+          >
+            {isValidating ? '登录中…' : '登录'}
+          </button>
         </form>
+
+        <div className="kv-gate-error-slot">
+          {error && (
+            <p className="kv-gate-error" role="alert">
+              {error}
+            </p>
+          )}
+        </div>
       </div>
-      <style jsx global>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-        .animate-shake {
-          animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
-        }
-      `}</style>
     </div>
   );
 }

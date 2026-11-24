@@ -14,6 +14,7 @@ import { setCachedResolution } from '@/lib/player/resolution-cache';
 import { useVideoPlayer } from '@/lib/hooks/useVideoPlayer';
 import { useHistory } from '@/lib/store/history-store';
 import { FavoritesSidebar } from '@/components/favorites/FavoritesSidebar';
+import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar';
 import { FavoriteButton } from '@/components/favorites/FavoriteButton';
 import { PlayerNavbar } from '@/components/player/PlayerNavbar';
 import { settingsStore } from '@/lib/store/settings-store';
@@ -566,8 +567,9 @@ function PlayerContent() {
         )}
       </main>
 
-      {/* Favorites Sidebar - Left */}
+      {/* Favorites / History Sidebar - 入口在顶部 PlayerNavbar */}
       <FavoritesSidebar isPremium={isPremium} />
+      <WatchHistorySidebar isPremium={isPremium} />
     </div>
   );
 }

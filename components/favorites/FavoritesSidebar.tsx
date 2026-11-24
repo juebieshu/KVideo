@@ -1,23 +1,25 @@
 /**
  * FavoritesSidebar - Main favorites sidebar component
  * Positioned on the left side of the screen (opposite to WatchHistorySidebar)
+ * 入口已统一到顶部 Navbar，本组件只负责抽屉本身。
  */
 
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { useFavorites } from '@/lib/store/favorites-store';
-import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar';
-import { Icons } from '@/components/ui/Icon';
+import { useSidebarStore } from '@/lib/store/sidebar-store';
 import { ConfirmDialog } from '@/components/ui/Dialog';
 import { FavoritesHeader } from './FavoritesHeader';
 import { FavoritesList } from './FavoritesList';
 import { FavoritesFooter } from './FavoritesFooter';
 import { trapFocus } from '@/lib/accessibility/focus-management';
-import { useFloatingButtonPosition } from '@/lib/hooks/useFloatingButtonPosition';
 
 export function FavoritesSidebar({ isPremium = false }: { isPremium?: boolean }) {
-    const [isOpen, setIsOpen] = useState(false);
+    const activePanel = useSidebarStore((state) => state.activePanel);
+    const closePanel = useSidebarStore((state) => state.closePanel);
+    const isOpen = activePanel === 'favorites';
+
     const [deleteConfirm, setDeleteConfirm] = useState<{
         isOpen: boolean;
         videoId?: string;
@@ -27,14 +29,6 @@ export function FavoritesSidebar({ isPremium = false }: { isPremium?: boolean })
     const { favorites, removeFavorite, clearFavorites } = useFavorites(isPremium);
     const sidebarRef = useRef<HTMLElement>(null);
     const cleanupFocusTrapRef = useRef<(() => void) | null>(null);
-    const {
-        floatingStyle,
-        onPointerDown,
-        consumeSyntheticClick,
-    } = useFloatingButtonPosition({
-        storageKey: isPremium ? 'kvideo-premium-favorites-button-position' : 'kvideo-favorites-button-position',
-        defaultAnchor: 'left',
-    });
 
     // Setup focus trap when sidebar opens
     useEffect(() => {
@@ -54,7 +48,7 @@ export function FavoritesSidebar({ isPremium = false }: { isPremium?: boolean })
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isOpen) {
-                setIsOpen(false);
+                closePanel();
             }
         };
 
@@ -65,7 +59,7 @@ export function FavoritesSidebar({ isPremium = false }: { isPremium?: boolean })
         return () => {
             document.removeEventListener('keydown', handleEscape);
         };
-    }, [isOpen]);
+    }, [isOpen, closePanel]);
 
     // Handle delete confirmation
     const handleDeleteItem = (videoId: string | number, source: string) => {
@@ -91,26 +85,11 @@ export function FavoritesSidebar({ isPremium = false }: { isPremium?: boolean })
 
     return (
         <>
-            {/* Toggle Button - Left side */}
-            <button
-                onClick={(event) => {
-                    if (consumeSyntheticClick(event)) return;
-                    setIsOpen(true);
-                }}
-                onPointerDown={onPointerDown}
-                style={floatingStyle}
-                className="fixed z-40 bg-[var(--glass-bg)] backdrop-blur-[8px] saturate-[120%] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-md)] p-3 hover:scale-105 transition-transform duration-200 cursor-pointer touch-none select-none"
-                aria-label="打开收藏夹"
-                title="点击打开收藏夹，拖动可调整位置"
-            >
-                <Icons.Heart size={24} className="text-[var(--text-color)]" />
-            </button>
-
             {/* Backdrop */}
             {isOpen && (
                 <div
                     className="fixed inset-0 z-[1999] bg-black/40 opacity-0 animate-[fadeIn_0.2s_ease-out_forwards]"
-                    onClick={() => setIsOpen(false)}
+                    onClick={closePanel}
                 />
             )}
 
@@ -126,7 +105,7 @@ export function FavoritesSidebar({ isPremium = false }: { isPremium?: boolean })
                 }}
                 className={`fixed top-0 left-0 bottom-0 w-[85%] sm:w-[90%] max-w-[420px] z-[2000] bg-[var(--glass-bg)] backdrop-blur-[8px] saturate-[120%] border-r border-[var(--glass-border)] rounded-tr-[var(--radius-2xl)] rounded-br-[var(--radius-2xl)] p-6 flex flex-col shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-transform duration-250 ease-out`}
             >
-                <FavoritesHeader onClose={() => setIsOpen(false)} />
+                <FavoritesHeader onClose={closePanel} />
 
                 <FavoritesList
                     favorites={favorites}
@@ -139,9 +118,6 @@ export function FavoritesSidebar({ isPremium = false }: { isPremium?: boolean })
                     onClearAll={handleClearAll}
                 />
             </aside>
-
-            {/* Watch History Sidebar - Right side */}
-            <WatchHistorySidebar isPremium={isPremium} />
 
             {/* Confirm Dialog */}
             <ConfirmDialog

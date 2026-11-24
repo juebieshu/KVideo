@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ChevronUp } from 'lucide-react';
+import { MIcon, materialIconMap } from '@/components/ui/Icon';
 
 /**
  * BackToTop - Floating button to scroll back to top of page
@@ -51,7 +51,7 @@ export function BackToTop() {
             aria-label="返回顶部"
             title="返回顶部"
         >
-            <ChevronUp size={24} strokeWidth={2.5} />
+            <MIcon icon={materialIconMap.ChevronUp} width={24} height={24} />
         </button>
     );
 }

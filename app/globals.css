@@ -1,30 +1,39 @@
+/**
+ * 样式入口：这里只做汇总，具体规则都放在 app/styles/ 下。
+ *
+ * app/styles/ 下分两类：
+ *   根目录        全局 CSS，跨组件复用的令牌、重置、工具类与通用动画
+ *   components/   组件专用 CSS，每个文件对应一个界面模块
+ *
+ * 加载顺序即层叠顺序，新增样式请按下面的顺序插入，不要打乱：
+ *   令牌 → 基础 → 工具 → 通用视觉 → 模块
+ */
+
 @import "tailwindcss";
-@import "./scroll-optimization.css";
-@import "./styles/variables.css";
+
+/* ── 1. 设计令牌 ────────────────────────────────────────
+   颜色 / 圆角 / 阴影 / 缓动曲线。必须在 base 之前，
+   后面的文件都靠它提供的变量 */
+@import "./styles/tokens.css";
+
+/* ── 2. 基础 ────────────────────────────────────────────
+   重置、焦点样式、滚动条、性能优化、TV 模式 */
 @import "./styles/base.css";
-@import "./styles/settings-v2.css";
-@import './styles/transitions.css';
-@import './styles/effects.css';
-@import './styles/glass.css';
-@import "./styles/video-player.css";
-@import "./styles/search-history.css";
-@keyframes jiggle {
-  0% { transform: rotate(-1deg); }
-  50% { transform: rotate(1deg); }
-  100% { transform: rotate(-1deg); }
-}
 
-.animate-jiggle {
-  animation: jiggle 0.2s infinite;
-}
+/* ── 3. 工具类 ──────────────────────────────────────────
+   .kv-content / .sr-only / 隐藏滚动条 / 抖动 等单职责类 */
+@import "./styles/utilities.css";
 
-/* Remove standard arrow for number input */
-.no-spinner::-webkit-inner-spin-button, 
-.no-spinner::-webkit-outer-spin-button { 
-  -webkit-appearance: none; 
-  margin: 0; 
-}
+/* ── 4. 通用视觉 ────────────────────────────────────────
+   动画过渡与装饰性特效。首页卡片行的动画在 components/home.css */
+@import "./styles/motion.css";
+@import "./styles/effects.css";
 
-.no-spinner {
-  -moz-appearance: textfield;
-}
+/* ── 5. 模块样式 ────────────────────────────────────────
+   组件专用，按界面模块划分 */
+@import "./styles/components/home.css";
+@import "./styles/components/settings.css";
+@import "./styles/components/player.css";
+@import "./styles/components/fullscreen.css";
+@import "./styles/components/search-history.css";
+@import './styles/components/password-gate.css';

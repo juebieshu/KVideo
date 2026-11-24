@@ -1,12 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Info, LogOut, Shield } from 'lucide-react';
+
 import { clearSession, getSession, type Permission, type Role } from '@/lib/store/auth-store';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { settingsInputClassName } from '@/components/settings/SettingRow';
-import { Icons } from '@/components/ui/Icon';
+import { Icons, MIcon, materialIconMap } from '@/components/ui/Icon';
 import { ALL_PERMISSIONS, ROLE_PERMISSIONS } from '@/lib/auth/permissions';
 
 type LoginMode = 'none' | 'legacy_password' | 'managed';
@@ -380,14 +380,14 @@ export function AccountSettings({
               color="danger"
               onClick={logoutAndReload}
               className="shrink-0 gap-1.5">
-              <LogOut size={14} />
+              <MIcon icon={materialIconMap.LogOut} width={14} height={14} />
               退出登录
             </Button>
           </div>
         )}
 
         <div className="flex items-start gap-3 py-3">
-          <Info className="shrink-0 mt-0.5 text-(--text-color-secondary)" size={16} />
+          <MIcon icon={materialIconMap.Info} width={16} height={16} className="shrink-0 mt-0.5 text-(--text-color-secondary)" />
           <div className="min-w-0">
             <p className="text-[14px] leading-5 font-medium text-(--text-color)">
               当前登录模式：{isManagedMode ? 'Redis 托管账户' : loginMode === 'legacy_password' ? '环境变量密码登录' : '未启用'}

@@ -10,6 +10,7 @@ import { AccountSettings } from '@/components/settings/AccountSettings';
 import { AdminGate } from '@/components/AdminGate';
 import { usePremiumSettingsPage } from './hooks/usePremiumSettingsPage';
 import Link from 'next/link';
+import { MIcon, materialIconMap } from '@/components/ui/Icon';
 
 export default function PremiumSettingsPage() {
     const {
@@ -63,9 +64,7 @@ export default function PremiumSettingsPage() {
                                 className="w-10 h-10 flex items-center justify-center rounded-[var(--radius-full)] bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--text-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_10%,transparent)] transition-all duration-200 cursor-pointer"
                                 aria-label="返回"
                             >
-                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                                </svg>
+                                <MIcon icon={materialIconMap.ChevronLeft} className="w-5 h-5" />
                             </Link>
                             <div>
                                 <h1 className="text-2xl font-bold text-[var(--text-color)]">高级模式设置</h1>

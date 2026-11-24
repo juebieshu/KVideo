@@ -17,7 +17,7 @@ interface StreamHandlerParams {
     onStart: (totalSources: number) => void;
     onVideos: (videos: Video[], source: string) => void;
     onProgress: (completedSources: number, totalVideosFound: number) => void;
-    onComplete: () => void;
+    onComplete: (info?: { maxPageCount?: number; fetchedPage?: number }) => void;
     onError: (message: string) => void;
     onPageInfo?: (maxPageCount: number) => void;
     currentQuery: string;
@@ -83,7 +83,10 @@ export async function processSearchStream({
                         if (data.maxPageCount && onPageInfo) {
                             onPageInfo(data.maxPageCount);
                         }
-                        onComplete();
+                        onComplete({
+                            maxPageCount: data.maxPageCount,
+                            fetchedPage: data.fetchedPage,
+                        });
                     }
                 } else if (data.type === 'error') {
                     if (!isCompleted) {

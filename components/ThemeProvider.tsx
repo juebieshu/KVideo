@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useSyncExternalStore } from 'react';
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -10,33 +10,99 @@ interface ThemeContextType {
   actualTheme: 'light' | 'dark';
 }
 
+interface ThemeViewTransition {
+  finished: Promise<void>;
+  skipTransition: () => void;
+}
+
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+interface ThemeStore {
+  subscribe: (listener: () => void) => () => void;
+  getSnapshot: () => Theme;
+  setTheme: (theme: Theme) => void;
+}
+
+function readStoredTheme(): Theme {
+  if (typeof window === 'undefined') return 'system';
+
+  try {
+    const saved = window.localStorage.getItem('theme');
+    return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
+  } catch {
+    return 'system';
+  }
+}
+
+function getServerThemeSnapshot(): Theme {
+  return 'system';
+}
+
+function createThemeStore(): ThemeStore {
+  let snapshot = readStoredTheme();
+  const listeners = new Set<() => void>();
+
+  return {
+    subscribe: (listener) => {
+      listeners.add(listener);
+      const handleStorage = (event: StorageEvent) => {
+        if (event.key !== 'theme' && event.key !== null) return;
+        snapshot = readStoredTheme();
+        listener();
+      };
+      window.addEventListener('storage', handleStorage);
+
+      return () => {
+        listeners.delete(listener);
+        window.removeEventListener('storage', handleStorage);
+      };
+    },
+    getSnapshot: () => snapshot,
+    setTheme: (nextTheme) => {
+      snapshot = nextTheme;
+      if (typeof window !== 'undefined') {
+        try {
+          window.localStorage.setItem('theme', nextTheme);
+        } catch {
+          // Keep the in-memory theme when storage is unavailable.
+        }
+      }
+      listeners.forEach((listener) => listener());
+    },
+  };
+}
+
+function getSystemThemeSnapshot(): 'light' | 'dark' {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function getServerSystemThemeSnapshot(): 'light' | 'dark' {
+  return 'dark';
+}
+
+function subscribeToSystemTheme(listener: () => void): () => void {
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  mediaQuery.addEventListener('change', listener);
+  return () => mediaQuery.removeEventListener('change', listener);
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('system');
-  const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('dark');
-  const [mounted, setMounted] = useState(false);
-  const transitionRef = React.useRef<any>(null);
+  const [themeStore] = useState(createThemeStore);
+  const theme = useSyncExternalStore(
+    themeStore.subscribe,
+    themeStore.getSnapshot,
+    getServerThemeSnapshot,
+  );
+  const systemTheme = useSyncExternalStore(
+    subscribeToSystemTheme,
+    getSystemThemeSnapshot,
+    getServerSystemThemeSnapshot,
+  );
+  const actualTheme = theme === 'system' ? systemTheme : theme;
+  const transitionRef = React.useRef<ThemeViewTransition | null>(null);
 
   useEffect(() => {
-    setMounted(true);
-    // Load saved theme
-    const saved = localStorage.getItem('theme') as Theme;
-    if (saved) {
-      setTheme(saved);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-
     const applyTheme = () => {
-      const resolved =
-        theme === 'system'
-          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-          : theme;
-
-      setActualTheme(resolved);
       document.documentElement.setAttribute('data-theme', theme);
     };
 
@@ -57,11 +123,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Check if View Transition API is supported
-      // @ts-ignore - View Transition API is experimental
-      if (typeof document.startViewTransition === 'function') {
+      const transitionDocument = document as Document & {
+        startViewTransition?: (callback: () => void) => ThemeViewTransition;
+      };
+      if (typeof transitionDocument.startViewTransition === 'function') {
         try {
-          // @ts-ignore
-          transitionRef.current = document.startViewTransition(() => {
+          transitionRef.current = transitionDocument.startViewTransition(() => {
             applyTheme();
           });
           
@@ -85,16 +152,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     };
 
     applyThemeWithTransition();
-    localStorage.setItem('theme', theme);
 
-    // Listen for system theme changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleSystemThemeChange = () => {
-      if (theme === 'system') {
-        applyThemeWithTransition();
-      }
-    };
-    
     // Listen for visibility changes to abort transitions
     const handleVisibilityChange = () => {
       if (document.hidden && transitionRef.current) {
@@ -106,12 +164,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         transitionRef.current = null;
       }
     };
-    
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
-      mediaQuery.removeEventListener('change', handleSystemThemeChange);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       // Abort any pending transition on unmount
       if (transitionRef.current) {
@@ -122,10 +178,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         }
       }
     };
-  }, [theme, mounted]);
+  }, [theme, actualTheme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, actualTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme: themeStore.setTheme, actualTheme }}>
       {children}
     </ThemeContext.Provider>
   );

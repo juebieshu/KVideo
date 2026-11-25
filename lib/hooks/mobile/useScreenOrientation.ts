@@ -10,19 +10,19 @@ export function useScreenOrientation(isFullscreen: boolean) {
 
         const handleOrientation = async () => {
             try {
-                const screen = window.screen as any;
+                const orientation = window.screen.orientation;
 
                 if (isFullscreen) {
                     // Fullscreen: Lock to landscape
-                    if (screen.orientation?.lock) {
-                        await screen.orientation.lock('landscape').catch((err: any) => {
-                            console.warn('Could not lock orientation:', err);
+                    if (orientation?.lock) {
+                        await orientation.lock('landscape').catch((error: unknown) => {
+                            console.warn('Could not lock orientation:', error);
                         });
                     }
                 } else {
                     // Exit fullscreen: Unlock to allow portrait
-                    if (screen.orientation?.unlock) {
-                        screen.orientation.unlock();
+                    if (orientation?.unlock) {
+                        orientation.unlock();
                     }
                 }
             } catch (error) {
@@ -35,9 +35,9 @@ export function useScreenOrientation(isFullscreen: boolean) {
         // Cleanup: Always unlock on unmount
         return () => {
             try {
-                const screen = window.screen as any;
-                if (screen.orientation?.unlock) {
-                    screen.orientation.unlock();
+                const orientation = window.screen.orientation;
+                if (orientation?.unlock) {
+                    orientation.unlock();
                 }
             } catch (error) {
                 // Ignore cleanup errors

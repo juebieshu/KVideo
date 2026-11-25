@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/Dialog';
 import { Switch } from '@/components/ui/Switch';
@@ -8,20 +8,29 @@ import { Menu } from '@/components/ui/Menu';
 import { userSourcesStore } from '@/lib/store/user-sources-store';
 import type { VideoSource } from '@/lib/types';
 
+function subscribeToUserSources(listener: () => void): () => void {
+  return userSourcesStore.subscribe(listener);
+}
+
+function getSourcesSnapshot(): string {
+  return JSON.stringify(userSourcesStore.getSources());
+}
+
+function getServerSourcesSnapshot(): string {
+  return '[]';
+}
+
 export function UserSourceSettings() {
-  const [sources, setSources] = useState<VideoSource[]>([]);
+  const sourcesSnapshot = useSyncExternalStore(
+    subscribeToUserSources,
+    getSourcesSnapshot,
+    getServerSourcesSnapshot,
+  );
+  const sources = useMemo(() => JSON.parse(sourcesSnapshot) as VideoSource[], [sourcesSnapshot]);
   const [name, setName] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
   const [error, setError] = useState('');
   const [pendingRemove, setPendingRemove] = useState<VideoSource | null>(null);
-
-  useEffect(() => {
-    setSources(userSourcesStore.getSources());
-    const unsub = userSourcesStore.subscribe(() => {
-      setSources(userSourcesStore.getSources());
-    });
-    return unsub;
-  }, []);
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();

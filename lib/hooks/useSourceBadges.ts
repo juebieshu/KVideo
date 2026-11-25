@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import type { SourceBadge } from '@/lib/types';
 
 /**
@@ -15,7 +15,19 @@ export function useSourceBadges<T extends { source?: string; sourceName?: string
   videos: T[],
   availableSources: SourceBadge[]
 ) {
-  const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
+  const [selectedSourceState, setSelectedSources] = useState<Set<string>>(new Set);
+
+  // Derive the valid selection so removed sources never filter the UI.
+  const selectedSources = useMemo(() => {
+    const availableSourceIds = new Set(availableSources.map(source => source.id));
+    const filtered = new Set(
+      Array.from(selectedSourceState).filter(sourceId => availableSourceIds.has(sourceId))
+    );
+
+    return filtered.size === selectedSourceState.size
+      ? selectedSourceState
+      : filtered;
+  }, [availableSources, selectedSourceState]);
 
   // Filter videos by selected sources
   const filteredVideos = useMemo(() => {
@@ -40,23 +52,6 @@ export function useSourceBadges<T extends { source?: string; sourceName?: string
       return newSet;
     });
   }, []);
-
-  // Auto-cleanup: remove selected sources that no longer exist
-  useEffect(() => {
-    const availableSourceIds = new Set(availableSources.map(s => s.id));
-
-    setSelectedSources(prev => {
-      const filtered = new Set(
-        Array.from(prev).filter(sourceId => availableSourceIds.has(sourceId))
-      );
-
-      // Only update if changed
-      if (filtered.size !== prev.size) {
-        return filtered;
-      }
-      return prev;
-    });
-  }, [availableSources]);
 
   return {
     selectedSources,

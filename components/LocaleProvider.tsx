@@ -5,24 +5,27 @@
  * using opencc-js DOM-level conversion (MutationObserver-based).
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { settingsStore, type LocaleOption } from '@/lib/store/settings-store';
 
+function subscribeToLocale(listener: () => void): () => void {
+  return settingsStore.subscribe(listener);
+}
+
+function getLocaleSnapshot(): LocaleOption {
+  return settingsStore.getSettings().locale;
+}
+
+function getServerLocaleSnapshot(): LocaleOption {
+  return 'zh-CN';
+}
+
 export function LocaleProvider() {
-  const [locale, setLocale] = useState<LocaleOption>('zh-CN');
-
-  // Listen for settings changes
-  useEffect(() => {
-    const settings = settingsStore.getSettings();
-    setLocale(settings.locale);
-
-    const unsub = settingsStore.subscribe(() => {
-      const updated = settingsStore.getSettings();
-      setLocale(updated.locale);
-    });
-
-    return unsub;
-  }, []);
+  const locale = useSyncExternalStore(
+    subscribeToLocale,
+    getLocaleSnapshot,
+    getServerLocaleSnapshot,
+  );
 
   // Apply DOM-level conversion when locale changes
   useEffect(() => {

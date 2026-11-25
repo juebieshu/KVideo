@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import type { LanguageBadge } from '@/lib/types';
 
 /**
@@ -8,7 +8,7 @@ import type { LanguageBadge } from '@/lib/types';
  * Mirrors useTypeBadges pattern
  */
 export function useLanguageBadges<T extends { vod_lang?: string }>(videos: T[]) {
-  const [selectedLangs, setSelectedLangs] = useState<Set<string>>(new Set());
+  const [selectedLangState, setSelectedLangs] = useState<Set<string>>(new Set);
 
   // Collect and count language badges from videos
   const languageBadges = useMemo<LanguageBadge[]>(() => {
@@ -25,6 +25,18 @@ export function useLanguageBadges<T extends { vod_lang?: string }>(videos: T[]) 
       .map(([lang, count]) => ({ lang, count }))
       .sort((a, b) => b.count - a.count);
   }, [videos]);
+
+  // Ignore stale selections without synchronizing state from an effect.
+  const selectedLangs = useMemo(() => {
+    const availableLangs = new Set(languageBadges.map(badge => badge.lang));
+    const filtered = new Set(
+      Array.from(selectedLangState).filter(lang => availableLangs.has(lang))
+    );
+
+    return filtered.size === selectedLangState.size
+      ? selectedLangState
+      : filtered;
+  }, [languageBadges, selectedLangState]);
 
   // Filter videos by selected languages
   const filteredVideos = useMemo(() => {
@@ -49,22 +61,6 @@ export function useLanguageBadges<T extends { vod_lang?: string }>(videos: T[]) 
       return newSet;
     });
   }, []);
-
-  // Auto-cleanup: remove selected langs that no longer exist in badges
-  useEffect(() => {
-    const availableLangs = new Set(languageBadges.map(b => b.lang));
-
-    setSelectedLangs(prev => {
-      const filtered = new Set(
-        Array.from(prev).filter(lang => availableLangs.has(lang))
-      );
-
-      if (filtered.size !== prev.size) {
-        return filtered;
-      }
-      return prev;
-    });
-  }, [languageBadges]);
 
   return {
     languageBadges,

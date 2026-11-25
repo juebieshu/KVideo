@@ -72,7 +72,13 @@ export function EpisodeList({
   const [showAllSources, setShowAllSources] = useState(false);
   // list = classic vertical list; grid = multi-column with section pages
   const [episodeLayout, setEpisodeLayout] = useState<'list' | 'grid'>('grid');
-  const [episodePage, setEpisodePage] = useState(0);
+  const [episodePageSelection, setEpisodePageSelection] = useState<{
+    episodes: Episode[] | null;
+    currentEpisode: number;
+    isReversed: boolean;
+    episodeLayout: 'list' | 'grid';
+    page: number;
+  } | null>(null);
 
   const EPISODES_PER_PAGE = 50;
 
@@ -153,43 +159,38 @@ export function EpisodeList({
     return config?.baseUrl || null;
   }, []);
 
-  // Initialize latencies from sources
+  // Auto-refresh latencies for sources that don't have them.
   useEffect(() => {
-    if (!sources) return;
-    const hasMissing = sources.some((source) => source.latency === undefined);
+    if (!sources || sources.length <= 1) return;
+    const missing = sources.filter(s => s.latency === undefined);
+    if (missing.length === 0) return;
 
-    // Auto-refresh latencies for sources that don't have them
-    if (hasMissing && sources.length > 1) {
-      const autoRefresh = async () => {
-        const missing = sources.filter(s => s.latency === undefined);
-        const results = await Promise.all(
-          missing.map(async (source) => {
-            try {
-              const pingUrl = getSourcePingUrl(source.source);
-              if (!pingUrl) return { source: source.source, latency: undefined };
-              const response = await fetch('/api/ping', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: pingUrl }),
-              });
-              if (response.ok) {
-                const data = await response.json();
-                return { source: source.source, latency: data.latency as number | undefined };
-              }
-            } catch { /* ignore */ }
-            return { source: source.source, latency: undefined };
-          })
-        );
-        setLatencies(prev => {
-          const updated = { ...prev };
-          results.forEach(({ source, latency }) => {
-            if (latency !== undefined) updated[source] = latency;
+    Promise.all(
+      missing.map(async (source) => {
+        try {
+          const pingUrl = getSourcePingUrl(source.source);
+          if (!pingUrl) return { source: source.source, latency: undefined };
+          const response = await fetch('/api/ping', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: pingUrl }),
           });
-          return updated;
+          if (response.ok) {
+            const data = await response.json();
+            return { source: source.source, latency: data.latency as number | undefined };
+          }
+        } catch { /* ignore */ }
+        return { source: source.source, latency: undefined };
+      })
+    ).then(results => {
+      setLatencies(prev => {
+        const updated = { ...prev };
+        results.forEach(({ source, latency }) => {
+          if (latency !== undefined) updated[source] = latency;
         });
-      };
-      autoRefresh();
-    }
+        return updated;
+      });
+    });
   }, [sources, getSourcePingUrl]);
 
   // Refresh latencies
@@ -239,18 +240,23 @@ export function EpisodeList({
     return Math.max(1, Math.ceil(displayEpisodes.length / EPISODES_PER_PAGE));
   }, [displayEpisodes]);
 
-  // Keep the current episode's page visible when order/layout changes
-  useEffect(() => {
-    if (!episodes || episodes.length === 0) {
-      setEpisodePage(0);
-      return;
-    }
+  // Keep the current episode's page visible when order/layout changes. A manual
+  // page selection is retained only for the episode/order/layout context that produced it.
+  const currentEpisodePage = (() => {
+    if (!episodes || episodes.length === 0) return 0;
     const displayIndex = isReversed
       ? episodes.length - 1 - currentEpisode
       : currentEpisode;
     const page = Math.floor(displayIndex / EPISODES_PER_PAGE);
-    setEpisodePage(Math.min(Math.max(0, page), Math.max(0, Math.ceil(episodes.length / EPISODES_PER_PAGE) - 1)));
-  }, [currentEpisode, episodes, isReversed, episodeLayout]);
+    return Math.min(Math.max(0, page), Math.max(0, Math.ceil(episodes.length / EPISODES_PER_PAGE) - 1));
+  })();
+  const episodePage = episodePageSelection
+    && episodePageSelection.episodes === episodes
+    && episodePageSelection.currentEpisode === currentEpisode
+    && episodePageSelection.isReversed === isReversed
+    && episodePageSelection.episodeLayout === episodeLayout
+    ? episodePageSelection.page
+    : currentEpisodePage;
 
   const pagedEpisodes = useMemo(() => {
     if (!displayEpisodes) return null;
@@ -670,7 +676,13 @@ export function EpisodeList({
               {pageRangeLabels.map((label, page) => (
                 <button
                   key={label}
-                  onClick={() => setEpisodePage(page)}
+                  onClick={() => setEpisodePageSelection({
+                    episodes,
+                    currentEpisode,
+                    isReversed,
+                    episodeLayout,
+                    page,
+                  })}
                   className={`
                     px-2.5 py-1 rounded-[var(--radius-2xl)] text-xs font-medium transition-all duration-200 cursor-pointer
                     ${episodePage === page

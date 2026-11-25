@@ -5,7 +5,7 @@
  * 作为「弹幕」类目内的一组嵌入，不再自带页头；行布局与「隐私与数据」一致。
  */
 
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/Dialog';
 import { Menu } from '@/components/ui/Menu';
@@ -21,29 +21,50 @@ interface UserDanmakuSettingsProps {
     showSystemApi?: boolean;
 }
 
+interface DanmakuSettingsSnapshot {
+    danmakuApis: DanmakuApiEntry[];
+    activeDanmakuApiId: string | null;
+}
+
+const SERVER_DANMAKU_SETTINGS: DanmakuSettingsSnapshot = {
+    danmakuApis: [],
+    activeDanmakuApiId: null,
+};
+
+function subscribeToUserSources(listener: () => void): () => void {
+    return userSourcesStore.subscribe(listener);
+}
+
+function getDanmakuSettingsSnapshot(): string {
+    const state = userSourcesStore.getState();
+    return JSON.stringify({
+        danmakuApis: state.danmakuApis,
+        activeDanmakuApiId: state.activeDanmakuApiId,
+    });
+}
+
+function getServerDanmakuSettingsSnapshot(): string {
+    return JSON.stringify(SERVER_DANMAKU_SETTINGS);
+}
+
 export function UserDanmakuSettings({
     systemApiUrl,
     onSystemApiUrlChange,
     showSystemApi = true,
 }: UserDanmakuSettingsProps) {
-    const [apis, setApis] = useState<DanmakuApiEntry[]>([]);
-    const [activeId, setActiveId] = useState<string | null>(null);
+    const settingsSnapshot = useSyncExternalStore(
+        subscribeToUserSources,
+        getDanmakuSettingsSnapshot,
+        getServerDanmakuSettingsSnapshot,
+    );
+    const { danmakuApis: apis, activeDanmakuApiId: activeId } = useMemo(
+        () => JSON.parse(settingsSnapshot) as DanmakuSettingsSnapshot,
+        [settingsSnapshot],
+    );
     const [name, setName] = useState('');
     const [url, setUrl] = useState('');
     const [error, setError] = useState('');
     const [pendingRemove, setPendingRemove] = useState<DanmakuApiEntry | null>(null);
-
-    useEffect(() => {
-        const state = userSourcesStore.getState();
-        setApis(state.danmakuApis);
-        setActiveId(state.activeDanmakuApiId);
-
-        return userSourcesStore.subscribe(() => {
-            const s = userSourcesStore.getState();
-            setApis(s.danmakuApis);
-            setActiveId(s.activeDanmakuApiId);
-        });
-    }, []);
 
     const handleAdd = (e: React.FormEvent) => {
         e.preventDefault();

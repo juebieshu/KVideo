@@ -10,10 +10,20 @@
 const CACHE_PREFIX = 'gs:';
 const MAX_CACHE_SIZE = 100;
 
+interface GroupedSource {
+  id: string | number;
+  source: string;
+  sourceName?: string;
+  latency?: number;
+  pic?: string;
+  typeName?: string;
+  remarks?: string;
+}
+
 /**
  * Store grouped sources data and return a short cache key.
  */
-export function storeGroupedSources(data: any[]): string {
+export function storeGroupedSources(data: GroupedSource[]): string {
   if (typeof window === 'undefined') return '';
 
   const key = generateKey();
@@ -33,7 +43,7 @@ export function storeGroupedSources(data: any[]): string {
 /**
  * Retrieve grouped sources data by cache key.
  */
-export function retrieveGroupedSources(key: string): any[] | null {
+export function retrieveGroupedSources(key: string): GroupedSource[] | null {
   if (typeof window === 'undefined' || !key) return null;
   try {
     const raw = sessionStorage.getItem(`${CACHE_PREFIX}${key}`);

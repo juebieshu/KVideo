@@ -10,7 +10,10 @@ import type { VideoResolutionInfo } from './useVideoResolution';
 const AUTO_HIDE_DELAY = 5000; // 5 seconds
 
 export function useResolutionBadge(resolution: VideoResolutionInfo | null) {
-  const [visible, setVisible] = useState(false);
+  const [visibility, setVisibility] = useState(() => ({
+    resolution,
+    visible: resolution !== null,
+  }));
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearTimer = useCallback(() => {
@@ -20,33 +23,33 @@ export function useResolutionBadge(resolution: VideoResolutionInfo | null) {
     }
   }, []);
 
-  const startHideTimer = useCallback(() => {
+  const startHideTimer = useCallback((nextResolution: VideoResolutionInfo) => {
     clearTimer();
     timerRef.current = setTimeout(() => {
-      setVisible(false);
+      setVisibility({ resolution: nextResolution, visible: false });
     }, AUTO_HIDE_DELAY);
   }, [clearTimer]);
 
-  // Show badge when resolution first detected or changes
+  // A new resolution is visible immediately by derivation; only the timeout
+  // callback performs the state update that hides it.
   useEffect(() => {
     if (resolution) {
-      setVisible(true);
-      startHideTimer();
+      startHideTimer(resolution);
     } else {
-      setVisible(false);
       clearTimer();
     }
+    return clearTimer;
   }, [resolution, startHideTimer, clearTimer]);
 
   // Briefly show badge on user interaction
   const flashBadge = useCallback(() => {
     if (!resolution) return;
-    setVisible(true);
-    startHideTimer();
+    setVisibility({ resolution, visible: true });
+    startHideTimer(resolution);
   }, [resolution, startHideTimer]);
 
-  // Cleanup
-  useEffect(() => clearTimer, [clearTimer]);
+  const badgeVisible = resolution !== null
+    && (visibility.resolution !== resolution || visibility.visible);
 
-  return { badgeVisible: visible, flashBadge };
+  return { badgeVisible, flashBadge };
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ImportModalTabs } from './import/ImportModalTabs';
 import { FileImportTab } from './import/FileImportTab';
 import { LinkImportTab } from './import/LinkImportTab';
@@ -25,7 +25,12 @@ interface ImportModalProps {
   onRefreshSubscription: (sub: SourceSubscription) => Promise<void>;
 }
 
-export function ImportModal({
+export function ImportModal(props: ImportModalProps) {
+  if (!props.isOpen) return null;
+  return <ImportModalContent {...props} />;
+}
+
+function ImportModalContent({
   isOpen,
   onClose,
   onImportFile,
@@ -36,15 +41,6 @@ export function ImportModal({
   onRefreshSubscription
 }: ImportModalProps) {
   const [activeTab, setActiveTab] = useState<'file' | 'link' | 'subscription' | 'json'>('file');
-
-  // Reset tab on open
-  useEffect(() => {
-    if (isOpen) {
-      setActiveTab('file');
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
 
   return (
     <>

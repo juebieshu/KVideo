@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
 import { clearSession, getSession, type Permission, type Role } from '@/lib/store/auth-store';
 import { Button } from '@/components/ui/Button';
@@ -84,6 +84,19 @@ async function logoutAndReload() {
   window.location.reload();
 }
 
+function subscribeToSession(listener: () => void): () => void {
+  window.addEventListener('kvideo-session-changed', listener);
+  return () => window.removeEventListener('kvideo-session-changed', listener);
+}
+
+function getSessionSnapshot(): string {
+  return JSON.stringify(getSession());
+}
+
+function getServerSessionSnapshot(): string {
+  return 'null';
+}
+
 interface AccountSettingsProps {
   showSession?: boolean;
   title?: string;
@@ -95,12 +108,20 @@ export function AccountSettings({
   title = '账户管理',
   description = '查看当前登录用户，并根据部署模式管理访问账户。',
 }: AccountSettingsProps = {}) {
-  const [session, setSessionState] = useState<ReturnType<typeof getSession>>(null);
+  const sessionSnapshot = useSyncExternalStore(
+    subscribeToSession,
+    getSessionSnapshot,
+    getServerSessionSnapshot,
+  );
+  const session = useMemo(
+    () => JSON.parse(sessionSnapshot) as ReturnType<typeof getSession>,
+    [sessionSnapshot],
+  );
   const [hasAuth, setHasAuth] = useState(false);
   const [loginMode, setLoginMode] = useState<LoginMode>('none');
   const [accounts, setAccounts] = useState<AccountInfo[]>([]);
   const [draftAccounts, setDraftAccounts] = useState<EditableAccount[]>([]);
-  const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const [accountsStatus, setAccountsStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -110,35 +131,40 @@ export function AccountSettings({
 
   const canManageAccounts = session?.role === 'super_admin';
   const isManagedMode = loginMode === 'managed';
+  const loadingAccounts = canManageAccounts && accountsStatus === 'loading';
+
+  const applyAccountsResponse = useCallback(async (response: Response) => {
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to load accounts');
+    }
+
+    const nextAccounts = (data.accounts || []) as AccountInfo[];
+    setAccounts(nextAccounts);
+    setDraftAccounts(buildEditableAccounts(nextAccounts));
+    setIsDirty(false);
+    setAccountsStatus('loaded');
+    setSaveError('');
+  }, []);
+
+  const handleAccountsError = useCallback((error: unknown) => {
+    setAccountsStatus('error');
+    setSaveError(error instanceof Error ? error.message : 'Failed to load accounts');
+  }, []);
 
   const fetchAccounts = useCallback(async () => {
     if (!canManageAccounts) return;
 
-    setLoadingAccounts(true);
-    setSaveError('');
-
     try {
       const response = await fetch('/api/auth/accounts');
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to load accounts');
-      }
-
-      const nextAccounts = (data.accounts || []) as AccountInfo[];
-      setAccounts(nextAccounts);
-      setDraftAccounts(buildEditableAccounts(nextAccounts));
-      setIsDirty(false);
+      await applyAccountsResponse(response);
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : 'Failed to load accounts');
-    } finally {
-      setLoadingAccounts(false);
+      handleAccountsError(error);
     }
-  }, [canManageAccounts]);
+  }, [canManageAccounts, applyAccountsResponse, handleAccountsError]);
 
   useEffect(() => {
-    setSessionState(getSession());
-
     fetch('/api/auth')
       .then((response) => response.json())
       .then((data) => {
@@ -152,8 +178,10 @@ export function AccountSettings({
 
   useEffect(() => {
     if (!canManageAccounts) return;
-    fetchAccounts();
-  }, [canManageAccounts, fetchAccounts, loginMode]);
+    fetch('/api/auth/accounts')
+      .then(applyAccountsResponse)
+      .catch(handleAccountsError);
+  }, [canManageAccounts, applyAccountsResponse, handleAccountsError, loginMode]);
 
   const currentDraftAccounts = useMemo(
     () => draftAccounts.filter((account) => !account.markedForDeletion),

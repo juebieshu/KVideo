@@ -1,14 +1,34 @@
 import { NextResponse } from 'next/server';
+import type { VideoSource } from '@/lib/types';
 
 export const runtime = 'edge';
 // We still import this type but won't rely on the empty array
 import { PREMIUM_SOURCES } from '@/lib/api/premium-sources';
 
+interface CategoryVideo {
+    vod_id?: string | number;
+    vod_name?: string;
+    vod_pic?: string;
+    vod_remarks?: string;
+    type_name?: string;
+}
+
+interface CategoryResponse {
+    list?: CategoryVideo[];
+}
+
+interface CategoryRequestBody {
+    sources?: VideoSource[];
+    category?: string;
+    page?: string;
+    limit?: string;
+}
+
 /**
  * Shared handler for fetching content
  */
 async function handleCategoryRequest(
-    sourceList: any[],
+    sourceList: VideoSource[],
     categoryParam: string,
     page: number,
     limit: number
@@ -32,7 +52,7 @@ async function handleCategoryRequest(
             });
         }
 
-        let targetSources = [];
+        let targetSources: VideoSource[] = [];
         if (sourceMap.size > 0) {
             targetSources = sourceList.filter(s => sourceMap.has(s.id) && s.enabled);
         } else {
@@ -43,7 +63,7 @@ async function handleCategoryRequest(
             return NextResponse.json({ videos: [], error: 'No enabled sources provided or found' }, { status: 500 });
         }
 
-        const fetchPromises = targetSources.map(async (source: any) => {
+        const fetchPromises = targetSources.map(async (source) => {
             try {
                 const url = new URL(source.baseUrl);
                 url.searchParams.set('ac', 'detail');
@@ -68,8 +88,8 @@ async function handleCategoryRequest(
 
                 if (!response.ok) return [];
 
-                const data = await response.json();
-                return (data.list || []).map((item: any) => ({
+                const data: CategoryResponse = await response.json();
+                return (data.list || []).map((item) => ({
                     vod_id: item.vod_id,
                     vod_name: item.vod_name,
                     vod_pic: item.vod_pic,
@@ -85,7 +105,7 @@ async function handleCategoryRequest(
 
         const results = await Promise.all(fetchPromises);
 
-        const interleavedVideos = [];
+        const interleavedVideos: Array<CategoryVideo & { source: string }> = [];
         const maxLen = Math.max(...results.map(r => r.length));
 
         for (let i = 0; i < maxLen; i++) {
@@ -109,7 +129,7 @@ async function handleCategoryRequest(
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
+        const body: CategoryRequestBody = await request.json();
         const { sources, category, page, limit } = body;
 
         // Use provided sources

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useState, useCallback, useRef, useSyncExternalStore } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { VideoPlayer } from '@/components/player/VideoPlayer';
 import { VideoMetadata } from '@/components/player/VideoMetadata';
@@ -50,8 +50,18 @@ function PlayerContent() {
 
   // Track settings - use mode-specific store
   const modeStore = isPremium ? premiumModeSettingsStore : settingsStore;
-  const [isReversed, setIsReversed] = useState(() =>
-    typeof window !== 'undefined' ? modeStore.getSettings().episodeReverseOrder : false
+  const subscribeToModeStore = useCallback(
+    (listener: () => void) => modeStore.subscribe(listener),
+    [modeStore],
+  );
+  const getEpisodeReverseOrder = useCallback(
+    () => modeStore.getSettings().episodeReverseOrder,
+    [modeStore],
+  );
+  const isReversed = useSyncExternalStore(
+    subscribeToModeStore,
+    getEpisodeReverseOrder,
+    () => false,
   );
 
   // Mobile tab state
@@ -63,11 +73,6 @@ function PlayerContent() {
   });
   const [isSourceSectionCollapsed, setIsSourceSectionCollapsed] = useState(false);
   const [isEpisodeSectionCollapsed, setIsEpisodeSectionCollapsed] = useState(false);
-
-  // Sync with store changes if any (though usually it's one-way from UI to store)
-  useEffect(() => {
-    setIsReversed(modeStore.getSettings().episodeReverseOrder);
-  }, [modeStore]);
 
   useEffect(() => {
     localStorage.setItem(PLAYER_VIEWPORT_MODE_KEY, playerViewportMode);
@@ -288,13 +293,13 @@ function PlayerContent() {
     return () => controller.abort();
   }, [groupedSourcesParam, gsKey, isPremium, pendingFallback, source, title]);
 
-  // Track current source for switching
-  const [currentSourceId, setCurrentSourceId] = useState(source);
+  // Track current source for switching, including the optimistic selection before navigation.
+  const [sourceState, setSourceState] = useState({ routeSource: source, sourceId: source });
+  if (sourceState.routeSource !== source) {
+    setSourceState({ routeSource: source, sourceId: source });
+  }
+  const currentSourceId = sourceState.routeSource === source ? sourceState.sourceId : source;
   const playerTimeRef = useRef(0);
-
-  useEffect(() => {
-    setCurrentSourceId(source);
-  }, [source]);
 
   // Track detected video resolution from the player
   const [detectedResolution, setDetectedResolution] = useState<VideoResolutionInfo | null>(null);
@@ -357,7 +362,6 @@ function PlayerContent() {
   }, [searchParams, router, setCurrentEpisode, setPlayUrl, setVideoError]);
 
   const handleToggleReverse = (reversed: boolean) => {
-    setIsReversed(reversed);
     const settings = modeStore.getSettings();
     modeStore.saveSettings({
       ...settings,
@@ -555,7 +559,7 @@ function PlayerContent() {
                       if (isPremium) {
                         params.set('premium', '1');
                       }
-                      setCurrentSourceId(newSource.source);
+                      setSourceState({ routeSource: source, sourceId: newSource.source });
                       router.replace(`/player?${params.toString()}`, { scroll: false });
                     }}
                   />

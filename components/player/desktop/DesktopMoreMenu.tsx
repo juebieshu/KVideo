@@ -62,7 +62,8 @@ export function DesktopMoreMenu({
 
     const buttonRef = React.useRef<HTMLButtonElement>(null);
     const menuRef = React.useRef<HTMLDivElement>(null);
-    const [menuPosition, setMenuPosition] = React.useState({ top: 0, left: 0, maxHeight: 'none', openUpward: false, align: 'right' as 'left' | 'right' });
+    const [menuPosition, setMenuPosition] = React.useState({ top: 0, left: 0, buttonWidth: 0, maxHeight: 'none', openUpward: false, align: 'right' as 'left' | 'right' });
+    const [portalTarget, setPortalTarget] = React.useState<HTMLElement | null>(null);
     const [isAdFilterOpen, setAdFilterOpen] = React.useState(false);
 
     const AD_FILTER_LABELS: Record<string, string> = {
@@ -99,6 +100,8 @@ export function DesktopMoreMenu({
     // Dual Positioning Strategy
     const calculateMenuPosition = React.useCallback(() => {
         if (!buttonRef.current || !containerRef.current) return;
+
+        setPortalTarget((isRotated || isFullscreen) ? containerRef.current : document.body);
 
         if (!isRotated && !isFullscreen) {
             // Normal Mode: Non-rotated, non-fullscreen
@@ -139,6 +142,7 @@ export function DesktopMoreMenu({
                     ? buttonRect.top - 10
                     : buttonRect.bottom + 10,
                 left: left,
+                buttonWidth: buttonRect.width,
                 maxHeight: `${maxHeight}px`,
                 openUpward: openUpward,
                 align: align
@@ -180,6 +184,7 @@ export function DesktopMoreMenu({
                     ? top - 10
                     : top + buttonHeight + 10,
                 left: isLeftHalf ? left : left + buttonWidth,
+                buttonWidth,
                 maxHeight: `${maxHeight}px`,
                 openUpward: openUpward,
                 align: align
@@ -228,6 +233,7 @@ export function DesktopMoreMenu({
             setMenuPosition({
                 top: top, // Fixed horizontal container coordinate
                 left: left, // Fixed vertical container coordinate
+                buttonWidth,
                 maxHeight: `${maxHeight}px`,
                 openUpward: openUpward,
                 align: align
@@ -279,7 +285,7 @@ export function DesktopMoreMenu({
                         right: `calc(100% - ${menuPosition.left}px + 10px)`,
                         left: 'auto'
                     } : {
-                        left: `${menuPosition.left + buttonRef.current?.offsetWidth! + 10}px`,
+                        left: `${menuPosition.left + menuPosition.buttonWidth + 10}px`,
                         right: 'auto'
                     }),
 
@@ -604,7 +610,7 @@ export function DesktopMoreMenu({
 
             {/* More Menu Dropdown (Portal) */}
             {/* More Menu Dropdown (Portal) */}
-            {showMoreMenu && typeof document !== 'undefined' && createPortal(MenuContent, ((isRotated || isFullscreen) && containerRef.current) ? containerRef.current : document.body)}
+            {showMoreMenu && portalTarget && createPortal(MenuContent, portalTarget)}
         </div>
     );
 }

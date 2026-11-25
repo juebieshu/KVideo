@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Icons } from '@/components/ui/Icon';
 import { getSourceName } from '@/lib/utils/source-names';
 import { htmlToText } from '@/lib/utils/html';
+import type { VideoDetail } from '@/lib/types';
 
 /**
  * Split person names by common delimiters (comma, Chinese comma, slash).
@@ -16,7 +17,10 @@ function splitPersonNames(str: string): string[] {
 }
 
 interface VideoMetadataProps {
-  videoData: any;
+  videoData: Partial<Pick<VideoDetail,
+    'vod_name' | 'vod_pic' | 'vod_content' | 'type_name' | 'vod_year' |
+    'vod_area' | 'vod_lang' | 'vod_actor' | 'vod_director'
+  >> | null;
   source: string | null;
   title?: string | null;
 }

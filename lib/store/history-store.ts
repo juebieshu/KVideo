@@ -210,12 +210,13 @@ const createHistoryStore = (name: string) =>
       {
         name,
         version: 2,
-        migrate: (persistedState: any, version: number) => {
+        migrate: (persistedState: unknown, version: number) => {
           if (version < 2) {
             // Migrate from v1: merge entries with same normalized title
-            const oldHistory = persistedState?.viewingHistory || [];
+            const state = persistedState as Partial<HistoryStore> | null | undefined;
+            const oldHistory = state?.viewingHistory || [];
             return {
-              ...persistedState,
+              ...state,
               viewingHistory: migrateHistory(oldHistory),
             };
           }

@@ -1,27 +1,40 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { useSettingsUiStore } from '@/lib/store/settings-ui-store';
 import { SettingsSurface } from './SettingsSurface';
 
+function subscribeToHydration(): () => void {
+  return () => {};
+}
+
+function getHydratedSnapshot(): boolean {
+  return true;
+}
+
+function getServerHydratedSnapshot(): boolean {
+  return false;
+}
+
 export function SettingsModalHost() {
   const isOpen = useSettingsUiStore((state) => state.isOpen);
   const close = useSettingsUiStore((state) => state.close);
+  const isHydrated = useSyncExternalStore(
+    subscribeToHydration,
+    getHydratedSnapshot,
+    getServerHydratedSnapshot,
+  );
 
   const previousFocus = useRef<HTMLElement | null>(null);
   const [mounted, setMounted] = useState(isOpen);
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  if (isOpen && !mounted) {
+    setMounted(true);
+  }
 
   useEffect(() => {
-    setPortalTarget(document.body);
-  }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      setMounted(true);
-      return;
-    }
+    if (isOpen) return;
 
     const timer = window.setTimeout(() => setMounted(false), 200);
     return () => window.clearTimeout(timer);
@@ -47,7 +60,7 @@ export function SettingsModalHost() {
     };
   }, [close, isOpen]);
 
-  if (!mounted || !portalTarget) return null;
+  if (!mounted || !isHydrated) return null;
 
   return createPortal(
     <div
@@ -61,6 +74,6 @@ export function SettingsModalHost() {
     >
       <SettingsSurface variant="modal" onClose={close} />
     </div>,
-    portalTarget,
+    document.body,
   );
 }

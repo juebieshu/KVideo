@@ -3,10 +3,22 @@ import { getSourceName } from '@/lib/utils/source-names';
 import { calculateRelevanceScore, hasMinimumMatch } from '@/lib/utils/search';
 import { settingsStore } from '@/lib/store/settings-store';
 
+interface SearchStreamVideo extends Video {
+  vod_class?: string;
+  sourceDisplayName?: string;
+}
+
+type SearchStreamEvent =
+  | { type: 'start'; totalSources: number }
+  | { type: 'videos'; videos: SearchStreamVideo[]; source: string; pagecount?: number }
+  | { type: 'progress'; completedSources: number; totalVideosFound: number }
+  | { type: 'complete'; maxPageCount?: number; fetchedPage?: number }
+  | { type: 'error'; message: string };
+
 /**
  * Check if a video's category matches any blocked keyword.
  */
-function isCategoryBlocked(video: any, blockedCategories: string[]): boolean {
+function isCategoryBlocked(video: SearchStreamVideo, blockedCategories: string[]): boolean {
     if (blockedCategories.length === 0) return false;
     const typeName = (video.type_name || video.vod_class || '').toLowerCase();
     return blockedCategories.some(cat => typeName.includes(cat.toLowerCase()));
@@ -57,15 +69,15 @@ export async function processSearchStream({
             if (!line.startsWith('data: ')) continue;
 
             try {
-                const data = JSON.parse(line.slice(6));
+                const data = JSON.parse(line.slice(6)) as SearchStreamEvent;
 
                 if (data.type === 'start') {
                     onStart(data.totalSources);
                 } else if (data.type === 'videos') {
                     const newVideos: Video[] = data.videos
-                        .filter((video: any) => hasMinimumMatch(video.vod_name, currentQuery))
-                        .filter((video: any) => !isCategoryBlocked(video, blockedCategories))
-                        .map((video: any) => ({
+                        .filter((video) => hasMinimumMatch(video.vod_name, currentQuery))
+                        .filter((video) => !isCategoryBlocked(video, blockedCategories))
+                        .map((video) => ({
                             ...video,
                             sourceName: video.sourceDisplayName || getSourceName(video.source),
                             isNew: true,

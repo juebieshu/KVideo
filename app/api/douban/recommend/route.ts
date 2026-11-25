@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
+interface DoubanSubject {
+  cover?: string;
+  [key: string]: unknown;
+}
+
+interface DoubanRecommendationsResponse {
+  subjects?: DoubanSubject[];
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const tag = searchParams.get('tag') || '热门';
@@ -24,11 +33,11 @@ export async function GET(request: Request) {
       throw new Error(`Douban API returned ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: DoubanRecommendationsResponse = await response.json();
 
     // 转换图片链接使用代理
     if (data.subjects && Array.isArray(data.subjects)) {
-      data.subjects = data.subjects.map((item: any) => ({
+      data.subjects = data.subjects.map((item) => ({
         ...item,
         cover: item.cover ? `/api/douban/image?url=${encodeURIComponent(item.cover)}` : item.cover,
       }));

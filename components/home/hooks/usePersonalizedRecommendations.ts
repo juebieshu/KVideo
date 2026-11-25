@@ -15,7 +15,7 @@
  * - hasHistory = true when viewingHistory.length >= 2
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from 'react';
 import { useHistoryStore, usePremiumHistoryStore } from '@/lib/store/history-store';
 import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll';
 import {
@@ -37,19 +37,56 @@ interface InterleavedMovie extends DoubanMovie {
   sourceLabel: string;
 }
 
+interface InitialRecommendationsState {
+  historyLength: number;
+  loaded: boolean;
+  movies: InterleavedMovie[];
+  hasMore: boolean;
+  page: number;
+}
+
+interface LoadMoreState {
+  historyLength: number;
+  loading: boolean;
+}
+
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 const ITEMS_PER_PAGE = 18; // How many to fetch per query per page
 const MAX_ROUNDS = 8; // Max times to regenerate queries before giving up
+
+function subscribeToHydration(): () => void {
+  return () => {};
+}
+
+function getHydratedSnapshot(): boolean {
+  return true;
+}
+
+function getServerHydratedSnapshot(): boolean {
+  return false;
+}
 
 export function usePersonalizedRecommendations(isPremium = false) {
   const normalHistory = useHistoryStore();
   const premiumHistory = usePremiumHistoryStore();
   const { viewingHistory } = isPremium ? premiumHistory : normalHistory;
+  const isHydrated = useSyncExternalStore(
+    subscribeToHydration,
+    getHydratedSnapshot,
+    getServerHydratedSnapshot,
+  );
 
-  const [movies, setMovies] = useState<InterleavedMovie[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(0);
+  const [initialResult, setInitialResult] = useState<InitialRecommendationsState>(() => ({
+    historyLength: isHydrated ? viewingHistory.length : -1,
+    loaded: isHydrated ? viewingHistory.length < 2 : false,
+    movies: [],
+    hasMore: true,
+    page: 0,
+  }));
+  const [loadMoreState, setLoadMoreState] = useState<LoadMoreState>(() => ({
+    historyLength: isHydrated ? viewingHistory.length : -1,
+    loading: false,
+  }));
   const queriesRef = useRef<RecommendationQuery[]>([]);
   const roundRef = useRef(0); // Track how many times we've regenerated queries
   const allSeenTitlesRef = useRef<Set<string>>(new Set()); // Global dedup across rounds
@@ -59,7 +96,17 @@ export function usePersonalizedRecommendations(isPremium = false) {
     timestamp: number;
   } | null>(null);
 
-  const hasHistory = viewingHistory.length >= 2;
+  const hasHistory = isHydrated && viewingHistory.length >= 2;
+  const isCurrentHistory = initialResult.historyLength === viewingHistory.length;
+  const initialLoading = hasHistory && (!isCurrentHistory || !initialResult.loaded);
+  const movies = hasHistory && isCurrentHistory ? initialResult.movies : [];
+  const hasMore = isHydrated
+    ? hasHistory && (initialLoading || (isCurrentHistory && initialResult.hasMore))
+    : true;
+  const page = isCurrentHistory ? initialResult.page : 0;
+  const loading = isHydrated && (
+    initialLoading || (loadMoreState.historyLength === viewingHistory.length && loadMoreState.loading)
+  );
 
   // Fetch a page of results from all queries
   const fetchPage = useCallback(async (
@@ -97,63 +144,58 @@ export function usePersonalizedRecommendations(isPremium = false) {
 
   // Initial load
   useEffect(() => {
-    if (viewingHistory.length < 2) {
-      setMovies([]);
-      setHasMore(false);
-      return;
-    }
+    if (viewingHistory.length < 2) return;
 
+    const historyLength = viewingHistory.length;
     const queries = generateRecommendations(viewingHistory);
     queriesRef.current = queries;
     roundRef.current = 0;
     allSeenTitlesRef.current = new Set();
 
-    if (queries.length === 0) {
-      setMovies([]);
-      setHasMore(false);
-      return;
-    }
-
     // Cache key based on query tags (not pageStart, since that's randomized)
     const cacheKey = queries.map(q => `${q.tag}:${q.type}`).join('|');
-
-    if (
-      cacheRef.current &&
+    const cached = cacheRef.current &&
       cacheRef.current.key === cacheKey &&
       Date.now() - cacheRef.current.timestamp < CACHE_DURATION
-    ) {
-      setMovies(cacheRef.current.movies);
-      // Rebuild seen titles from cache
-      for (const m of cacheRef.current.movies) {
-        allSeenTitlesRef.current.add(m.title.toLowerCase().trim());
-      }
-      setHasMore(true);
-      return;
-    }
+      ? cacheRef.current
+      : null;
+
+    const loadInitialPage = async (): Promise<InterleavedMovie[]> => {
+      if (queries.length === 0) return [];
+      if (cached) return cached.movies;
+      return fetchPage(queries, 0, getWatchedTitles(viewingHistory));
+    };
 
     let cancelled = false;
-    setLoading(true);
-    setPage(0);
-    setHasMore(true);
-
-    const watchedTitles = getWatchedTitles(viewingHistory);
-
-    fetchPage(queries, 0, watchedTitles).then((interleaved) => {
+    loadInitialPage().then((interleaved) => {
       if (cancelled) return;
-      setMovies(interleaved);
+
       for (const m of interleaved) {
         allSeenTitlesRef.current.add(m.title.toLowerCase().trim());
       }
-      // Always assume there's more — we can regenerate queries if this round exhausts
-      setHasMore(interleaved.length > 0);
-      cacheRef.current = {
-        key: queries.map(q => `${q.tag}:${q.type}`).join('|'),
+      setInitialResult({
+        historyLength,
+        loaded: true,
         movies: interleaved,
-        timestamp: Date.now(),
-      };
-      setLoading(false);
+        hasMore: queries.length > 0 && (cached ? true : interleaved.length > 0),
+        page: 0,
+      });
+      if (!cached && queries.length > 0) {
+        cacheRef.current = {
+          key: cacheKey,
+          movies: interleaved,
+          timestamp: Date.now(),
+        };
+      }
     }).catch(() => {
-      if (!cancelled) setLoading(false);
+      if (cancelled) return;
+      setInitialResult((current) => ({
+        historyLength,
+        loaded: true,
+        movies: current.historyLength === historyLength ? current.movies : [],
+        hasMore: current.historyLength === historyLength ? current.hasMore : true,
+        page: 0,
+      }));
     });
 
     return () => { cancelled = true; };
@@ -164,7 +206,8 @@ export function usePersonalizedRecommendations(isPremium = false) {
     const queries = queriesRef.current;
     if (queries.length === 0 || loading) return;
 
-    setLoading(true);
+    const historyLength = viewingHistory.length;
+    setLoadMoreState({ historyLength, loading: true });
     const watchedTitles = getWatchedTitles(viewingHistory);
 
     try {
@@ -192,25 +235,39 @@ export function usePersonalizedRecommendations(isPremium = false) {
             for (const m of freshUnique) {
               allSeenTitlesRef.current.add(m.title.toLowerCase().trim());
             }
-            setMovies((prev) => [...prev, ...freshUnique]);
-            setPage(0); // Reset page for fresh queries
+            setInitialResult((current) => (
+              current.historyLength === historyLength && current.loaded
+                ? { ...current, movies: [...current.movies, ...freshUnique], page: 0 }
+                : current
+            ));
             if (cacheRef.current) {
               cacheRef.current.movies = [...cacheRef.current.movies, ...freshUnique];
             }
           } else {
             // Even fresh queries yielded nothing new — stop
-            setHasMore(false);
+            setInitialResult((current) => (
+              current.historyLength === historyLength && current.loaded
+                ? { ...current, hasMore: false }
+                : current
+            ));
           }
         } else {
           // Exceeded max rounds — stop
-          setHasMore(false);
+          setInitialResult((current) => (
+            current.historyLength === historyLength && current.loaded
+              ? { ...current, hasMore: false }
+              : current
+          ));
         }
       } else {
         for (const m of uniqueNew) {
           allSeenTitlesRef.current.add(m.title.toLowerCase().trim());
         }
-        setMovies((prev) => [...prev, ...uniqueNew]);
-        setPage(nextPage);
+        setInitialResult((current) => (
+          current.historyLength === historyLength && current.loaded
+            ? { ...current, movies: [...current.movies, ...uniqueNew], page: nextPage }
+            : current
+        ));
         if (cacheRef.current) {
           cacheRef.current.movies = [...cacheRef.current.movies, ...uniqueNew];
         }
@@ -218,7 +275,11 @@ export function usePersonalizedRecommendations(isPremium = false) {
     } catch {
       // Silently fail
     } finally {
-      setLoading(false);
+      setLoadMoreState((current) => (
+        current.historyLength === historyLength
+          ? { ...current, loading: false }
+          : current
+      ));
     }
   }, [loading, viewingHistory, fetchPage]);
 

@@ -9,12 +9,92 @@ interface UseCastControlsProps {
     setIsCasting: (casting: boolean) => void;
 }
 
+type SessionState = 'SESSION_STARTED' | 'SESSION_RESUMED' | 'SESSION_ENDED';
+type CastContextEventType = 'sessionstatechanged';
+type AutoJoinPolicy = 'tab_and_origin_scoped' | 'origin_scoped';
+
+interface MediaInfo {
+    contentType: string;
+}
+
+interface LoadRequest {
+    currentTime?: number;
+}
+
+interface SessionStateEventData {
+    sessionState: SessionState;
+}
+
+interface CastOptions {
+    receiverApplicationId: string;
+    autoJoinPolicy: AutoJoinPolicy;
+}
+
+interface Session {
+    loadMedia(request: LoadRequest): Promise<unknown>;
+}
+
+interface CastContext {
+    setOptions(options: CastOptions): void;
+    getCurrentSession(): Session | null;
+    addEventListener(
+        type: CastContextEventType,
+        listener: (event: SessionStateEventData) => void
+    ): void;
+    removeEventListener(
+        type: CastContextEventType,
+        listener: (event: SessionStateEventData) => void
+    ): void;
+    requestSession(): Promise<Session>;
+}
+
+interface CastSdk {
+    chrome: {
+        cast: {
+            media: {
+                DEFAULT_MEDIA_RECEIVER_APP_ID: string;
+                MediaInfo: new (contentId: string, contentType: string) => MediaInfo;
+                LoadRequest: new (mediaInfo: MediaInfo) => LoadRequest;
+            };
+            AutoJoinPolicy: {
+                ORIGIN_SCOPED: 'origin_scoped';
+            };
+        };
+    };
+    cast: {
+        framework: {
+            CastContext: {
+                getInstance: () => CastContext;
+            };
+            CastContextEventType: {
+                SESSION_STATE_CHANGED: CastContextEventType;
+            };
+            SessionState: {
+                SESSION_STARTED: 'SESSION_STARTED';
+                SESSION_RESUMED: 'SESSION_RESUMED';
+            };
+        };
+    };
+}
+
 declare global {
     interface Window {
-        chrome: any;
-        cast: any;
+        chrome?: CastSdk['chrome'];
+        cast?: CastSdk['cast'];
         __onGCastApiAvailable?: (isAvailable: boolean) => void;
     }
+}
+
+function hasCastSdk(value: Window): value is Window & CastSdk {
+    return Boolean(
+        value.cast?.framework?.CastContext?.getInstance &&
+        value.cast?.framework?.CastContextEventType?.SESSION_STATE_CHANGED &&
+        value.cast?.framework?.SessionState &&
+        value.chrome?.cast?.media?.DEFAULT_MEDIA_RECEIVER_APP_ID &&
+        value.chrome?.cast?.media?.MediaInfo &&
+        value.chrome?.cast?.media?.LoadRequest &&
+        value.chrome?.cast?.AutoJoinPolicy?.ORIGIN_SCOPED
+    );
 }
 
 export function useCastControls({
@@ -23,21 +103,13 @@ export function useCastControls({
     setIsCastAvailable,
     setIsCasting
 }: UseCastControlsProps) {
-    const castContextRef = useRef<any>(null);
+    const castContextRef = useRef<CastContext | null>(null);
     const loadMediaRef = useRef<() => void>(() => {});
 
     const isCastSdkReady = useCallback(() => {
         if (typeof window === 'undefined') return false;
 
-        return Boolean(
-            window.cast?.framework?.CastContext?.getInstance &&
-            window.cast?.framework?.CastContextEventType?.SESSION_STATE_CHANGED &&
-            window.cast?.framework?.SessionState &&
-            window.chrome?.cast?.media?.DEFAULT_MEDIA_RECEIVER_APP_ID &&
-            window.chrome?.cast?.media?.MediaInfo &&
-            window.chrome?.cast?.media?.LoadRequest &&
-            window.chrome?.cast?.AutoJoinPolicy?.ORIGIN_SCOPED
-        );
+        return hasCastSdk(window);
     }, []);
 
     const loadMedia = useCallback(() => {
@@ -63,7 +135,7 @@ export function useCastControls({
 
         session.loadMedia(request).then(
             () => console.log('Cast: Media loaded successfully'),
-            (error: any) => console.error('Cast: Media load failed', error)
+            (error: unknown) => console.error('Cast: Media load failed', error)
         );
     }, [src, videoRef]);
 
@@ -72,7 +144,7 @@ export function useCastControls({
     }, [loadMedia]);
 
     useEffect(() => {
-        let sessionStateListener: ((event: any) => void) | null = null;
+        let sessionStateListener: ((event: SessionStateEventData) => void) | null = null;
         let onGCastApiAvailable: ((isAvailable: boolean) => void) | null = null;
 
         const markCastUnavailable = () => {
@@ -83,13 +155,14 @@ export function useCastControls({
 
         // Function to initialize Cast
         const initializeCastApi = () => {
-            if (!isCastSdkReady()) {
+            if (typeof window === 'undefined' || !hasCastSdk(window)) {
                 markCastUnavailable();
                 return;
             }
 
             try {
-                const castContext = window.cast.framework.CastContext.getInstance();
+                const framework = window.cast.framework;
+                const castContext = framework.CastContext.getInstance();
                 castContextRef.current = castContext;
 
                 castContext.setOptions({
@@ -102,10 +175,10 @@ export function useCastControls({
                 setIsCastAvailable(true);
 
                 // Monitor session state
-                sessionStateListener = (event: any) => {
+                sessionStateListener = (event: SessionStateEventData) => {
                     const sessionState = event.sessionState;
-                    const isSessionActive = sessionState === window.cast.framework.SessionState.SESSION_STARTED ||
-                        sessionState === window.cast.framework.SessionState.SESSION_RESUMED;
+                    const isSessionActive = sessionState === framework.SessionState.SESSION_STARTED ||
+                        sessionState === framework.SessionState.SESSION_RESUMED;
 
                     setIsCasting(isSessionActive);
 
@@ -116,7 +189,7 @@ export function useCastControls({
                 };
 
                 castContext.addEventListener(
-                    window.cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+                    framework.CastContextEventType.SESSION_STATE_CHANGED,
                     sessionStateListener
                 );
             } catch (error) {
@@ -146,13 +219,14 @@ export function useCastControls({
             }
 
             const castContext = castContextRef.current;
+            const sessionStateChanged = window.cast?.framework?.CastContextEventType?.SESSION_STATE_CHANGED;
             if (
                 sessionStateListener &&
                 castContext?.removeEventListener &&
-                window.cast?.framework?.CastContextEventType?.SESSION_STATE_CHANGED
+                sessionStateChanged
             ) {
                 castContext.removeEventListener(
-                    window.cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+                    sessionStateChanged,
                     sessionStateListener
                 );
             }
@@ -160,7 +234,7 @@ export function useCastControls({
     }, [isCastSdkReady, setIsCastAvailable, setIsCasting, videoRef]);
 
     const showCastMenu = useCallback(() => {
-        if (!isCastSdkReady()) return;
+        if (typeof window === 'undefined' || !hasCastSdk(window)) return;
 
         try {
             window.cast.framework.CastContext.getInstance().requestSession();
@@ -168,7 +242,7 @@ export function useCastControls({
             console.warn('Cast session request failed.', error);
             setIsCastAvailable(false);
         }
-    }, [isCastSdkReady, setIsCastAvailable]);
+    }, [setIsCastAvailable]);
 
     const castActions = useMemo(() => ({
         showCastMenu

@@ -26,7 +26,8 @@ export function DesktopSpeedMenu({
 }: DesktopSpeedMenuProps) {
     const buttonRef = React.useRef<HTMLButtonElement>(null);
     const menuRef = React.useRef<HTMLDivElement>(null);
-    const [menuPosition, setMenuPosition] = React.useState({ top: 0, left: 0, maxHeight: 'none', openUpward: false, align: 'right' as 'left' | 'right' });
+    const [menuPosition, setMenuPosition] = React.useState({ top: 0, left: 0, buttonWidth: 0, maxHeight: 'none', openUpward: false, align: 'right' as 'left' | 'right' });
+    const [portalTarget, setPortalTarget] = React.useState<HTMLElement | null>(null);
 
     const [isFullscreen, setIsFullscreen] = React.useState(false);
 
@@ -50,6 +51,8 @@ export function DesktopSpeedMenu({
     // Dual Positioning Strategy
     const calculateMenuPosition = React.useCallback(() => {
         if (!buttonRef.current || !containerRef.current) return;
+
+        setPortalTarget((isRotated || isFullscreen) ? containerRef.current : document.body);
 
         if (!isRotated && !isFullscreen) {
             // Normal Mode: Non-rotated, non-fullscreen
@@ -90,6 +93,7 @@ export function DesktopSpeedMenu({
                     ? buttonRect.top - 10
                     : buttonRect.bottom + 10,
                 left: left,
+                buttonWidth: buttonRect.width,
                 maxHeight: `${maxHeight}px`,
                 openUpward: openUpward,
                 align: align
@@ -130,6 +134,7 @@ export function DesktopSpeedMenu({
                     ? top - 10
                     : top + buttonHeight + 10,
                 left: isLeftHalf ? left : left + buttonWidth,
+                buttonWidth,
                 maxHeight: `${maxHeight}px`,
                 openUpward: openUpward,
                 align: align
@@ -181,6 +186,7 @@ export function DesktopSpeedMenu({
             setMenuPosition({
                 top: top, // Fixed horizontal container coordinate
                 left: left, // Fixed vertical container coordinate
+                buttonWidth,
                 maxHeight: `${maxHeight}px`,
                 openUpward: openUpward,
                 align: align
@@ -232,7 +238,7 @@ export function DesktopSpeedMenu({
                         right: `calc(100% - ${menuPosition.left}px + 10px)`,
                         left: 'auto'
                     } : {
-                        left: `${menuPosition.left + buttonRef.current?.offsetWidth! + 10}px`,
+                        left: `${menuPosition.left + menuPosition.buttonWidth + 10}px`,
                         right: 'auto'
                     }),
 
@@ -295,7 +301,7 @@ export function DesktopSpeedMenu({
                 So portaling to containerRef is SAFE and CORRECT.
             */}
             {/* Speed Menu (Portal) */}
-            {showSpeedMenu && typeof document !== 'undefined' && createPortal(MenuContent, ((isRotated || isFullscreen) && containerRef.current) ? containerRef.current : document.body)}
+            {showSpeedMenu && portalTarget && createPortal(MenuContent, portalTarget)}
         </div>
     );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useHistory } from '@/lib/store/history-store';
 import { CustomVideoPlayer } from './CustomVideoPlayer';
@@ -49,7 +49,7 @@ export function VideoPlayer({
   const searchParams = useSearchParams();
 
   const source = searchParams.get('source') || '';
-  const title = searchParams.get('title') || '未知视频';
+  const title = useMemo(() => searchParams.get('title') || '未知视频', [searchParams]);
 
   const getSavedProgress = () => {
     const timeParam = searchParams.get('t');

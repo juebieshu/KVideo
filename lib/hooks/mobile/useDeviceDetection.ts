@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 
+interface StreamCapableWindow extends Window {
+    MSStream?: unknown;
+}
+
 /**
  * Hook to detect if the device is mobile
  */
@@ -31,7 +35,7 @@ export function useIsIOS() {
 
     useEffect(() => {
         const checkIOS = () => {
-            const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+            const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as StreamCapableWindow).MSStream;
             setIsIOS(ios);
         };
 

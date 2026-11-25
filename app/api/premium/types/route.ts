@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PREMIUM_SOURCES } from '@/lib/api/premium-sources';
+import type { VideoSource } from '@/lib/types';
 
 export const runtime = 'edge';
 
@@ -16,13 +17,21 @@ interface SourceCategories {
     categories: Category[];
 }
 
+interface CategoriesResponse {
+    class?: Category[];
+}
+
+interface TypesRequestBody {
+    sources?: VideoSource[];
+}
+
 // Shared handler
-async function handleTypesRequest(sourceList: any[]) {
+async function handleTypesRequest(sourceList: VideoSource[]) {
     try {
         const enabledSources = sourceList.filter(s => s.enabled);
 
         const results = await Promise.allSettled(
-            enabledSources.map(async (source: any) => {
+            enabledSources.map(async (source) => {
                 try {
                     const url = new URL(source.baseUrl);
                     url.searchParams.set('ac', 'list');
@@ -44,7 +53,7 @@ async function handleTypesRequest(sourceList: any[]) {
                         throw new Error(`HTTP ${response.status}`);
                     }
 
-                    const data = await response.json();
+                    const data: CategoriesResponse = await response.json();
                     return {
                         sourceId: source.id,
                         sourceName: source.name,
@@ -162,7 +171,7 @@ async function handleTypesRequest(sourceList: any[]) {
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
+        const body: TypesRequestBody = await request.json();
         const { sources } = body;
         return await handleTypesRequest(sources || []);
     } catch (error) {

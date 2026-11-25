@@ -1,121 +1,197 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll';
 import { settingsStore } from '@/lib/store/settings-store';
+import type { SourceSubscription, Video, VideoSource } from '@/lib/types';
 
-interface PremiumVideo {
-    vod_id: string | number;
-    vod_name: string;
-    vod_pic?: string;
-    vod_remarks?: string;
-    type_name?: string;
-    source: string;
+type PremiumSubscription = SourceSubscription & Partial<Pick<VideoSource, 'group' | 'enabled'>>;
+
+function isPremiumSubscription(source: SourceSubscription): source is PremiumSubscription {
+    return (source as PremiumSubscription).group === 'premium';
+}
+
+interface PremiumContentState {
+    category: string;
+    videos: Video[];
+    loading: boolean;
+    hasMore: boolean;
+    page: number;
+}
+
+interface PremiumPageResult {
+    videos: Video[];
+    hasMore: boolean;
 }
 
 const PAGE_LIMIT = 20;
 
 export function usePremiumContent(categoryValue: string) {
-    const [videos, setVideos] = useState<PremiumVideo[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
-    const [page, setPage] = useState(1);
+    const [state, setState] = useState<PremiumContentState>(() => ({
+        category: categoryValue,
+        videos: [],
+        loading: true,
+        hasMore: true,
+        page: 1,
+    }));
+    const requestIdRef = useRef(0);
+    const loadingRef = useRef(false);
 
-    // Track source count to detect meaningful updates
-    const sourceCountRef = useRef(0);
-
-    const loadVideos = useCallback(async (pageNum: number, append = false) => {
-        if (loading) return;
-
-        setLoading(true);
-        try {
-            // Get sources from settings
-            const settings = settingsStore.getSettings();
-            // Resolve all relevant sources (premium sources + subscriptions that might be premium)
-            // For simplicity, we send all enabled premium sources.
-            const premiumSources = [
-                ...settings.premiumSources,
-                // Check if any subscription sources are marked as premium
-                ...settings.subscriptions.filter(s => (s as any).group === 'premium')
-            ].filter(s => (s as any).enabled !== false);
-
-            if (premiumSources.length === 0) {
-                setLoading(false);
-                return;
-            }
-
-            // Should we include normal subscriptions too if categoryValue requests them?
-            // The API handles filtering by categoryValue map.
-            // If categoryValue is empty (Recommend), we use all enabled premium sources.
-
-            const response = await fetch('/api/premium/category', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    sources: premiumSources,
-                    category: categoryValue,
-                    page: pageNum.toString(),
-                    limit: PAGE_LIMIT.toString()
-                })
-            });
-
-            if (!response.ok) throw new Error('Failed to fetch');
-
-            const data = await response.json();
-            const newVideos = data.videos || [];
-
-            setVideos(prev => append ? [...prev, ...newVideos] : newVideos);
-            setHasMore(newVideos.length === PAGE_LIMIT);
-        } catch (error) {
-            console.error('Failed to load videos:', error);
-            setHasMore(false);
-        } finally {
-            setLoading(false);
-        }
-    }, [loading, categoryValue]);
-
-    // Initial load and category change
-    useEffect(() => {
-        setPage(1);
-        setVideos([]);
-        setHasMore(true);
-
-        // Initial check for sources
+    const fetchPremiumPage = useCallback(async (
+        category: string,
+        pageNum: number,
+    ): Promise<PremiumPageResult | null> => {
         const settings = settingsStore.getSettings();
-        const sourcesCount = settings.premiumSources.length + settings.subscriptions.length;
-        sourceCountRef.current = sourcesCount;
+        // Resolve all relevant sources (premium sources + subscriptions that might be premium)
+        // For simplicity, we send all enabled premium sources.
+        const premiumSources = [
+            ...settings.premiumSources,
+            // Check if any subscription sources are marked as premium
+            ...settings.subscriptions.filter(isPremiumSubscription)
+        ].filter(s => s.enabled !== false);
 
-        loadVideos(1, false);
-    }, [categoryValue]); // eslint-disable-line react-hooks/exhaustive-deps
+        if (premiumSources.length === 0) {
+            return null;
+        }
 
-    // Subscribe to settings changes to handle async source loading
+        // Should we include normal subscriptions too if categoryValue requests them?
+        // The API handles filtering by categoryValue map.
+        // If categoryValue is empty (Recommend), we use all enabled premium sources.
+        const response = await fetch('/api/premium/category', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sources: premiumSources,
+                category,
+                page: pageNum.toString(),
+                limit: PAGE_LIMIT.toString()
+            })
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch');
+
+        const data = await response.json();
+        const newVideos: Video[] = data.videos || [];
+
+        return {
+            videos: newVideos,
+            hasMore: newVideos.length === PAGE_LIMIT,
+        };
+    }, []);
+
+    const loadVideos = useCallback((pageNum: number, append = false) => {
+        if (loadingRef.current) return;
+
+        const requestId = ++requestIdRef.current;
+        loadingRef.current = true;
+        setState(previous => ({ ...previous, page: pageNum, loading: true }));
+
+        void fetchPremiumPage(categoryValue, pageNum).then(result => {
+            if (requestId !== requestIdRef.current) return;
+
+            setState(previous => ({
+                ...previous,
+                category: categoryValue,
+                videos: result
+                    ? append
+                        ? [...previous.videos, ...result.videos]
+                        : result.videos
+                    : previous.videos,
+                hasMore: result ? result.hasMore : previous.hasMore,
+                loading: false,
+                page: pageNum,
+            }));
+        }).catch((error: unknown) => {
+            if (requestId !== requestIdRef.current) return;
+
+            console.error('Failed to load videos:', error);
+            setState(previous => ({
+                ...previous,
+                category: categoryValue,
+                hasMore: false,
+                loading: false,
+                page: pageNum,
+            }));
+        }).finally(() => {
+            if (requestId === requestIdRef.current) {
+                loadingRef.current = false;
+            }
+        });
+    }, [categoryValue, fetchPremiumPage]);
+
+    // Fetch on mount and when the category changes. The category-keyed state
+    // derivation below clears stale results without a synchronous effect reset.
+    useEffect(() => {
+        const requestId = ++requestIdRef.current;
+        loadingRef.current = true;
+
+        void fetchPremiumPage(categoryValue, 1).then(result => {
+            if (requestId !== requestIdRef.current) return;
+
+            setState({
+                category: categoryValue,
+                videos: result?.videos ?? [],
+                hasMore: result?.hasMore ?? true,
+                page: 1,
+                loading: false,
+            });
+        }).catch((error: unknown) => {
+            if (requestId !== requestIdRef.current) return;
+
+            console.error('Failed to load videos:', error);
+            setState({
+                category: categoryValue,
+                videos: [],
+                hasMore: false,
+                page: 1,
+                loading: false,
+            });
+        }).finally(() => {
+            if (requestId === requestIdRef.current) {
+                loadingRef.current = false;
+            }
+        });
+
+        return () => {
+            if (requestId === requestIdRef.current) {
+                requestIdRef.current += 1;
+                loadingRef.current = false;
+            }
+        };
+    }, [categoryValue, fetchPremiumPage]);
+
+    const isCategoryPending = state.category !== categoryValue;
+    const videos = isCategoryPending ? [] : state.videos;
+    const loading = isCategoryPending || state.loading;
+    const hasMore = isCategoryPending ? true : state.hasMore;
+    const page = isCategoryPending ? 1 : state.page;
+
+    // Subscribe to settings changes to handle async source loading.
     useEffect(() => {
         const handleSettingsUpdate = () => {
             const settings = settingsStore.getSettings();
             const premiumSources = [
                 ...settings.premiumSources,
-                ...settings.subscriptions.filter(s => (s as any).group === 'premium')
-            ].filter(s => (s as any).enabled !== false);
+                ...settings.subscriptions.filter(isPremiumSubscription)
+            ].filter(s => s.enabled !== false);
 
-            const currentSourceCount = premiumSources.length;
-
-            // If we have 0 videos and suddenly gain sources, we should retry loading
-            // OR if the number of sources significantly changed (e.g. from 0 to N)
-            if (videos.length === 0 && currentSourceCount > 0 && !loading) {
-                // Determine if we should reload. 
-                // Mostly needed when initial load failed due to no sources.
+            // If we have 0 videos and suddenly gain sources, retry loading.
+            if (
+                !isCategoryPending &&
+                videos.length === 0 &&
+                premiumSources.length > 0 &&
+                !loadingRef.current
+            ) {
                 loadVideos(1, false);
             }
         };
 
-        const unsubscribe = settingsStore.subscribe(handleSettingsUpdate);
-        return () => unsubscribe();
-    }, [loadVideos, videos.length, loading]);
+        return settingsStore.subscribe(handleSettingsUpdate);
+    }, [isCategoryPending, videos.length, loadVideos]);
 
     const { prefetchRef, loadMoreRef } = useInfiniteScroll({
         hasMore,
         loading,
         page,
         onLoadMore: (nextPage) => {
-            setPage(nextPage);
             loadVideos(nextPage, true);
         },
     });

@@ -78,17 +78,26 @@ export const getDefaultPremiumSources = (): VideoSource[] => PREMIUM_SOURCES;
 
 
 
+interface SubscriptionSourceInput {
+  name: string;
+  url: string;
+}
+
 function getEnvSubscriptions(customValue?: string): SourceSubscription[] {
   const envValue = (customValue || process.env.SUBSCRIPTION_SOURCES || process.env.NEXT_PUBLIC_SUBSCRIPTION_SOURCES || '').trim();
   if (!envValue) return [];
 
   // 1. Try JSON
   try {
-    const raw = JSON.parse(envValue);
+    const raw: unknown = JSON.parse(envValue);
     if (Array.isArray(raw)) {
       return raw
-        .filter((item: any) => item && typeof item.name === 'string' && typeof item.url === 'string')
-        .map((item: any) => createSubscription(item.name, item.url));
+        .filter((item: unknown): item is SubscriptionSourceInput =>
+          typeof item === 'object' && item !== null &&
+          'name' in item && typeof item.name === 'string' &&
+          'url' in item && typeof item.url === 'string'
+        )
+        .map((item) => createSubscription(item.name, item.url));
     }
   } catch (e) {
     // Ignore JSON parse error, try direct URL
@@ -182,12 +191,12 @@ export const settingsStore = {
     }
 
     try {
-      const parsed = JSON.parse(stored);
+      const parsed = JSON.parse(stored) as Partial<AppSettings>;
       // Get ENV subscriptions
       const envSubscriptions = getEnvSubscriptions();
 
       // Parse stored subscriptions
-      const storedSubscriptions = Array.isArray(parsed.subscriptions) ? parsed.subscriptions : [];
+      const storedSubscriptions: SourceSubscription[] = Array.isArray(parsed.subscriptions) ? parsed.subscriptions : [];
 
       // Merge: ENV subscriptions take precedence for existence, but we want to keep local state (like lastUpdated) if possible
       // However, for simplicity and ensuring "auto update" as user requested, if it's in ENV, we act as if it's a fresh/enforced source
@@ -213,16 +222,16 @@ export const settingsStore = {
 
       // Filter out invalid sources (missing baseUrl etc)
       const validSources = (Array.isArray(parsed.sources) ? parsed.sources : getDefaultSources())
-        .filter((s: any) => s && s.id && s.name && s.baseUrl);
+        .filter((s: VideoSource) => s && s.id && s.name && s.baseUrl);
 
       const validPremiumSources = (Array.isArray(parsed.premiumSources) ? parsed.premiumSources : getDefaultPremiumSources())
-        .filter((s: any) => s && s.id && s.name && s.baseUrl);
+        .filter((s: VideoSource) => s && s.id && s.name && s.baseUrl);
 
       // Validate that parsed data has all required properties
       return {
         sources: validSources,
         premiumSources: validPremiumSources,
-        subscriptions: mergedSubscriptions.filter((s: any) => s && s.id && s.name && s.url),
+        subscriptions: mergedSubscriptions.filter((s: SourceSubscription) => s && s.id && s.name && s.url),
         sortBy: parsed.sortBy || 'default',
         searchHistory: parsed.searchHistory !== undefined ? parsed.searchHistory : true,
         watchHistory: parsed.watchHistory !== undefined ? parsed.watchHistory : true,

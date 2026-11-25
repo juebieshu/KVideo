@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import type { TypeBadge } from '@/lib/types';
 
 /**
@@ -32,7 +32,7 @@ function normalizeTypeName(type: string): string {
 }
 
 export function useTypeBadges<T extends { type_name?: string }>(videos: T[]) {
-  const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
+  const [selectedTypeState, setSelectedTypes] = useState<Set<string>>(new Set);
 
   // Collect and count type badges from videos
   const typeBadges = useMemo<TypeBadge[]>(() => {
@@ -60,6 +60,18 @@ export function useTypeBadges<T extends { type_name?: string }>(videos: T[]) {
       .map(([, val]) => ({ type: val.display, count: val.count }))
       .sort((a, b) => b.count - a.count);
   }, [videos]);
+
+  // Derive the valid selection so removed types never filter the UI.
+  const selectedTypes = useMemo(() => {
+    const availableTypes = new Set(typeBadges.map(badge => badge.type));
+    const filtered = new Set(
+      Array.from(selectedTypeState).filter(type => availableTypes.has(type))
+    );
+
+    return filtered.size === selectedTypeState.size
+      ? selectedTypeState
+      : filtered;
+  }, [typeBadges, selectedTypeState]);
 
   // Filter videos by selected types
   const filteredVideos = useMemo(() => {
@@ -90,23 +102,6 @@ export function useTypeBadges<T extends { type_name?: string }>(videos: T[]) {
       return newSet;
     });
   }, []);
-
-  // Auto-cleanup: remove selected types that no longer exist in badges
-  useEffect(() => {
-    const availableTypes = new Set(typeBadges.map(b => b.type));
-
-    setSelectedTypes(prev => {
-      const filtered = new Set(
-        Array.from(prev).filter(type => availableTypes.has(type))
-      );
-
-      // Only update if changed
-      if (filtered.size !== prev.size) {
-        return filtered;
-      }
-      return prev;
-    });
-  }, [typeBadges]);
 
   return {
     typeBadges,

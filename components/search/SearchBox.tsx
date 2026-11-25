@@ -1,4 +1,4 @@
-import { useState, FormEvent, useEffect, useRef } from 'react';
+import { useState, FormEvent, useRef } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icon';
@@ -15,8 +15,23 @@ interface SearchBoxProps {
 }
 
 export function SearchBox({ onSearch, onClear, initialQuery = '', placeholder = '搜索电影、电视剧、综艺...', isPremium = false }: SearchBoxProps) {
-    const [query, setQuery] = useState(initialQuery);
+    const [queryState, setQueryState] = useState(() => ({
+        query: initialQuery,
+        previousInitialQuery: initialQuery,
+    }));
     const inputRef = useRef<HTMLInputElement>(null);
+
+    // Keep the controlled input in sync when the initial query changes.
+    if (queryState.previousInitialQuery !== initialQuery) {
+        setQueryState({ query: initialQuery, previousInitialQuery: initialQuery });
+    }
+
+    const query = queryState.previousInitialQuery === initialQuery
+        ? queryState.query
+        : initialQuery;
+    const setQuery = (value: string) => {
+        setQueryState({ query: value, previousInitialQuery: initialQuery });
+    };
 
     // Search history hook
     const {
@@ -37,11 +52,6 @@ export function SearchBox({ onSearch, onClear, initialQuery = '', placeholder = 
         // Blur the input after selecting from history
         inputRef.current?.blur();
     }, isPremium);
-
-    // Update query when initialQuery changes
-    useEffect(() => {
-        setQuery(initialQuery);
-    }, [initialQuery]);
 
     const {
         handleSubmit,

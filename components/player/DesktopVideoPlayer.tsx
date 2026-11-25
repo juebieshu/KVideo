@@ -53,6 +53,89 @@ function readViewportMetrics(): ViewportMetrics {
   };
 }
 
+function createViewportMetricsStore() {
+  const initialMetrics = readViewportMetrics();
+  let snapshot = `${initialMetrics.width}:${initialMetrics.height}`;
+  const listeners = new Set<() => void>();
+
+  const updateMetrics = () => {
+    const next = readViewportMetrics();
+    const nextSnapshot = `${next.width}:${next.height}`;
+    if (nextSnapshot === snapshot) return;
+    snapshot = nextSnapshot;
+    listeners.forEach((listener) => listener());
+  };
+
+  return {
+    getSnapshot: () => snapshot,
+    updateMetrics,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      updateMetrics();
+
+      const visualViewport = window.visualViewport;
+      window.addEventListener('resize', updateMetrics);
+      window.addEventListener('orientationchange', updateMetrics);
+      visualViewport?.addEventListener('resize', updateMetrics);
+
+      return () => {
+        listeners.delete(listener);
+        window.removeEventListener('resize', updateMetrics);
+        window.removeEventListener('orientationchange', updateMetrics);
+        visualViewport?.removeEventListener('resize', updateMetrics);
+      };
+    },
+  };
+}
+
+function getServerViewportMetricsSnapshot(): string {
+  return '0:0';
+}
+
+const FULLSCREEN_CLOCK_FORMATTER = new Intl.DateTimeFormat('zh-CN', {
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+
+function createFullscreenClockStore() {
+  let timestamp = Date.now();
+  let intervalId: number | null = null;
+  const listeners = new Set<() => void>();
+
+  const updateClock = () => {
+    timestamp = Date.now();
+    listeners.forEach((listener) => listener());
+  };
+
+  return {
+    getSnapshot: () => timestamp,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      updateClock();
+      if (intervalId === null) {
+        intervalId = window.setInterval(updateClock, 30000);
+      }
+
+      return () => {
+        listeners.delete(listener);
+        if (listeners.size === 0 && intervalId !== null) {
+          window.clearInterval(intervalId);
+          intervalId = null;
+        }
+      };
+    },
+  };
+}
+
+function getServerFullscreenClockSnapshot(): number {
+  return 0;
+}
+
+function getServerSeekStepSeconds(): number {
+  return DEFAULT_SEEK_STEP_SECONDS;
+}
+
 interface DesktopVideoPlayerProps {
   src: string;
   poster?: string;
@@ -93,14 +176,51 @@ export function DesktopVideoPlayer({
   const { fullscreenType: settingsFullscreenType } = usePlayerSettings(isPremium);
   const isIOS = useIsIOS();
   const isMobile = useIsMobile();
-  const [viewportMetrics, setViewportMetrics] = React.useState<ViewportMetrics>(() => readViewportMetrics());
-  const [seekStepSeconds, setSeekStepSeconds] = React.useState(DEFAULT_SEEK_STEP_SECONDS);
+  const [viewportMetricsStore] = React.useState(createViewportMetricsStore);
+  const viewportMetricsSnapshot = React.useSyncExternalStore(
+    viewportMetricsStore.subscribe,
+    viewportMetricsStore.getSnapshot,
+    getServerViewportMetricsSnapshot,
+  );
+  const viewportMetrics = React.useMemo<ViewportMetrics>(() => {
+    const [width, height] = viewportMetricsSnapshot.split(':').map(Number);
+    return { width, height };
+  }, [viewportMetricsSnapshot]);
   const [webFullscreenSize, setWebFullscreenSize] = React.useState<WebFullscreenSize>(() => {
     if (typeof window === 'undefined') return 'full';
     const saved = localStorage.getItem(WEB_FULLSCREEN_SIZE_KEY);
     return saved === 'large' || saved === 'focused' || saved === 'full' ? saved : 'full';
   });
-  const [fullscreenClock, setFullscreenClock] = React.useState('');
+  const [fullscreenClockStore] = React.useState(createFullscreenClockStore);
+  const subscribeToFullscreenClock = React.useCallback(
+    (listener: () => void) => data.isFullscreen
+      ? fullscreenClockStore.subscribe(listener)
+      : () => {},
+    [data.isFullscreen, fullscreenClockStore],
+  );
+  const fullscreenClockTimestamp = React.useSyncExternalStore(
+    subscribeToFullscreenClock,
+    fullscreenClockStore.getSnapshot,
+    getServerFullscreenClockSnapshot,
+  );
+  const fullscreenClock = data.isFullscreen
+    ? FULLSCREEN_CLOCK_FORMATTER.format(fullscreenClockTimestamp)
+    : '';
+
+  const seekStepStore = isPremium ? premiumModeSettingsStore : settingsStore;
+  const getSeekStepSeconds = React.useCallback(
+    () => seekStepStore.getSettings().seekStepSeconds ?? DEFAULT_SEEK_STEP_SECONDS,
+    [seekStepStore],
+  );
+  const subscribeToSeekStepSeconds = React.useCallback(
+    (listener: () => void) => seekStepStore.subscribe(listener),
+    [seekStepStore],
+  );
+  const seekStepSeconds = React.useSyncExternalStore(
+    subscribeToSeekStepSeconds,
+    getSeekStepSeconds,
+    getServerSeekStepSeconds,
+  );
 
   // Detect actual video resolution
   const videoResolution = useVideoResolution(refs.videoRef);
@@ -119,31 +239,6 @@ export function DesktopVideoPlayer({
     episodeIndex: currentEpisodeIndex,
   });
 
-  const updateViewportMetrics = React.useCallback(() => {
-    setViewportMetrics((current) => {
-      const next = readViewportMetrics();
-      if (current.width === next.width && current.height === next.height) {
-        return current;
-      }
-      return next;
-    });
-  }, []);
-
-  React.useEffect(() => {
-    updateViewportMetrics();
-
-    const visualViewport = window.visualViewport;
-    window.addEventListener('resize', updateViewportMetrics);
-    window.addEventListener('orientationchange', updateViewportMetrics);
-    visualViewport?.addEventListener('resize', updateViewportMetrics);
-
-    return () => {
-      window.removeEventListener('resize', updateViewportMetrics);
-      window.removeEventListener('orientationchange', updateViewportMetrics);
-      visualViewport?.removeEventListener('resize', updateViewportMetrics);
-    };
-  }, [updateViewportMetrics]);
-
   // Use user preference for fullscreen type, resolving 'auto' to device default
   // Auto Rules:
   // - Mobile: Window Fullscreen (Better for Danmaku/Controls)
@@ -158,55 +253,20 @@ export function DesktopVideoPlayer({
   const shouldForceLandscape = data.fullscreenMode === 'window' && isIOS && !isLandscape;
 
   React.useEffect(() => {
-    updateViewportMetrics();
-
     if (data.fullscreenMode !== 'window') return;
 
-    const rafId = window.requestAnimationFrame(updateViewportMetrics);
-    const timeoutId = window.setTimeout(updateViewportMetrics, 250);
+    const rafId = window.requestAnimationFrame(viewportMetricsStore.updateMetrics);
+    const timeoutId = window.setTimeout(viewportMetricsStore.updateMetrics, 250);
 
     return () => {
       window.cancelAnimationFrame(rafId);
       window.clearTimeout(timeoutId);
     };
-  }, [data.fullscreenMode, src, updateViewportMetrics]);
+  }, [data.fullscreenMode, src, viewportMetricsStore]);
 
   React.useEffect(() => {
     localStorage.setItem(WEB_FULLSCREEN_SIZE_KEY, webFullscreenSize);
   }, [webFullscreenSize]);
-
-  React.useEffect(() => {
-    const store = isPremium ? premiumModeSettingsStore : settingsStore;
-
-    const syncSeekStep = () => {
-      setSeekStepSeconds(store.getSettings().seekStepSeconds ?? DEFAULT_SEEK_STEP_SECONDS);
-    };
-
-    syncSeekStep();
-    const unsubscribe = store.subscribe(syncSeekStep);
-    return () => unsubscribe();
-  }, [isPremium]);
-
-  React.useEffect(() => {
-    if (!data.isFullscreen) {
-      setFullscreenClock('');
-      return;
-    }
-
-    const formatter = new Intl.DateTimeFormat('zh-CN', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
-
-    const updateClock = () => {
-      setFullscreenClock(formatter.format(new Date()));
-    };
-
-    updateClock();
-    const interval = window.setInterval(updateClock, 30000);
-    return () => window.clearInterval(interval);
-  }, [data.isFullscreen]);
 
   // Initialize HLS Player
   useHlsPlayer({
@@ -233,12 +293,6 @@ export function DesktopVideoPlayer({
     setBufferedTime,
     setIsLoading,
   } = actions;
-
-  // Reset loading state and show spinner when source changes
-  React.useEffect(() => {
-    setIsLoading(true);
-    setBufferedTime(0);
-  }, [src, setBufferedTime, setIsLoading]);
 
   const logic = useDesktopPlayerLogic({
     src,
@@ -379,6 +433,10 @@ export function DesktopVideoPlayer({
             onLoadedMetadata={handleLoadedMetadata}
             onProgress={handleProgressEvent}
             onError={handleVideoError}
+            onLoadStart={() => {
+              setIsLoading(true);
+              setBufferedTime(0);
+            }}
             onWaiting={() => setIsLoading(true)}
             onCanPlay={() => setIsLoading(false)}
             onClick={!isMobile ? () => {

@@ -5,7 +5,7 @@
  * Following Liquid Glass design system
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -35,7 +35,23 @@ export function SourceSelector({
     className = '',
 }: SourceSelectorProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const [latencies, setLatencies] = useState<Record<string, number>>({});
+    const [latencyResult, setLatencyResult] = useState<{
+        sources: SourceInfo[];
+        latencies: Record<string, number>;
+    } | null>(null);
+
+    const initialLatencies = useMemo(() => {
+        const initial: Record<string, number> = {};
+        sources.forEach((source) => {
+            if (source.latency !== undefined) {
+                initial[source.source] = source.latency;
+            }
+        });
+        return initial;
+    }, [sources]);
+
+    // Ignore measured values from a previous sources prop without resetting state in an effect.
+    const latencies = latencyResult?.sources === sources ? latencyResult.latencies : initialLatencies;
 
     // Sort sources by latency
     const sortedSources = useMemo(() => {
@@ -80,19 +96,8 @@ export function SourceSelector({
             }
         });
 
-        setLatencies(newLatencies);
+        setLatencyResult({ sources, latencies: newLatencies });
         setIsLoading(false);
-    }, [sources]);
-
-    // Initialize latencies from sources
-    useEffect(() => {
-        const initial: Record<string, number> = {};
-        sources.forEach(s => {
-            if (s.latency !== undefined) {
-                initial[s.source] = s.latency;
-            }
-        });
-        setLatencies(initial);
     }, [sources]);
 
     if (sources.length <= 1) {

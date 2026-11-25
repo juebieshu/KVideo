@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef } from "react";
 import { Button } from "./Button";
 
 interface ConfirmDialogProps {
@@ -28,7 +28,6 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
-  const [isClosing, setIsClosing] = useState(false);
 
   const titleId = useId();
   const descriptionId = useId();
@@ -47,8 +46,6 @@ export function ConfirmDialog({
     if (!dialog) return;
 
     if (isOpen) {
-      setIsClosing(false);
-
       if (!dialog.open) {
         dialog.showModal();
       }
@@ -60,11 +57,8 @@ export function ConfirmDialog({
 
     // isOpen → false：先播关闭动画（125ms），结束后再真正 close。
     if (dialog.open) {
-      setIsClosing(true);
-
       const timer = window.setTimeout(() => {
         dialog.close();
-        setIsClosing(false);
       }, 125);
 
       return () => window.clearTimeout(timer);
@@ -117,7 +111,7 @@ export function ConfirmDialog({
         p-0 text-(--kv-color-text)
         shadow-[0_16px_48px_rgba(0,0,0,0.22)]
         backdrop:bg-black/50
-        ${isOpen ? "kv-anim-panel-in" : isClosing ? "kv-anim-panel-out" : ""}
+        ${isOpen ? "kv-anim-panel-in" : "kv-anim-panel-out"}
       `}>
       <div className="px-5 py-5 sm:px-6 sm:py-6">
         {/* 标题与说明 */}

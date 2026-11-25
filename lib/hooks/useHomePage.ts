@@ -1,10 +1,27 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useSyncExternalStore } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSearchCache } from '@/lib/hooks/useSearchCache';
 import { useParallelSearch } from '@/lib/hooks/useParallelSearch';
 import { useSubscriptionSync } from '@/lib/hooks/useSubscriptionSync';
 import { settingsStore, type SortOption } from '@/lib/store/settings-store';
 import { userSourcesStore } from '@/lib/store/user-sources-store';
+
+function subscribeToSortOption(listener: () => void): () => void {
+    return settingsStore.subscribe(listener);
+}
+
+function getSortOptionSnapshot(): SortOption {
+    return settingsStore.getSettings().sortBy;
+}
+
+function getServerSortOptionSnapshot(): SortOption {
+    return 'default';
+}
+
+function clearSearchScrollPosition(searchQuery: string): void {
+    const scrollKey = `scroll-pos:/?q=${encodeURIComponent(searchQuery)}`;
+    sessionStorage.removeItem(scrollKey);
+}
 
 export function useHomePage() {
     useSubscriptionSync();
@@ -15,9 +32,16 @@ export function useHomePage() {
     const hasSearchedWithSourcesRef = useRef(false);
     const isInitialCacheLoad = useRef(false);
 
-    const [query, setQuery] = useState('');
-    const [hasSearched, setHasSearched] = useState(false);
-    const [currentSortBy, setCurrentSortBy] = useState<SortOption>('default');
+    const initialQuery = searchParams.get('q') ?? '';
+    const [query, setQuery] = useState(initialQuery);
+    const [hasSearched, setHasSearched] = useState(
+        () => initialQuery.trim().length > 0
+    );
+    const currentSortBy = useSyncExternalStore(
+        subscribeToSortOption,
+        getSortOptionSnapshot,
+        getServerSortOptionSnapshot,
+    );
 
     const onUrlUpdate = useCallback((q: string) => {
         router.replace(`/?q=${encodeURIComponent(q)}`, { scroll: false });
@@ -77,15 +101,10 @@ export function useHomePage() {
         }
     }, [currentSortBy, applySorting, hasSearched, results.length]);
 
-    // Load sort preference on mount and subscribe to changes
+    // Retry when settings asynchronously provide sources for a pending query.
     useEffect(() => {
         const updateSettings = () => {
             const settings = settingsStore.getSettings();
-
-            // Update sort preference
-            if (settings.sortBy !== currentSortBy) {
-                setCurrentSortBy(settings.sortBy);
-            }
 
             // Check if we need to re-trigger search due to new sources being loaded
             // This fixes the issue where initial visit has 0 sources, then sources are loaded async
@@ -96,26 +115,18 @@ export function useHomePage() {
             // If we have a query, and we haven't searched with sources yet,
             // and we suddenly have sources, trigger the search.
             if (query && hasSources && !hasSearchedWithSourcesRef.current && !loading) {
-                if (executeSearch(query)) {
-                    setHasSearched(true);
-                }
+                executeSearch(query);
             }
         };
 
-        // Initial load
-        updateSettings();
-
-        // Subscribe to changes
-        const unsubscribe = settingsStore.subscribe(updateSettings);
-        return () => unsubscribe();
-    }, [query, loading, executeSearch, currentSortBy]);
+        return settingsStore.subscribe(updateSettings);
+    }, [query, loading, executeSearch]);
 
     const handleSearch = useCallback((searchQuery: string) => {
         if (!searchQuery.trim()) return;
 
         // Clear scroll position for this search query to ensure we start at the top on a fresh search
-        const scrollKey = `scroll-pos:/?q=${encodeURIComponent(searchQuery)}`;
-        sessionStorage.removeItem(scrollKey);
+        clearSearchScrollPosition(searchQuery);
 
         // Reset cache load flag for new search
         isInitialCacheLoad.current = false;
@@ -134,17 +145,17 @@ export function useHomePage() {
         const cached = loadFromCache();
 
         if (urlQuery) {
-            setQuery(urlQuery);
             if (cached && cached.query === urlQuery && cached.results.length > 0) {
                 isInitialCacheLoad.current = true;
-                setHasSearched(true);
                 loadCachedResults(cached.results, cached.availableSources);
                 hasSearchedWithSourcesRef.current = true;
             } else {
-                handleSearch(urlQuery);
+                clearSearchScrollPosition(urlQuery);
+                isInitialCacheLoad.current = false;
+                executeSearch(urlQuery);
             }
         }
-    }, [searchParams, loadFromCache, loadCachedResults, handleSearch]);
+    }, [searchParams, loadFromCache, loadCachedResults, executeSearch]);
 
 
 
